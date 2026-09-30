@@ -1,14 +1,15 @@
-# Real Estate Dashboard
+# DFMBA 한국 주택시장 101
 
 주요 부동산 지표를 한 화면에 모아 보는 대시보드입니다.
 [mypage](https://github.com/junoopark/mypage) 프로젝트의 뼈대(프론트엔드 틀 · FastAPI 백엔드 · 배포 구성)를 가져와 시작했습니다.
 
 ## 프로젝트 소개
 
-- **대시보드**: 3 x 2 타일에 부동산 지표를 나눠 보여줍니다. (타일 구성은 임시)
-- **API 연동 실습 페이지**: 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다.
+- **Overview 탭**: 3 x 2 타일에 부동산 지표를 나눠 보여줍니다. (타일 구성은 임시)
+- **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로 핵심 질문과 변수 목록을 보여줍니다. 내용은 [`frontend/data/drivers.json`](frontend/data/drivers.json)에서 읽습니다.
+- **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
 - **다크모드**: 헤더 버튼으로 전환합니다. 처음에는 OS 설정을 따르고, 직접 고르면 그 선택을 기억합니다.
-- **한국어 / English**: 헤더 버튼으로 전환합니다. 처음에는 브라우저 언어를 따르고, 직접 고르면 그 선택을 기억합니다.
+- **언어**: 한국어로 고정했습니다. (English 문구 사전은 `js/i18n.js`에 남아 있습니다)
 
 ## 주요 구성
 
@@ -21,15 +22,16 @@
 ```
 realestate/
 ├─ frontend/              # Vercel (Root Directory)
-│   ├─ index.html         # 대시보드 (3 x 2 타일)
+│   ├─ index.html         # 대시보드 (Overview 3 x 2 타일 + 동인 탭 6개)
 │   ├─ demo.html          # API 연동 실습
 │   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
-│   ├─ data/              # 정적 JSON (필요할 때)
+│   ├─ data/drivers.json  # 6개 동인·변수 목록 (데이터사전 엑셀에서 추출)
 │   └─ js/
 │       ├─ config.js      # API 주소 (로컬/배포 자동 선택)
 │       ├─ theme-init.js  # 다크모드 초기값 (깜빡임 방지)
 │       ├─ i18n.js        # 한국어/English 문구 사전
-│       ├─ main.js        # 테마·언어 전환 버튼
+│       ├─ main.js        # 테마 전환 버튼
+│       ├─ factors.js     # 탭 전환(#overview, #demand …) · 동인 탭 화면
 │       └─ demo.js        # API 호출·결과 표시
 ├─ backend/               # Render (Root Directory)
 │   ├─ requirements.txt
