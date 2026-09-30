@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="index.title">부동산 지표 대시보드</title>
+  <meta name="description" content="주요 부동산 지표를 한 화면에 모아 보는 대시보드" data-i18n-attr="content:index.desc">
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="frame">
+  <header class="site-header">
+    <h1 data-i18n="index.h1">부동산 지표 대시보드</h1>
+    <div class="header-right">
+      <nav aria-label="페이지 이동" data-i18n-attr="aria-label:nav.aria">
+        <a href="index.html" aria-current="page" data-i18n="nav.home">대시보드</a>
+        <a href="demo.html" data-i18n="nav.demo">API 연동 실습</a>
+      </nav>
+      <div class="controls">
+        <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>
+        <button id="lang-btn" type="button" data-i18n="lang.other" data-i18n-attr="aria-label:lang.aria">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!--
+    한 화면에 담기는 3 x 2 타일 틀. 내용은 아직 비어 있다. (타일 구성은 임시 — 확정되면 바꾼다)
+    - 타일 식별자: prices · transactions · rent · supply · finance · sentiment (좌상단부터 가로 순서)
+    - 각 타일의 본문은 <div class="tile-body" data-tile="식별자"> 안에 채운다.
+    - 타일마다 js/<식별자>.js 를 만들어 API(/indicators/{key})를 불러와 그린다.
+    - 제목·문구는 한국어는 여기, English 는 js/i18n.js 의 tile.<식별자>.* 키에 둔다.
+  -->
+  <main class="tiles">
+
+    <section class="tile" id="tile-prices" aria-labelledby="tile-prices-title">
+      <header class="tile-head"><h2 id="tile-prices-title" data-i18n="tile.prices.title">주택가격 동향</h2></header>
+      <div class="tile-body" data-tile="prices"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+    <section class="tile" id="tile-transactions" aria-labelledby="tile-transactions-title">
+      <header class="tile-head"><h2 id="tile-transactions-title" data-i18n="tile.transactions.title">거래 동향</h2></header>
+      <div class="tile-body" data-tile="transactions"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+    <section class="tile" id="tile-rent" aria-labelledby="tile-rent-title">
+      <header class="tile-head"><h2 id="tile-rent-title" data-i18n="tile.rent.title">전월세 시장</h2></header>
+      <div class="tile-body" data-tile="rent"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+    <section class="tile" id="tile-supply" aria-labelledby="tile-supply-title">
+      <header class="tile-head"><h2 id="tile-supply-title" data-i18n="tile.supply.title">공급·분양</h2></header>
+      <div class="tile-body" data-tile="supply"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+    <section class="tile" id="tile-finance" aria-labelledby="tile-finance-title">
+      <header class="tile-head"><h2 id="tile-finance-title" data-i18n="tile.finance.title">금리·대출</h2></header>
+      <div class="tile-body" data-tile="finance"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+    <section class="tile" id="tile-sentiment" aria-labelledby="tile-sentiment-title">
+      <header class="tile-head"><h2 id="tile-sentiment-title" data-i18n="tile.sentiment.title">시장 심리</h2></header>
+      <div class="tile-body" data-tile="sentiment"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+    </section>
+
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/config.js"></script>
+  <!-- 타일 스크립트는 여기에 추가한다. 예) <script src="js/prices.js"></script> -->
+</body>
+</html>

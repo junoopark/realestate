@@ -1,0 +1,281 @@
+/* 두 페이지(index.html, demo.html) 공용 스타일 */
+* { box-sizing: border-box; margin: 0; }
+
+/* ── 색상 토큰: 라이트(기본) ─────────────────────────── */
+:root {
+  color-scheme: light;
+  --bg: #f4f4f0;
+  --ink: #1a2230;
+  --ink-soft: #43506a;
+  --card-bg: #ffffff;
+  --line: #dfd9cd;
+  --brand: #2f6f6a;
+  --brand-hover: #24564f;
+  --on-brand: #ffffff;       /* brand 색 배경 위의 글자색 */
+  --chip-bg: #ecece4;
+  --chip-hover: #dfdfd4;
+  --input-bg: #ffffff;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --loading-bg: #fdf3e7;
+  --loading-line: #e0a86a;
+  --ok-bg: #eef4f3;
+  --err-bg: #fbe9e3;
+  --err-line: #b4532a;
+  --err-ink: #7a2f12;
+  --out-bg: #12161f;
+  /* 지표 상승·하락 표시용: 하락(빨강) · 보합(회색) · 상승(청록) */
+  --neg: #b00000;  --neg-soft: #fde3dc;
+  --pos: #12716e;  --pos-soft: #d5eeec;
+  --neu: #4a5568;  --neu-soft: #e6e8ec;
+}
+
+/* ── 색상 토큰: 다크 (theme-init.js / main.js 가 data-theme 을 정한다) ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12151a;
+  --ink: #e8eaee;
+  --ink-soft: #a3adbd;
+  --card-bg: #1c2128;
+  --line: #333b47;
+  --brand: #6cc4bb;
+  --brand-hover: #8fd6cf;
+  --on-brand: #0d1a19;
+  --chip-bg: #2a313c;
+  --chip-hover: #364050;
+  --input-bg: #12151a;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --loading-bg: #33291a;
+  --loading-line: #b8874a;
+  --ok-bg: #17302d;
+  --err-bg: #3a1f18;
+  --err-line: #e08a6a;
+  --err-ink: #f5c6b5;
+  --out-bg: #0a0d12;
+  --neg: #ff8f7f;  --neg-soft: #47231e;
+  --pos: #62d3cb;  --pos-soft: #143735;
+  --neu: #b7c0cf;  --neu-soft: #333b47;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic",
+               "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+a { color: var(--brand); font-weight: 600; }
+a:hover { color: var(--brand-hover); }
+
+/* 헤더 + 내비게이션 + 테마/언어 버튼 */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 40px;
+  border-bottom: 3px solid var(--ink);
+}
+.site-header h1 { font-size: clamp(22px, 4vw, 30px); letter-spacing: -0.4px; }
+.header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.site-header nav { display: flex; gap: 8px; }
+.site-header nav a,
+.controls button {
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.7;
+  cursor: pointer;
+}
+.site-header nav a:hover,
+.controls button:hover { border-color: var(--brand); color: var(--brand); background: var(--card-bg); }
+.site-header nav a[aria-current="page"] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+.controls { display: flex; gap: 8px; }
+.controls .ico { margin-right: 4px; }
+
+/* 키보드 이동 시 포커스 표시 */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.sr-only {                   /* 화면에는 안 보이고 스크린 리더만 읽는 글자 */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── API 연동 실습 페이지 (demo.html) ─────────────────── */
+.page { max-width: 760px; margin: 0 auto; padding: 28px 20px 8px; }
+.lead { margin-bottom: 8px; }
+.endpoint { font-size: 14px; color: var(--ink-soft); word-break: break-all; }
+code {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  background: var(--chip-bg);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
+
+.status {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 16px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--line);
+  background: var(--card-bg);
+  font-size: 14px;
+}
+.status.loading { border-color: var(--loading-line); background: var(--loading-bg); }
+.status.ok      { border-color: var(--brand); background: var(--ok-bg); }
+.status.error   { border-color: var(--err-line); background: var(--err-bg); color: var(--err-ink); }
+
+.panel {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: background-color 0.2s;
+}
+.panel h2 { font-size: 18px; margin-bottom: 12px; }
+.method {
+  margin-left: 6px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--ok-bg);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.panel button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: var(--on-brand);
+  cursor: pointer;
+}
+.panel button:hover { background: var(--brand-hover); }
+.panel button.secondary { background: var(--chip-bg); color: var(--ink); }
+.panel button.secondary:hover { background: var(--chip-hover); }
+.panel .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.panel input {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--ink);
+}
+
+.out {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--out-bg);
+  color: #e6e6e6;
+  border-radius: 9px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  max-height: 320px;
+}
+.hint { margin-top: 12px; font-size: 13px; color: var(--ink-soft); }
+
+/* 푸터 */
+.site-footer {
+  text-align: center;
+  padding: 24px 20px 40px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* ── 대시보드 틀: 한 화면에 3 x 2 타일 (index.html, body.frame) ── */
+body.frame {
+  height: 100vh;
+  height: 100dvh;            /* 모바일 주소창을 뺀 실제 화면 높이 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;          /* 페이지 자체는 스크롤하지 않는다 */
+}
+.frame .site-header { flex: none; padding: 10px 24px; border-bottom-width: 2px; }
+.frame .site-header h1 { font-size: clamp(18px, 2.4vw, 24px); }
+
+.tiles {
+  flex: 1;
+  min-height: 0;             /* flex 자식이 내용 때문에 화면 밖으로 밀려나지 않게 한다 */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 24px 24px;
+}
+.tile {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: background-color 0.2s;
+}
+.tile-head { flex: none; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.tile-head h2 { font-size: 16px; }
+.tile-body { flex: 1; min-height: 0; overflow: auto; padding: 16px; }   /* 내용이 넘치면 타일 안에서만 스크롤 */
+.tile-placeholder {
+  height: 100%;
+  min-height: 60px;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* ── 타일별 스타일은 이 아래에 「타일 이름」 주석으로 구분해 추가한다 ── */
+
+/* 화면이 낮으면(가로 모드 휴대폰 등) 억지로 맞추지 않고 스크롤을 허용한다 */
+@media (max-height: 520px) {
+  body.frame { height: auto; overflow: auto; }
+  .tiles { grid-template-rows: repeat(2, minmax(220px, 1fr)); }
+}
+
+/* 좁은 화면(휴대폰): 3 x 2 는 읽기 어려워 1열로 쌓고, 페이지를 스크롤한다 */
+@media (max-width: 720px) {
+  body.frame { height: auto; overflow: auto; }
+  .tiles { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: minmax(200px, auto); padding: 12px 16px 20px; }
+  .frame .site-header { padding: 10px 16px; }
+}
+
+@media (max-width: 600px) {
+  .site-header { padding: 16px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

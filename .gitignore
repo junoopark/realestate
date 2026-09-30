@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+# 환경변수 (견본만 커밋)
+.env
+.env.*
+!.env.example
+
+# 기타
+*.db
+.vercel/
+.vscode/
+.DS_Store
+Thumbs.db
