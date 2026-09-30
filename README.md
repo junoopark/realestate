@@ -51,8 +51,8 @@ realestate/
 |---|---|
 | 대시보드 (Vercel) | (배포 후 기입) |
 | API 연동 실습 페이지 (Vercel) | (배포 후 기입) |
-| 백엔드 Swagger UI (Render) | (배포 후 기입) |
-| GitHub 저장소 | (생성 후 기입) |
+| 백엔드 Swagger UI (Render) | https://realestate-qr7h.onrender.com/docs |
+| GitHub 저장소 | https://github.com/junoopark/realestate |
 
 > Render 무료 플랜은 일정 시간 요청이 없으면 서버가 잠듭니다. 첫 요청은 30~60초 걸릴 수 있습니다.
 
