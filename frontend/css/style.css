@@ -115,18 +115,14 @@ a:hover { color: var(--brand-hover); }
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-.site-header h1::before {          /* 로고 자리의 작은 브랜드 마크 */
+.site-header h1::before {          /* 로고: 둥근 사각형에서 집 모양을 오려낸 마크 (집 부분은 헤더 배경색이 비친다) */
   content: "";
   flex: none;
   width: 26px;
   height: 26px;
-  border-radius: 8px;
-  background:
-    linear-gradient(var(--on-brand), var(--on-brand)) 6px 14px / 3px 6px no-repeat,
-    linear-gradient(var(--on-brand), var(--on-brand)) 11.5px 10px / 3px 10px no-repeat,
-    linear-gradient(var(--on-brand), var(--on-brand)) 17px 6px / 3px 14px no-repeat,
-    linear-gradient(135deg, var(--brand), var(--brand-hover));
-  box-shadow: 0 2px 6px var(--shadow-strong);
+  background: linear-gradient(135deg, var(--brand), var(--brand-hover));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
