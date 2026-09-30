@@ -14,13 +14,12 @@
   <header class="site-header">
     <h1 data-i18n="index.h1">부동산 지표 대시보드</h1>
     <div class="header-right">
-      <nav aria-label="페이지 이동" data-i18n-attr="aria-label:nav.aria">
-        <a href="index.html" aria-current="page" data-i18n="nav.home">대시보드</a>
-        <a href="demo.html" data-i18n="nav.demo">API 연동 실습</a>
+      <!-- 탭: Overview + 6개 동인. 동인 탭 링크는 factors.js 가 data/drivers.json 을 읽어 채운다 -->
+      <nav id="view-nav" aria-label="화면 이동" data-i18n-attr="aria-label:nav.aria">
+        <a href="#overview" data-view="overview" aria-current="page" data-i18n="nav.overview">Overview</a>
       </nav>
       <div class="controls">
         <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>
-        <button id="lang-btn" type="button" data-i18n="lang.other" data-i18n-attr="aria-label:lang.aria">EN</button>
       </div>
     </div>
   </header>
@@ -32,7 +31,7 @@
     - 타일마다 js/<식별자>.js 를 만들어 API(/indicators/{key})를 불러와 그린다.
     - 제목·문구는 한국어는 여기, English 는 js/i18n.js 의 tile.<식별자>.* 키에 둔다.
   -->
-  <main class="tiles">
+  <main class="tiles" id="view-overview">
 
     <section class="tile" id="tile-prices" aria-labelledby="tile-prices-title">
       <header class="tile-head"><h2 id="tile-prices-title" data-i18n="tile.prices.title">주택가격 동향</h2></header>
@@ -66,9 +65,13 @@
 
   </main>
 
+  <!-- 동인 탭 화면: factors.js 가 선택한 동인의 설명과 변수 카드를 그린다 -->
+  <main class="factor" id="view-factor" hidden></main>
+
   <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/factors.js"></script>
   <!-- 타일 스크립트는 여기에 추가한다. 예) <script src="js/prices.js"></script> -->
 </body>
 </html>

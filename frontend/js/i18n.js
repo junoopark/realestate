@@ -7,8 +7,8 @@
 const I18N = {
   ko: {
     // 공통
-    "nav.aria": "페이지 이동",
-    "nav.home": "대시보드",
+    "nav.aria": "화면 이동",
+    "nav.overview": "Overview",
     "nav.demo": "API 연동 실습",
     "theme.toDark": "다크",
     "theme.toLight": "라이트",
@@ -26,6 +26,24 @@ const I18N = {
     "tile.sentiment.title": "시장 심리",
     "tile.placeholder": "내용 준비 중",
     "tile.error": "데이터를 불러오지 못했습니다",
+
+    // 동인 탭 (factors.js)
+    "factor.question": "핵심 질문",
+    "factor.subareas": "주요 하위영역",
+    "factor.principle": "분류 원칙",
+    "factor.variables": "변수 {n}개",
+    "factor.secondary": "2차 동인",
+    "factor.sign": "예상 부호",
+    "factor.lead": "기대 선행성",
+    "factor.freq": "빈도",
+    "factor.source": "출처",
+    "factor.region": "지역 범위",
+    "factor.release": "발표·가용 시점",
+    "factor.period": "수록기간",
+    "factor.transform": "권장 가공",
+    "factor.leakage": "Leakage {level}",
+    "factor.chart": "차트 준비 중",
+    "factor.loadError": "동인 데이터를 불러오지 못했습니다 (data/drivers.json)",
 
     // 대시보드 페이지
     "index.title": "부동산 지표 대시보드",
@@ -69,8 +87,8 @@ const I18N = {
 
   en: {
     // Common
-    "nav.aria": "Page navigation",
-    "nav.home": "Dashboard",
+    "nav.aria": "View navigation",
+    "nav.overview": "Overview",
     "nav.demo": "API Demo",
     "theme.toDark": "Dark",
     "theme.toLight": "Light",
@@ -88,6 +106,8 @@ const I18N = {
     "tile.sentiment.title": "Market Sentiment",
     "tile.placeholder": "Content coming soon",
     "tile.error": "Failed to load data",
+    "factor.chart": "Chart coming soon",
+    "factor.loadError": "Failed to load driver data (data/drivers.json)",
 
     // Dashboard page
     "index.title": "Real Estate Dashboard",
@@ -130,14 +150,9 @@ const I18N = {
   },
 };
 
-// 언어 결정: 저장된 선택 → 브라우저 언어(한국어면 ko) → English
+// 언어 결정: 언어 전환 버튼을 없애 한국어로 고정한다. (English 사전은 다시 켤 때를 위해 남겨 둔다)
 function detectLang() {
-  let saved = null;
-  try {
-    saved = localStorage.getItem("lang");
-  } catch (e) {}
-  if (saved && I18N[saved]) return saved;
-  return (navigator.language || "").toLowerCase().startsWith("ko") ? "ko" : "en";
+  return "ko";
 }
 
 let currentLang = detectLang();
