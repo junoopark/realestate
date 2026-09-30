@@ -49,8 +49,8 @@ realestate/
 
 | 항목 | 주소 |
 |---|---|
-| 대시보드 (Vercel) | (배포 후 기입) |
-| API 연동 실습 페이지 (Vercel) | (배포 후 기입) |
+| 대시보드 (Vercel) | https://realestate-junoo1.vercel.app |
+| API 연동 실습 페이지 (Vercel) | https://realestate-junoo1.vercel.app/demo.html |
 | 백엔드 Swagger UI (Render) | https://realestate-qr7h.onrender.com/docs |
 | GitHub 저장소 | https://github.com/junoopark/realestate |
 
