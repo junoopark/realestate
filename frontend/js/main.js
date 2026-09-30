@@ -27,9 +27,14 @@ function setTheme(theme, { save }) {
 }
 
 // 버튼에는 "누르면 바뀔 상태"를 보여준다 (라이트일 때 '다크', 한국어일 때 'EN')
+const ICONS = {
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+};
+
 function renderControls() {
   const dark = currentTheme() === "dark";
-  themeBtn.querySelector(".ico").textContent = dark ? "☀️" : "🌙";
+  themeBtn.querySelector(".ico").innerHTML = dark ? ICONS.sun : ICONS.moon;
   themeBtn.querySelector(".lbl").textContent = t(dark ? "theme.toLight" : "theme.toDark");
   themeBtn.setAttribute("aria-label", t(dark ? "theme.aria.toLight" : "theme.aria.toDark"));
   langBtn.lang = getLang() === "ko" ? "en" : "ko"; // 버튼 글자의 언어를 스크린 리더에 알린다
