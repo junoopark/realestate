@@ -1,0 +1,102 @@
+/* 정량 지표 (Overview 타일 · 동인 탭 변수 차트) 전용 스타일. style.css 의 색상 토큰을 쓴다. */
+
+/* 헤더 지역 선택 */
+#region-select {
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#region-select:hover { border-color: var(--line-strong); background: var(--chip-bg); }
+
+/* 타일 본문: 주 지표 + 보조 지표 */
+.ind-tile { display: flex; flex-direction: column; gap: 10px; }
+.ind-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ind-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ind-label { font-size: 13px; font-weight: 600; color: var(--ink-soft); letter-spacing: -0.01em; }
+.ind-region { flex: none; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+.ind-value-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px; }
+.ind-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ind-unit { margin-left: 4px; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.ind-chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.ind-chip {
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ind-pos { background: var(--pos-soft); color: var(--pos); }
+.ind-neg { background: var(--neg-soft); color: var(--neg); }
+.ind-neu { background: var(--neu-soft); color: var(--neu); }
+
+/* 스파크라인 */
+.ind-spark { display: block; width: 100%; height: 56px; }
+.ind-spark-line { fill: none; stroke: var(--brand); stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ind-spark-area { fill: var(--brand); opacity: 0.12; }
+.ind-spark-dot { fill: var(--brand); stroke: var(--card-bg); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.ind-axis { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+
+/* 보조 지표: 두 칸 격자, 작은 숫자 */
+.ind-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 6px 12px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.ind-compact { gap: 2px; }
+.ind-compact .ind-head { flex-direction: column; align-items: flex-start; gap: 0; }
+.ind-compact .ind-value { font-size: 16px; }
+.ind-compact .ind-label { font-size: 12px; line-height: 1.3; }
+.ind-compact .ind-region { font-size: 10px; }
+.ind-compact .ind-chip { font-size: 10px; padding: 0 5px; }
+.ind-compact .ind-spark { height: 28px; }
+
+/* 타일 아래 자료 출처 한 줄 */
+#tiles-note {
+  flex: none;
+  padding: 0 24px 10px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+/* 동인 탭 변수 카드의 차트 자리 (var-chart 의 '준비 중' 뼈대를 덮는다) */
+.var-chart.ind-ready {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  height: auto;
+  min-height: 120px;
+  padding: 10px 12px;
+  background: var(--skeleton-hi);
+  color: var(--ink);
+}
+.var-chart.ind-ready .ind-value { font-size: 20px; }
+.var-chart.ind-ready .ind-spark { height: 56px; }
+.var-chart.ind-ready .ind-head { width: 100%; }
+.var-chart.ind-ready select {
+  align-self: flex-start;
+  margin-bottom: 2px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--input-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.var-chart.ind-none { color: var(--ink-soft); }
+
+@media (max-width: 900px) {
+  .ind-value { font-size: 22px; }
+}

@@ -51,7 +51,9 @@ function variableCard(v) {
   }
   card.append(badges);
 
-  card.append(el("div", "var-chart", t("factor.chart")));
+  const chart = el("div", "var-chart", t("factor.chart"));
+  card.append(chart);
+  renderVariableChart(chart, v);
 
   const meta = el("dl", "var-meta");
   for (const [key, value] of [
@@ -66,6 +68,51 @@ function variableCard(v) {
   }
   card.append(meta);
   return card;
+}
+
+// 변수 카드의 차트: indicators.js 로 data/indicators/<id>.json 을 읽어 선택 지역의 최신값·변화·스파크라인을 그린다.
+// 항목이 여럿이면(예: 고용률·취업자) 작은 선택 상자를 둔다. 자료가 없으면 "차트 준비 중"을 그대로 둔다.
+async function renderVariableChart(box, v) {
+  const I = window.Indicators;
+  if (!I) return;
+  let variable;
+  try {
+    variable = await I.loadVariable(v.id);
+  } catch (err) {
+    box.classList.add("ind-none");
+    return;
+  }
+  const itemKeys = Object.keys(variable.items);
+  if (!itemKeys.length) {
+    box.classList.add("ind-none");
+    return;
+  }
+  let itemKey = itemKeys[0];
+  const draw = () => {
+    const item = variable.items[itemKey];
+    const picked = I.pick(item, I.region());
+    box.replaceChildren();
+    box.classList.add("ind-ready");
+    if (itemKeys.length > 1) {
+      const select = el("select");
+      select.setAttribute("aria-label", "항목 선택");
+      for (const key of itemKeys) {
+        const opt = el("option", null, key);
+        opt.value = key;
+        opt.selected = key === itemKey;
+        select.append(opt);
+      }
+      select.addEventListener("change", () => { itemKey = select.value; draw(); });
+      box.append(select);
+    }
+    if (!picked) {
+      box.append(el("span", null, t("factor.chart")));
+      return;
+    }
+    box.append(I.seriesBlock({ label: itemKey, unit: item.unit, series: picked.series, regionName: picked.name, points: 60, name: v.name }));
+  };
+  draw();
+  I.onRegionChange(() => { if (box.isConnected) draw(); });
 }
 
 function renderFactor(driver) {
@@ -105,6 +152,8 @@ function showView() {
   document.body.classList.toggle("frame", view === "overview"); // Overview 만 한 화면 고정, 동인 탭은 스크롤
   overviewView.hidden = view !== "overview";
   factorView.hidden = view === "overview";
+  const note = document.querySelector("#tiles-note");
+  if (note) note.hidden = view !== "overview";
   if (driver) renderFactor(driver);
 
   for (const a of viewNav.querySelectorAll("a")) {

@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/indicators.css">
 </head>
 <body class="frame">
   <header class="site-header">
@@ -21,6 +22,9 @@
         <a href="policies.html" data-page-link>정책 모니터</a>
       </nav>
       <div class="controls">
+        <!-- 지역 선택: 타일과 동인 탭 차트가 함께 따른다. 목록은 tiles.js 가 data/indicators/index.json 으로 채운다 -->
+        <label class="sr-only" for="region-select">지역</label>
+        <select id="region-select"></select>
         <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>
       </div>
     </div>
@@ -30,7 +34,7 @@
     한 화면에 담기는 3 x 2 타일 틀. 내용은 아직 비어 있다. (타일 구성은 임시 — 확정되면 바꾼다)
     - 타일 식별자: prices · transactions · rent · supply · finance · sentiment (좌상단부터 가로 순서)
     - 각 타일의 본문은 <div class="tile-body" data-tile="식별자"> 안에 채운다.
-    - 타일마다 js/<식별자>.js 를 만들어 API(/indicators/{key})를 불러와 그린다.
+    - 타일 내용은 js/tiles.js 가 data/indicators/<변수id>.json 을 읽어 그린다. (dfmba-dashboard 파이프라인의 export/export_indicators.py 산출)
     - 제목·문구는 한국어는 여기, English 는 js/i18n.js 의 tile.<식별자>.* 키에 둔다.
   -->
   <main class="tiles" id="view-overview">
@@ -66,6 +70,8 @@
     </section>
 
   </main>
+  <!-- 자료 갱신일·출처 한 줄. tiles.js 가 채우고, factors.js 가 Overview 에서만 보이게 한다 -->
+  <p id="tiles-note"></p>
 
   <!-- 동인 탭 화면: factors.js 가 선택한 동인의 설명과 변수 카드를 그린다 -->
   <main class="factor" id="view-factor" hidden></main>
@@ -73,7 +79,8 @@
   <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/indicators.js"></script>
   <script src="js/factors.js"></script>
-  <!-- 타일 스크립트는 여기에 추가한다. 예) <script src="js/prices.js"></script> -->
+  <script src="js/tiles.js"></script>
 </body>
 </html>

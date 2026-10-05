@@ -5,7 +5,7 @@
 
 ## 프로젝트 소개
 
-- **Overview 탭**: 3 x 2 타일에 부동산 지표를 나눠 보여줍니다. (타일 구성은 임시)
+- **Overview 탭**: 3 x 2 타일(주택가격·거래·전월세·공급·금리대출·심리)에 최신값, 전기 대비·전년동기 대비 변화, 최근 3년 추세선을 보여줍니다. 헤더의 지역 선택(17개 시도·서울 25개 구)을 따르며, 그 지역 자료가 없는 지표는 서울 → 전국 순으로 대체하고 실제 지역명을 표시합니다. 자료는 [`frontend/data/indicators/`](frontend/data/indicators)의 정적 JSON(변수별 1파일)입니다.
 - **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로 핵심 질문과 변수 목록을 보여줍니다. 내용은 [`frontend/data/drivers.json`](frontend/data/drivers.json)에서 읽습니다.
 - **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
 - **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
@@ -30,12 +30,16 @@ realestate/
 │   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
 │   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
 │   ├─ data/drivers.json  # 6개 동인·변수 목록 (데이터사전 엑셀에서 추출)
+│   ├─ data/indicators/   # 정량 지표 시계열 (index.json + 변수별 V001.json …). 재생성: dfmba-dashboard 레포에서
+│   │                     #   python export/export_indicators.py --out ../realestate/frontend/data/indicators
 │   └─ js/
 │       ├─ config.js      # API 주소 (로컬/배포 자동 선택)
 │       ├─ theme-init.js  # 다크모드 초기값 (깜빡임 방지)
 │       ├─ i18n.js        # 한국어/English 문구 사전
 │       ├─ main.js        # 테마 전환 버튼
-│       ├─ factors.js     # 탭 전환(#overview, #demand …) · 동인 탭 화면
+│       ├─ factors.js     # 탭 전환(#overview, #demand …) · 동인 탭 화면 (변수 카드 차트 포함)
+│       ├─ indicators.js  # 정량 지표 공용: JSON 로딩·지역 선택·변화율·스파크라인
+│       ├─ tiles.js       # Overview 타일 6개 구성과 그리기
 │       └─ demo.js        # API 호출·결과 표시
 ├─ backend/               # Render (Root Directory)
 │   ├─ requirements.txt
