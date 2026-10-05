@@ -1,4 +1,6 @@
 import os
+import logging
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 
@@ -7,9 +9,21 @@ load_dotenv()  # 로컬 개발용. backend/.env 가 있으면 읽어온다 (배�
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import indicators
+from app.routers import indicators, qualitative
+from app.services.content_store import initialize_storage
 
-app = FastAPI(title="Real Estate Dashboard API")
+
+@asynccontextmanager
+async def lifespan(app):
+    try:
+        initialize_storage()
+    except Exception:
+        # Indicator routes stay available if a new Supabase connection is misconfigured.
+        logging.getLogger(__name__).error("Qualitative storage unavailable; serving reviewed files when possible.")
+    yield
+
+
+app = FastAPI(title="Real Estate Dashboard API", lifespan=lifespan)
 
 # CORS: 허용 출처는 환경변수로 받는다 (배포 시 Vercel 주소를 넣는다)
 origins = os.getenv(
@@ -23,6 +37,7 @@ app.add_middleware(
 )
 
 app.include_router(indicators.router)
+app.include_router(qualitative.router)
 
 
 @app.get("/")

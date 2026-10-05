@@ -3,3 +3,7 @@ python-dotenv
 requests
 pandas
 fredapi
+sqlalchemy>=2.0,<3
+psycopg[binary]>=3.2,<4
+beautifulsoup4>=4.12,<5
+defusedxml>=0.7,<1

@@ -7,6 +7,8 @@
 
 - **Overview 탭**: 3 x 2 타일에 부동산 지표를 나눠 보여줍니다. (타일 구성은 임시)
 - **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로 핵심 질문과 변수 목록을 보여줍니다. 내용은 [`frontend/data/drivers.json`](frontend/data/drivers.json)에서 읽습니다.
+- **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
+- **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
 - **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
 - **다크모드**: 헤더 버튼으로 전환합니다. 처음에는 OS 설정을 따르고, 직접 고르면 그 선택을 기억합니다.
 - **언어**: 한국어로 고정했습니다. (English 문구 사전은 `js/i18n.js`에 남아 있습니다)
@@ -17,13 +19,15 @@
 |---|---|---|---|
 | 프론트엔드 | HTML · CSS · JavaScript (빌드 없음) | Vercel | [`frontend/`](frontend) |
 | 백엔드 | Python · FastAPI · Pydantic | Render | [`backend/`](backend) |
-| 데이터베이스 (예정) | SQLite(로컬) · Supabase(배포) | Supabase | [`database/`](database) |
+| 데이터베이스 | SQLite(로컬 구현) · PostgreSQL(Supabase 연결 준비) | Supabase | [`database/`](database) |
 
 ```
 realestate/
 ├─ frontend/              # Vercel (Root Directory)
 │   ├─ index.html         # 대시보드 (Overview 3 x 2 타일 + 동인 탭 6개)
 │   ├─ demo.html          # API 연동 실습
+│   ├─ learn.html         # 용어·거래·개발·기관 투자 기초
+│   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
 │   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
 │   ├─ data/drivers.json  # 6개 동인·변수 목록 (데이터사전 엑셀에서 추출)
 │   └─ js/
@@ -38,13 +42,13 @@ realestate/
 │   └─ app/
 │       ├─ main.py        # 앱 생성 + CORS + 라우터 조립
 │       ├─ schemas.py     # Pydantic 모델
-│       ├─ routers/       # indicators.py
+│       ├─ routers/       # indicators.py · qualitative.py
 │       ├─ services/      # 지표 목록(CATALOG) · ECOS/FRED 클라이언트 · 캐시
-│       ├─ db/            # (예정) DB 연결·모델
-│       └─ crud/          # (예정) DB 조회·저장
-├─ database/              # (예정) 스키마·시드
+│       ├─ db/            # 정성자료 DB 연결·모델
+│       └─ crud/          # 정량 지표 저장 기능 확장용 자리
+├─ database/              # PostgreSQL 스키마·연결 및 테이블 설명
 ├─ scripts/               # 데이터 가공 스크립트
-└─ docs/작업설계서.md
+└─ docs/                  # 작업설계서.md · qualitative-guide.md
 ```
 
 ## 배포 주소
@@ -66,6 +70,11 @@ realestate/
 | GET | `/health` | 서버 생존 확인 | 200 |
 | GET | `/indicators` | 등록된 지표 목록 | 200 |
 | GET | `/indicators/{key}` | 지표 시계열 (최근 10년, 12시간 캐시) | 200 · 404 · 502 |
+| GET | `/knowledge` | 출처가 있는 부동산 기초 학습 콘텐츠 | 200 · 503 |
+| GET | `/policies` | 검토한 정책 요약 및 저장소 상태 | 200 · 503 |
+| GET | `/policies/monitor` | 수집 후보와 기관별 성공·실패 기록 | 200 · 422 |
+| GET | `/policies/history` | 최근 10년의 검토한 정책 연혁·시기별 흐름·출처 | 200 · 503 |
+| POST | `/policies/refresh` | 관리자 토큰으로 공식 발표 수집 | 200 · 401 · 409 · 503 |
 
 - 지표를 추가하는 방법은 [`backend/app/services/indicators.py`](backend/app/services/indicators.py) 맨 위 주석을 참고합니다.
 - 허용할 프론트엔드 주소는 환경변수 `ALLOWED_ORIGINS`로 지정합니다(쉼표로 구분, 끝에 `/` 없이).
@@ -104,3 +113,13 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | Vercel | Root Directory `frontend` · Framework Preset `Other` · 빌드 없음 |
 
 `main` 브랜치에 push하면 Vercel과 Render가 자동으로 다시 배포합니다.
+
+## 정성 자료 기능과 팀 인수인계
+
+**부동산 기초·정책 모니터·정책 히스토리 담당: 박민영**
+
+구현 내용·출처·API 응답·수집 운영은 [정성 자료 가이드](docs/qualitative-guide.md), Supabase 연결과 테이블은 [DB 설명](database/README.md)을 참고하세요.
+
+- 기초/정책/연혁 원본은 `frontend/data/knowledge.json`, `frontend/data/policies.json`, `frontend/data/policy-history.json`입니다. 연혁 수정 후 `python scripts/check_history_data.py`로 형식을 검사하고, `python scripts/sync_qualitative_data.py`로 Render 배포용 `backend/data/` 사본도 갱신합니다.
+- 실제 발표 수집: 저장소 루트에서 `python scripts/collect_policies.py --export frontend/data/monitor.json`. 수집은 DB에 기록하고, 옵션의 JSON은 프론트 서버 연결 실패 시 표시할 실제 수집 스냅샷입니다.
+- Supabase 연결 전에는 SQLite를 사용합니다. Render의 임시 디스크는 재배포 시 수집 이력이 사라질 수 있으므로, 누적 모니터링 운영 전 `DATABASE_URL`을 연결합니다.

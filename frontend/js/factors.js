@@ -134,7 +134,7 @@ async function initFactors() {
     a.href = `#${d.id}`;
     a.dataset.view = d.id;
     a.title = d.name;
-    viewNav.append(a);
+    viewNav.insertBefore(a, viewNav.querySelector("[data-page-link]"));
   }
   showView();
 }

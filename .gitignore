@@ -13,3 +13,6 @@ __pycache__/
 .vscode/
 .DS_Store
 Thumbs.db
+tmp/
+.pytest_cache/
+pytest-cache-files-*/

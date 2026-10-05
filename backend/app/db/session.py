@@ -1,12 +1,54 @@
-"""DB 연결·세션 (예정 — 아직 사용하지 않는다).
+"""Shared storage: local SQLite, or PostgreSQL via DATABASE_URL."""
 
-DB 를 붙이는 단계에서 아래를 채운다. (database/README.md 의 진행 순서 참고)
+import os
+from functools import lru_cache
+from pathlib import Path
 
-- DATABASE_URL 환경변수를 읽는다.
-    로컬 기본값: sqlite:///./local.db
-    배포: Supabase Session pooler 연결 문자열 (Render 환경변수로 설정)
-- SQLAlchemy engine, SessionLocal, Base 를 만든다.
-- 요청마다 세션을 열고 닫는 get_db() 의존성을 제공한다 (FastAPI Depends 용).
+from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
+from sqlalchemy.orm import DeclarativeBase, Session
 
-주의: sqlalchemy 는 아직 requirements.txt 에 없다. 이 파일을 실제로 쓰기 전에 추가한다.
-"""
+
+class Base(DeclarativeBase):
+    pass
+
+
+def database_url():
+    default = f"sqlite:///{(Path(__file__).resolve().parents[2] / 'local.db').as_posix()}"
+    value = os.getenv("DATABASE_URL", "").strip() or default
+    if value.startswith("postgres://"):
+        value = "postgresql://" + value[len("postgres://"):]
+    url = make_url(value)
+    if url.drivername in ("postgresql", "postgresql+psycopg2"):
+        url = url.set(drivername="postgresql+psycopg")
+    if url.get_backend_name() not in ("sqlite", "postgresql"):
+        raise ValueError("Only SQLite and PostgreSQL are supported")
+    return url
+
+
+@lru_cache(maxsize=1)
+def get_engine():
+    url = database_url()
+    args = {"check_same_thread": False, "timeout": 15} if url.get_backend_name() == "sqlite" else {"connect_timeout": 10}
+    if url.get_backend_name() == "postgresql":
+        # Supabase Session pooler uses TLS. Never log connection strings.
+        args["sslmode"] = "require"
+    return create_engine(url, connect_args=args, pool_pre_ping=True)
+
+
+def get_db():
+    with Session(get_engine()) as session:
+        yield session
+
+
+def storage_info(available=True):
+    try:
+        kind = database_url().get_backend_name()
+    except (ValueError, TypeError):
+        kind = "unavailable"
+    return {
+        "type": kind,
+        "available": available,
+        "persistent": available and kind == "postgresql",
+        "note": ("PostgreSQL 저장소" if kind == "postgresql" else "로컬 SQLite 저장소: Render 임시 디스크에서는 재배포 시 수집 이력이 사라질 수 있습니다.") if available else "저장소 연결 실패: 검증한 정적 자료만 제공합니다.",
+    }

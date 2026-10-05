@@ -1,0 +1,967 @@
+{
+  "title": "부동산 기초 가이드",
+  "verified_at": "2026-10-05",
+  "scope_note": "공식 자료와 공개된 금융 평가 원리를 토대로 편집한 교육용 설명입니다. 확인일은 출처 확인·편집일이며 모든 법령의 최신 적용을 보증하는 날짜가 아닙니다. 실제 계약·대출·세금·신고 의무는 지역, 자산, 당사자와 계약 시점에 따라 달라 원문 및 담당 기관 확인이 필요합니다. 거래 절차는 일반적인 주택 거래 기준이고, 개발·기관 투자 과정은 공개 자료를 종합한 학습용 검토 틀입니다. 가상 거래·시세·투자수익 데이터는 포함하지 않습니다.",
+  "sources": [
+    {
+      "id": "sale-overview",
+      "name": "부동산 매매: 준비·계약·계약 후 처리",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://easylaw.go.kr/CSP/CsmMainBtr.laf?csmSeq=649"
+    },
+    {
+      "id": "sale-permit",
+      "name": "허가받아야 할 부동산 매매: 토지거래허가와 계약의 효력",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=4&cnpClsNo=1&csmSeq=649"
+    },
+    {
+      "id": "sale-rights",
+      "name": "부동산의 권리관계 등 확인하기",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://easylaw.go.kr/CSP/CnpClsMainBtr.laf?ccfNo=3&cciNo=1&cnpClsNo=1&csmSeq=649&popMenu=ov"
+    },
+    {
+      "id": "sale-registration",
+      "name": "소유권이전등기하기",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://easylaw.go.kr/CSP/CnpClsMainBtr.laf?ccfNo=4&cciNo=1&cnpClsNo=1&csmSeq=649&popMenu=ov"
+    },
+    {
+      "id": "lease-types",
+      "name": "타인 주택의 이용: 전세권과 임대차",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?csmSeq=629&ccfNo=1&cciNo=1&cnpClsNo=1"
+    },
+    {
+      "id": "lease-register",
+      "name": "임대차 계약 전 등기부의 확인",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=1&cnpClsNo=1&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "lease-contract",
+      "name": "임대차계약서의 작성",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=2&cnpClsNo=2&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "lease-protection",
+      "name": "대항력 및 우선변제권 취득",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=3&cnpClsNo=1&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "lease-end",
+      "name": "주택임대차계약의 종료",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=5&cciNo=1&cnpClsNo=1&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "lease-order",
+      "name": "임차권등기명령 신청",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=5&cciNo=2&cnpClsNo=1&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "lease-rent",
+      "name": "차임 또는 보증금의 증감청구",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMainBtr.laf?ccfNo=4&cciNo=1&cnpClsNo=2&csmSeq=629&popMenu=ov"
+    },
+    {
+      "id": "mortgage",
+      "name": "근저당권과 저당권의 구분",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=4&cciNo=1&cnpClsNo=1&csmSeq=566&popMenu=ov"
+    },
+    {
+      "id": "building-ratio",
+      "name": "건폐율 및 용적률",
+      "organization": "법제처 · 찾기쉬운 생활법령정보",
+      "url": "https://easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=1&cnpClsNo=2&csmSeq=2602&popMenu=ov"
+    },
+    {
+      "id": "housing-area",
+      "name": "2024년 공동주택가격 조사·산정 업무요령",
+      "organization": "국토교통부",
+      "url": "https://www.molit.go.kr/portal/common/download/DownloadMltm2.jsp?FileName=2024%EB%85%84+%EA%B3%B5%EB%8F%99%EC%A3%BC%ED%83%9D%EA%B0%80%EA%B2%A9+%EC%A1%B0%EC%82%AC%EC%82%B0%EC%A0%95+%EC%97%85%EB%AC%B4%EC%9A%94%EB%A0%B9%28%EC%B5%9C%EC%A2%85%29.pdf&FilePath=portal%2FDextUpload%2F202401%2F20240105_125755_192.pdf"
+    },
+    {
+      "id": "safe-lease",
+      "name": "전세사기 막아주는 모범계약: 단계별 유의사항",
+      "organization": "대한민국정부",
+      "url": "https://www.youtube.com/watch?v=euBsq31a-eE"
+    },
+    {
+      "id": "hug-guarantee",
+      "name": "전세보증금반환보증 상품개요",
+      "organization": "주택도시보증공사 HUG",
+      "url": "https://m.khug.or.kr/hug/web/ig/dr/igdr000001.jsp?tabMenu=Y"
+    },
+    {
+      "id": "lh-development",
+      "name": "공공건축물 리뉴얼: 사업방식 및 절차",
+      "organization": "한국토지주택공사 LH",
+      "url": "https://www.lh.or.kr/menu.es?mid=a10402070200"
+    },
+    {
+      "id": "pf-review",
+      "name": "부동산 PF의 질서있는 연착륙: 사업성 평가 기준",
+      "organization": "금융위원회",
+      "url": "https://www.fsc.go.kr/no040101?cnId=2226"
+    },
+    {
+      "id": "pf-capital",
+      "name": "부동산 PF 건전성 제도개선방안 및 추진 일정",
+      "organization": "금융위원회",
+      "url": "https://www.fsc.go.kr/no010101/85924"
+    },
+    {
+      "id": "securities-risk",
+      "name": "증권업 부동산 익스포져 건전성 규제 개선",
+      "organization": "금융위원회",
+      "url": "https://www.fsc.go.kr/no010101/85927"
+    },
+    {
+      "id": "trust-risk",
+      "name": "책임준공형 토지신탁의 위험 관리",
+      "organization": "금융위원회",
+      "url": "https://fsc.go.kr/po010106/83892"
+    },
+    {
+      "id": "occ-cre",
+      "name": "Commercial Real Estate Lending, Version 2.0",
+      "organization": "미국 통화감독청 OCC",
+      "url": "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/commercial-real-estate-lending/pub-ch-commercial-real-estate.pdf"
+    },
+    {
+      "id": "occ-refinance",
+      "name": "Commercial Lending: Refinance Risk (2024-29)",
+      "organization": "미국 통화감독청 OCC",
+      "url": "https://occ.gov/news-issuances/bulletins/2024/bulletin-2024-29.html"
+    },
+    {
+      "id": "fannie-income",
+      "name": "Underwritten Net Cash Flow: 수입·비용 검증",
+      "organization": "Fannie Mae",
+      "url": "https://mfguide.fanniemae.com/node/7531"
+    },
+    {
+      "id": "kdi-metrics",
+      "name": "민간투자사업 용어: IRR·NPV·재무모델",
+      "organization": "한국개발연구원 KDI 공공투자관리센터",
+      "url": "https://infrainfo.kdi.re.kr/pv/intrcn/termIntrcn.do"
+    },
+    {
+      "id": "household-debt-ratios",
+      "name": "신DTI·DSR 도입 자료: 소득 대비 부채상환 지표의 개념",
+      "organization": "금융위원회",
+      "url": "https://www.fsc.go.kr/po010103/72911"
+    },
+    {
+      "id": "household-lending-qa",
+      "name": "가계부채 관리 강화방안 Q&A: LTV와 DSR의 역할",
+      "organization": "금융위원회",
+      "url": "https://www.fsc.go.kr/po020201/76750"
+    },
+    {
+      "id": "kdi-irr-limit",
+      "name": "타당성 분석 지표 및 내부수익률의 한계",
+      "organization": "한국개발연구원 KDI 공공투자관리센터",
+      "url": "https://pimac.kdi.re.kr/cooperation/qna_nview.jsp?idx=2315&pg=2&pp=10&skey=&stype="
+    }
+  ],
+  "glossary": [
+    {
+      "id": "sale",
+      "term": "매매",
+      "category": "거래·계약",
+      "definition": "대금을 지급하고 부동산의 소유권을 넘겨받는 거래입니다. 일반적인 계약에 의한 소유권 이전에는 등기가 필요합니다.",
+      "why": "대금 지급, 점유 인도, 소유권이전등기를 함께 관리해야 합니다.",
+      "source_ids": [
+        "sale-overview",
+        "sale-registration"
+      ]
+    },
+    {
+      "id": "jeonse",
+      "term": "전세",
+      "category": "거래·계약",
+      "definition": "보증금을 맡기고 통상 월 차임 없이 주택을 사용하는 임대차입니다. 흔히 말하는 전세가 곧 전세권 설정등기를 뜻하지는 않습니다.",
+      "why": "전세보증금의 반환 가능성과 임차인 보호 요건을 함께 확인합니다.",
+      "source_ids": [
+        "lease-types"
+      ]
+    },
+    {
+      "id": "monthly-rent",
+      "term": "월세·반전세",
+      "category": "거래·계약",
+      "definition": "보증금과 정기적인 차임을 지급하는 임대차입니다. 반전세는 보증금과 월 차임을 함께 두는 거래를 가리키는 실무상 표현입니다.",
+      "why": "월세뿐 아니라 관리비·공과금·보증금 조달비용을 함께 비교합니다.",
+      "source_ids": [
+        "lease-types",
+        "lease-contract"
+      ]
+    },
+    {
+      "id": "landlord-tenant",
+      "term": "임대인·임차인",
+      "category": "거래·계약",
+      "definition": "임대인은 목적물을 빌려주는 계약 당사자이고, 임차인은 빌려 사용하는 당사자입니다. 대리인이 계약하면 적법한 권한을 확인해야 합니다.",
+      "why": "소유자 이름, 계약 당사자, 위임 범위와 입금 계좌를 대조합니다.",
+      "source_ids": [
+        "lease-register"
+      ]
+    },
+    {
+      "id": "deposit",
+      "term": "임대차보증금",
+      "category": "거래·계약",
+      "definition": "임대차 과정의 채무를 담보하기 위해 맡기는 돈입니다. 종료 시 미납 차임 등 정산할 채무가 있으면 반환액에 영향을 줄 수 있습니다.",
+      "why": "보증금 전액이 자동으로 회수된다고 가정하지 말고 반환 계획을 확인합니다.",
+      "source_ids": [
+        "lease-contract",
+        "lease-end"
+      ]
+    },
+    {
+      "id": "special-terms",
+      "term": "특약",
+      "category": "거래·계약",
+      "definition": "계약의 기본 조항 외에 당사자들이 추가로 정한 약속입니다. 수리, 담보 말소, 대출 불가 시 처리 등을 구체적으로 적을 수 있습니다.",
+      "why": "강행규정에 반하는 임차인에게 불리한 약정은 효력이 제한될 수 있습니다.",
+      "source_ids": [
+        "lease-contract",
+        "lease-types"
+      ]
+    },
+    {
+      "id": "registry",
+      "term": "등기사항증명서",
+      "category": "권리·보증금",
+      "definition": "부동산의 표시와 등기된 권리관계를 확인하는 공적 서류입니다. 계약 전과 잔금 지급 전의 발급 내용을 비교합니다.",
+      "why": "미등기 임대차, 체납 등은 이것만으로 모두 파악할 수 없습니다.",
+      "source_ids": [
+        "lease-register",
+        "sale-rights"
+      ]
+    },
+    {
+      "id": "registry-parts",
+      "term": "표제부·갑구·을구",
+      "category": "권리·보증금",
+      "definition": "표제부는 부동산의 위치·면적 등 표시, 갑구는 소유권 관련 사항, 을구는 근저당권·전세권 등 소유권 외 권리를 담습니다.",
+      "why": "동·호수의 일치와 권리의 설정·말소 및 접수 순서를 함께 읽습니다.",
+      "source_ids": [
+        "lease-register"
+      ]
+    },
+    {
+      "id": "mortgage",
+      "term": "근저당권",
+      "category": "권리·보증금",
+      "definition": "계속되는 거래에서 생기는 채무를 정해진 최고액 한도에서 담보하는 권리입니다. 등기된 순위는 배당 가능성에 영향을 줍니다.",
+      "why": "대출이 있다는 사실뿐 아니라 선순위 담보의 범위와 말소 조건을 봅니다.",
+      "source_ids": [
+        "mortgage"
+      ]
+    },
+    {
+      "id": "maximum-claim",
+      "term": "채권최고액",
+      "category": "권리·보증금",
+      "definition": "근저당권으로 담보할 채권의 최대 한도입니다. 등기에 보이는 금액과 현재 실제 대출 잔액은 같지 않을 수 있습니다.",
+      "why": "잔금으로 담보를 없앤다면 상환금액 확인과 말소 절차를 따로 챙깁니다.",
+      "source_ids": [
+        "mortgage"
+      ]
+    },
+    {
+      "id": "opposability",
+      "term": "대항력",
+      "category": "권리·보증금",
+      "definition": "임차관계를 새 소유자 등 제3자에게 주장할 수 있는 효력입니다. 일반적인 주택임차인은 주택 인도와 주민등록을 갖춘 다음 날부터 효력이 생깁니다.",
+      "why": "확정일자만 받아서는 주택 인도·주민등록 요건을 대신할 수 없습니다.",
+      "source_ids": [
+        "lease-protection"
+      ]
+    },
+    {
+      "id": "fixed-date",
+      "term": "확정일자",
+      "category": "권리·보증금",
+      "definition": "해당 날짜에 임대차계약서가 존재했다는 사실을 공적으로 확인받는 것입니다.",
+      "why": "대항요건과 결합해 우선변제권을 판단하는 기준이 됩니다.",
+      "source_ids": [
+        "lease-protection"
+      ]
+    },
+    {
+      "id": "priority-payment",
+      "term": "우선변제권",
+      "category": "권리·보증금",
+      "definition": "대항요건과 확정일자를 갖춘 주택임차인이 경매·공매 대금에서 후순위 권리자 등보다 보증금을 먼저 변제받을 수 있는 권리입니다.",
+      "why": "선순위 채권, 낙찰가, 배당요구 등 절차에 따라 실제 회수액은 달라집니다.",
+      "source_ids": [
+        "lease-protection"
+      ]
+    },
+    {
+      "id": "registered-jeonse",
+      "term": "전세권",
+      "category": "권리·보증금",
+      "definition": "전세금을 지급하고 타인의 부동산을 사용·수익하며 우선변제를 받을 수 있는 등기된 물권입니다.",
+      "why": "일반적인 미등기 전세계약과 설정 절차·보호 방식이 다릅니다.",
+      "source_ids": [
+        "lease-types"
+      ]
+    },
+    {
+      "id": "tenant-registration",
+      "term": "임차권등기명령",
+      "category": "권리·보증금",
+      "definition": "임대차 종료 후 보증금을 돌려받지 못했을 때 법원에 신청하는 제도입니다. 요건에 따라 이사 후에도 기존 대항력·우선변제권을 유지하도록 합니다.",
+      "why": "신청만으로 완료된 것은 아닙니다. 실제 등기 완료 여부를 확인합니다.",
+      "source_ids": [
+        "lease-order"
+      ]
+    },
+    {
+      "id": "return-guarantee",
+      "term": "전세보증금반환보증",
+      "category": "권리·보증금",
+      "definition": "임대인이 반환하지 못한 보증금을 약정된 보증 범위와 요건에 따라 보증기관이 지급하는 상품입니다.",
+      "why": "전세대출 보증과 구분하고, 가입 가능 여부·신청기한·이행청구 요건을 확인합니다.",
+      "source_ids": [
+        "hug-guarantee"
+      ]
+    },
+    {
+      "id": "building-register",
+      "term": "건축물대장",
+      "category": "건물·개발",
+      "definition": "건물의 용도·면적·구조 등 현황을 확인하는 행정 장부입니다. 소유권·담보 확인에 쓰는 등기사항증명서와 함께 봅니다.",
+      "why": "주거용 사용 가능 여부, 실제 상태와 공부의 차이, 위반건축물 표시를 확인합니다.",
+      "source_ids": [
+        "sale-rights",
+        "safe-lease"
+      ]
+    },
+    {
+      "id": "exclusive-area",
+      "term": "전용면적·공용면적",
+      "category": "건물·개발",
+      "definition": "전용면적은 개별 세대가 사용하는 부분이고, 공용면적은 계단·복도 등 공동으로 사용하는 부분입니다. 공용면적에도 주거공용과 그 밖의 공용이 있습니다.",
+      "why": "면적당 가격을 비교할 때 어떤 면적을 분모로 삼았는지 통일합니다.",
+      "source_ids": [
+        "housing-area"
+      ]
+    },
+    {
+      "id": "building-coverage",
+      "term": "건폐율",
+      "category": "건물·개발",
+      "definition": "대지면적에 대한 건축면적의 비율입니다. 건물이 땅 위에 차지하는 범위를 이해하는 지표입니다.",
+      "why": "허용 한도는 용도지역·조례 등 적용 조건을 확인해야 합니다.",
+      "source_ids": [
+        "building-ratio"
+      ]
+    },
+    {
+      "id": "floor-area-ratio",
+      "term": "용적률",
+      "category": "건물·개발",
+      "definition": "대지면적에 대한 용적률 산정용 연면적의 비율입니다. 법정 산정에서 제외되는 면적이 있어 전체 연면적과 구분해야 합니다.",
+      "why": "높이·주차·건축선 등 다른 제한도 있어 용적률만으로 개발 규모를 확정할 수 없습니다.",
+      "source_ids": [
+        "building-ratio"
+      ]
+    },
+    {
+      "id": "developer-builder",
+      "term": "시행사·시공사",
+      "category": "건물·개발",
+      "definition": "시행사는 사업의 기획·부지·자금·분양 등을 주도하고, 시공사는 계약에 따라 실제 공사를 수행합니다. 한 회사가 여러 역할을 맡을 수도 있습니다.",
+      "why": "공사 지연, 비용 증가, 미분양의 책임이 누구에게 있는지 계약별로 확인합니다.",
+      "source_ids": [
+        "pf-review",
+        "trust-risk"
+      ]
+    },
+    {
+      "id": "pf",
+      "term": "프로젝트파이낸싱(PF)",
+      "category": "기관·투자",
+      "definition": "사업에서 발생할 현금흐름을 중요한 상환재원으로 삼아 사업자금을 조달하는 방식입니다.",
+      "why": "토지·인허가·공사·분양 진행과 참여자의 지원 능력을 함께 평가합니다.",
+      "source_ids": [
+        "pf-review",
+        "pf-capital"
+      ]
+    },
+    {
+      "id": "bridge",
+      "term": "브릿지론",
+      "category": "기관·투자",
+      "definition": "토지 매입 등 초기 단계에서 본격적인 사업자금 조달 전까지 필요한 자금을 연결하는 대출입니다.",
+      "why": "만기 연장과 본PF 전환을 당연하게 가정하면 조달 공백을 놓칠 수 있습니다.",
+      "source_ids": [
+        "pf-review"
+      ]
+    },
+    {
+      "id": "main-pf",
+      "term": "본PF",
+      "category": "기관·투자",
+      "definition": "사업 추진 조건을 갖춘 뒤 공사 등 본격적인 사업비를 조달하는 PF 단계입니다. 전환 요건은 사업과 금융약정에 따라 다릅니다.",
+      "why": "공정률·분양 또는 임대 진행·공사비·이자 지급 상황을 계속 점검합니다.",
+      "source_ids": [
+        "pf-review"
+      ]
+    },
+    {
+      "id": "equity",
+      "term": "자기자본",
+      "category": "기관·투자",
+      "definition": "사업주나 투자자가 출자한 자금으로 손실을 흡수하는 기반입니다. 대출과 달리 정해진 원리금 상환을 전제로 하지 않습니다.",
+      "why": "명목상 출자액뿐 아니라 실제 납입 여부와 자금 출처·추가 납입 능력을 봅니다.",
+      "source_ids": [
+        "pf-capital"
+      ]
+    },
+    {
+      "id": "completion",
+      "term": "책임준공",
+      "category": "기관·투자",
+      "definition": "약정한 기한과 조건에 맞춰 공사를 완료할 책임을 부담하는 계약 구조입니다.",
+      "why": "준공 책임과 원리금 지급 보증은 범위가 다를 수 있습니다. 미이행 시 의무를 원문으로 확인합니다.",
+      "source_ids": [
+        "trust-risk"
+      ]
+    },
+    {
+      "id": "refinance",
+      "term": "차환",
+      "category": "기관·투자",
+      "definition": "기존 채무를 새 대출이나 자금조달로 상환하는 것입니다.",
+      "why": "만기 시 금리·담보가치·대출심사 기준이 바뀌면 필요한 금액을 조달하지 못할 수 있습니다.",
+      "source_ids": [
+        "occ-refinance"
+      ]
+    },
+    {
+      "id": "ltv",
+      "term": "담보인정비율(LTV)",
+      "category": "기관·투자",
+      "definition": "담보가치 대비 대출금의 비율입니다. 담보가치가 차입을 얼마나 뒷받침하는지 보여 주며, 소득 대비 상환 부담을 보는 DSR·DTI와 기준이 다릅니다.",
+      "why": "주택대출 정책과 기관투자의 담보 여력을 읽는 기준입니다. 인정 담보가치·선순위 채무의 범위와 실제 적용 규제를 확인합니다.",
+      "source_ids": [
+        "occ-cre",
+        "household-lending-qa"
+      ]
+    },
+    {
+      "id": "dsr",
+      "term": "총부채원리금상환비율(DSR)",
+      "category": "거래·계약",
+      "definition": "연간 소득 대비 산정 대상 가계대출의 연간 원리금 상환액 비율입니다. 신용대출 등 다른 대출의 원금도 반영하는 점에서 DTI와 다릅니다.",
+      "why": "소득·기존 부채·금리·상환기간이 신규 대출 가능액에 미치는 영향을 이해할 때 씁니다. 적용 대상·예외·산정 방식은 대출 시점의 기준을 확인합니다.",
+      "source_ids": [
+        "household-debt-ratios",
+        "household-lending-qa"
+      ]
+    },
+    {
+      "id": "dti",
+      "term": "총부채상환비율(DTI)",
+      "category": "거래·계약",
+      "definition": "연간 소득 대비 주택담보대출의 연간 원리금 상환액과 기타 대출의 연간 이자 상환액을 합한 비율입니다. 기타 대출의 원금까지 보는 DSR과 구분합니다.",
+      "why": "주택 구입 자금과 상환 부담을 검토하는 지표입니다. 반영 대출·소득 인정·만기 계산 방식에 따라 결과가 달라 실제 심사 기준을 확인합니다.",
+      "source_ids": [
+        "household-debt-ratios"
+      ]
+    },
+    {
+      "id": "ltc",
+      "term": "사업비 대비 대출비율(LTC)",
+      "category": "기관·투자",
+      "definition": "사업의 인정 총사업비 대비 대출금의 비율입니다. 시장가치와 비교하는 LTV와 달리 사업에 투입하는 비용 중 차입으로 충당하는 비중을 봅니다.",
+      "why": "개발사업의 자기자본 부담과 자금조달 구조를 검토할 때 씁니다. 토지비·공사비·금융비 등 포함 범위를 맞추고, 비용 증가가 가치 상승을 뜻하지 않음에 유의합니다.",
+      "source_ids": [
+        "occ-cre",
+        "pf-capital"
+      ]
+    },
+    {
+      "id": "noi",
+      "term": "순영업소득(NOI)",
+      "category": "기관·투자",
+      "definition": "임대 등 부동산 운영수입에서 운영비용을 뺀 소득입니다.",
+      "why": "수선충당금 등 비용 범위를 밝히고 일회성 수입을 구분해 비교합니다.",
+      "source_ids": [
+        "fannie-income"
+      ]
+    },
+    {
+      "id": "cap-rate",
+      "term": "자본환원율(Cap rate)",
+      "category": "기관·투자",
+      "definition": "안정화된 연간 NOI를 자산가치 또는 거래가격과 비교한 비율입니다.",
+      "why": "같은 NOI라면 더 높은 환원율을 적용할수록 추정 가치는 낮아집니다.",
+      "source_ids": [
+        "occ-cre"
+      ]
+    },
+    {
+      "id": "dscr",
+      "term": "원리금상환배율(DSCR)",
+      "category": "기관·투자",
+      "definition": "일정 기간 상환재원이 같은 기간 원금·이자 지급액을 얼마나 충당하는지 보는 비율입니다.",
+      "why": "NOI와 실제 상환 가능 현금흐름의 차이, 만기 원금 상환을 함께 확인합니다.",
+      "source_ids": [
+        "occ-cre"
+      ]
+    },
+    {
+      "id": "irr",
+      "term": "내부수익률(IRR)",
+      "category": "기관·투자",
+      "definition": "투자 현금흐름의 순현재가치를 0으로 만드는 할인율입니다.",
+      "why": "사업 전체 IRR과 차입을 반영한 자기자본 IRR을 구분합니다.",
+      "source_ids": [
+        "kdi-metrics",
+        "kdi-irr-limit"
+      ]
+    },
+    {
+      "id": "npv",
+      "term": "순현재가치(NPV)",
+      "category": "기관·투자",
+      "definition": "미래 순현금흐름을 적절한 할인율로 현재가치로 바꾼 합계입니다.",
+      "why": "할인율·매각가·현금흐름 시점 가정이 바뀌면 결과가 달라집니다.",
+      "source_ids": [
+        "kdi-metrics"
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "id": "sale",
+      "title": "매매",
+      "intro": "집을 고르는 단계부터 대금 정산과 소유권이전등기까지의 일반적인 흐름입니다. 주택 유형과 지역에 따라 허가·신고·세금·대출 조건이 달라집니다.",
+      "steps": [
+        {
+          "title": "예산과 자금조달 확인",
+          "description": "매매대금 외에 세금·중개보수·등기비용·수리비를 포함한 총자금 계획을 세웁니다.",
+          "checks": [
+            "자기자금과 대출 실행 가능액을 구분하기",
+            "잔금일에 자금이 실제 준비되는지 확인하기"
+          ]
+        },
+        {
+          "title": "매물·현장·공부 확인",
+          "description": "현장 상태를 보고 등기사항증명서·건축물대장·토지이용 관련 자료를 비교합니다. 토지거래허가 대상인지, 실거주 등 해당 거래의 이용 요건을 충족할 수 있는지도 계약 전에 확인합니다.",
+          "checks": [
+            "실제 동·호수·면적·용도 대조하기",
+            "임차인·점유자 및 하자 확인하기",
+            "허가 대상·이용 요건을 관할청과 최신 공고로 확인하기"
+          ]
+        },
+        {
+          "title": "소유자·권리와 사전 허가 확인",
+          "description": "매도 권한과 담보·압류 등 권리를 확인하고 기존 임대차의 승계 여부를 정리합니다. 토지거래허가가 필요한 계약은 허가를 받기 전에는 효력이 발생하지 않으므로 계약 체결에 앞서 필요한 허가 절차를 진행합니다.",
+          "checks": [
+            "대리 계약이면 위임 범위 확인하기",
+            "잔금 전 말소할 권리와 담당자 정하기",
+            "허가 전 약정의 효력과 불허 시 처리 조건 확인하기"
+          ]
+        },
+        {
+          "title": "계약과 특약 작성",
+          "description": "목적물·대금·지급일·인도일을 적고 수리, 담보 말소, 계약 불이행 시 처리를 합의합니다.",
+          "checks": [
+            "계약 당사자와 입금 계좌 확인하기",
+            "구두 약속을 계약서에 남기기"
+          ]
+        },
+        {
+          "title": "거래신고·대출과 중도 절차",
+          "description": "계약 후 필요한 거래신고와 서류 제출을 처리하고 대출 승인·중도금 지급 등 약정 일정에 따라 이행합니다.",
+          "checks": [
+            "지역·거래 유형별 의무와 기한을 원문으로 확인하기",
+            "대출 승인·중도금·등기서류 준비 상태 점검하기"
+          ]
+        },
+        {
+          "title": "잔금·인도·권리 정리",
+          "description": "잔금 직전에 등기를 다시 확인하고 약정한 담보 말소, 서류 교부, 주택 인도를 맞춰 진행합니다.",
+          "checks": [
+            "추가 권리 설정 여부 재확인하기",
+            "대금 영수증·열쇠·관리비 정산 내역 받기"
+          ]
+        },
+        {
+          "title": "소유권이전등기와 후속 정리",
+          "description": "소유권이전등기를 신청하고 완료된 내용을 확인합니다. 세금·전입 등 후속 사항도 처리합니다.",
+          "checks": [
+            "등기 완료 후 소유자와 남은 권리 확인하기",
+            "계약서·신고필증·납부 영수증 보관하기"
+          ]
+        }
+      ],
+      "pitfalls": [
+        "잔금을 지급했다고 소유권이전등기가 자동으로 완료되지는 않습니다.",
+        "현재 등기만으로 점유·임대차·체납 등 모든 위험을 알 수는 없습니다.",
+        "대출이 예상보다 적거나 늦게 실행될 때의 처리 조건을 계약 전에 정해야 합니다."
+      ],
+      "source_ids": [
+        "sale-overview",
+        "sale-rights",
+        "sale-registration",
+        "sale-permit"
+      ]
+    },
+    {
+      "id": "jeonse",
+      "title": "전세",
+      "intro": "일반적인 주택 전세계약 기준입니다. 전세보증금의 회수 가능성을 계약 전부터 확인하고 입주 후 보호 요건까지 챙기는 흐름입니다.",
+      "steps": [
+        {
+          "title": "시세와 보증금 부담 점검",
+          "description": "실거래·주변 임대차 자료로 주택가치와 보증금 수준을 비교하고 필요한 대출과 반환보증을 검토합니다.",
+          "checks": [
+            "매도 호가 하나에 의존하지 않기",
+            "대출과 반환보증의 심사·가입 가능 여부 따로 확인하기"
+          ]
+        },
+        {
+          "title": "집과 선순위 권리 확인",
+          "description": "건축물대장과 등기를 살피고 선순위 담보·다른 임차인의 보증금·체납 관련 정보를 가능한 절차로 확인합니다.",
+          "checks": [
+            "위반건축물·실제 용도 확인하기",
+            "임대인의 자료 제공 및 확인 협조 여부 보기"
+          ]
+        },
+        {
+          "title": "임대 권한과 계약조건 확인",
+          "description": "임대인·대리인의 권한을 확인한 뒤 보증금, 기간, 반환, 담보 정리와 수리 조건을 적습니다.",
+          "checks": [
+            "신탁등기 등이 있으면 임대 권한과 동의 요건 확인하기",
+            "보증 가입 또는 대출 불가 시 처리 조건 협의하기"
+          ]
+        },
+        {
+          "title": "계약 후 신고·확정일자 확인",
+          "description": "신고 대상이면 주택 임대차 계약 신고를 하고 확정일자 부여 여부를 확인합니다.",
+          "checks": [
+            "신고 대상과 제출기한은 계약 시점 기준으로 확인하기",
+            "신고에 따라 확정일자가 부여되는지 접수 결과 확인하기"
+          ]
+        },
+        {
+          "title": "잔금 직전 재확인과 입주",
+          "description": "등기의 변동과 집의 상태를 재확인한 뒤 보증금 잔금을 지급하고 주택을 인도받습니다.",
+          "checks": [
+            "약정한 담보 말소가 이행되는지 확인하기",
+            "입금 증빙과 인도 사실 남기기"
+          ]
+        },
+        {
+          "title": "전입신고와 보증 관리",
+          "description": "전입신고를 하고 인도·주민등록·확정일자 요건을 점검합니다. 반환보증을 이용하면 기한 내 가입과 증서를 확인합니다.",
+          "checks": [
+            "대항력 효력 발생 시점까지 권리 변동 확인하기",
+            "보증약관의 주소·계약 변경 통지 요건 확인하기"
+          ]
+        },
+        {
+          "title": "종료 통지와 보증금 회수",
+          "description": "갱신 또는 종료 의사를 적절한 시기에 전달하고 반환과 인도를 협의합니다. 미반환이면 권리 보전 절차를 확인합니다.",
+          "checks": [
+            "통지 시점·도달 증거 남기기",
+            "이사 전 임차권등기명령 요건과 등기 완료 여부 확인하기"
+          ]
+        }
+      ],
+      "pitfalls": [
+        "확정일자는 보증금 전액 반환을 보장하는 보험이 아닙니다.",
+        "전세대출이 가능해도 반환보증 가입이나 보증금 안전성이 보장되지는 않습니다.",
+        "보증금을 못 받은 채 이사·전출하면 권리 유지에 문제가 생길 수 있어 선행 절차 확인이 필요합니다."
+      ],
+      "source_ids": [
+        "safe-lease",
+        "lease-register",
+        "lease-contract",
+        "lease-protection",
+        "hug-guarantee",
+        "lease-end",
+        "lease-order"
+      ]
+    },
+    {
+      "id": "monthly",
+      "title": "월세",
+      "intro": "보증금 보호에 더해 매월 실제로 내는 금액과 수리·관리 책임을 명확히 하는 것이 핵심입니다. 주택 월세를 기준으로 정리했습니다.",
+      "steps": [
+        {
+          "title": "총 주거비 계산",
+          "description": "월 차임, 관리비 항목, 공과금 부담, 보증금 조달비용을 함께 살핍니다.",
+          "checks": [
+            "정액 관리비의 포함·별도 항목 확인하기",
+            "월 차임이 같아도 총 지출이 같은지 비교하기"
+          ]
+        },
+        {
+          "title": "권리관계와 시설 점검",
+          "description": "등기와 건축물대장을 확인하고 누수·난방·가전 등 시설의 상태를 기록합니다.",
+          "checks": [
+            "보증금이 적어도 임대 권한 확인하기",
+            "입주 전 사진과 수리 요청 기록 남기기"
+          ]
+        },
+        {
+          "title": "계약·지급·수리 조건 정리",
+          "description": "보증금·월 차임·지급일·계좌와 관리비, 수리, 원상회복에 대한 약정을 적습니다.",
+          "checks": [
+            "입주일과 첫 달 일할 정산 기준 확인하기",
+            "통상 사용에 따른 마모와 손상 책임 구분하기"
+          ]
+        },
+        {
+          "title": "신고·확정일자·전입 준비",
+          "description": "대상 계약이면 임대차 신고를 하고 확정일자를 확인합니다. 입주와 전입신고도 별도로 준비합니다.",
+          "checks": [
+            "신고만으로 전입신고까지 완료되었다고 생각하지 않기",
+            "계약서의 주소와 실제 주택 표시 대조하기"
+          ]
+        },
+        {
+          "title": "잔금 지급과 입주",
+          "description": "권리 변동과 수리 이행을 다시 확인하고 보증금 잔금·열쇠를 교환합니다.",
+          "checks": [
+            "시설·계량기·열쇠 인수 기록하기",
+            "인도·주민등록 등 보증금 보호 요건 갖추기"
+          ]
+        },
+        {
+          "title": "월별 지급과 계약 관리",
+          "description": "차임·관리비의 지급 증빙을 보관하고 하자나 조건 변경은 기록이 남는 방식으로 협의합니다.",
+          "checks": [
+            "납부일과 연체 여부 관리하기",
+            "보증금 증액 시 계약서와 확정일자 등 보호 절차 확인하기"
+          ]
+        },
+        {
+          "title": "갱신·종료와 최종 정산",
+          "description": "갱신 또는 종료 통지를 확인하고 보증금에서 정산할 항목의 근거를 맞춘 뒤 반환·인도를 진행합니다.",
+          "checks": [
+            "차임·관리비·공과금 정산내역 확인하기",
+            "퇴거 상태 기록과 보증금 반환 증빙 보관하기"
+          ]
+        }
+      ],
+      "pitfalls": [
+        "월세 계약도 보증금 미반환과 선순위 권리 위험을 확인해야 합니다.",
+        "수리비·관리비를 임의로 차임에서 빼면 분쟁이 생길 수 있어 근거와 합의를 먼저 정리합니다.",
+        "계약갱신·해지·보증금 증액 관련 요건은 계약의 성격과 법령에 따라 달라집니다."
+      ],
+      "source_ids": [
+        "lease-types",
+        "lease-contract",
+        "lease-register",
+        "lease-protection",
+        "lease-rent",
+        "lease-end"
+      ]
+    }
+  ],
+  "development": {
+    "title": "기관의 부동산 개발 과정",
+    "intro": "공공기관·민간 시행사 등의 개발사업을 이해하기 위한 일반적인 검토 틀입니다. LH의 사업절차와 금융당국의 PF 평가 항목을 참고해 재구성했으며, 사업 유형별 법정 절차와 실제 진행 순서는 달라질 수 있습니다. 일부 단계는 병행됩니다.",
+    "steps": [
+      {
+        "title": "사업 기회와 수요 정의",
+        "description": "누가 어떤 공간을 필요로 하는지 파악하고 주거·업무·물류 등 용도와 보유·분양 전략을 정합니다. 공공사업은 정책 목적과 이용자 편익도 검토합니다.",
+        "checks": [
+          "이용자·임차인·매수자와 경쟁 공급은 누구인가",
+          "이 부지에서 해당 용도가 가능한가"
+        ]
+      },
+      {
+        "title": "부지 확보와 권리 실사",
+        "description": "토지 소유권·사용권·담보·점유를 확인하고 확보 방식과 남은 비용을 정리합니다. 토지 확보 지연은 이후 일정과 금융비용에 연결됩니다.",
+        "checks": [
+          "권리 정리에 필요한 협의·서류가 확보되었는가",
+          "토지 매입과 인허가의 선행조건이 충돌하지 않는가"
+        ]
+      },
+      {
+        "title": "사업성 분석과 투자 판단",
+        "description": "예상 수입, 토지·공사·부대·금융비용을 현금흐름으로 연결합니다. 수입 감소와 비용 증가에도 사업을 완료할 자금이 있는지 따져 추진 여부를 정합니다.",
+        "checks": [
+          "분양·임대 가정은 조사 자료로 뒷받침되는가",
+          "공공사업이라면 재무성과 공공 편익을 구분했는가"
+        ]
+      },
+      {
+        "title": "설계·인허가 구체화",
+        "description": "설계와 사업 방식에 맞는 인허가·협의 사항을 정리하고 규모·일정·조건을 구체화합니다. 허가 과정의 설계 변경은 사업비와 수입에 다시 반영합니다.",
+        "checks": [
+          "용적률 외 높이·주차·기반시설 조건도 검토했는가",
+          "허가 지연 및 추가 조건의 비용 담당자가 정해졌는가"
+        ]
+      },
+      {
+        "title": "자금조달과 주요 계약",
+        "description": "출자와 대출의 집행 시점, 공사 계약, 필요한 보증·신탁 등 구조를 확정합니다. 실제 자금 유입과 사업비 지급 일정이 맞아야 합니다.",
+        "checks": [
+          "자기자본이 실제 납입되는가",
+          "추가 공사비·공기 지연 발생 시 자금 제공 주체는 누구인가"
+        ]
+      },
+      {
+        "title": "시공·분양 또는 임대 관리",
+        "description": "공정·품질·안전·예산을 관리하면서 분양이나 임차인 확보를 진행합니다. 공사 진척과 판매·임대 실적을 비교해 사업계획과 자금 전망을 갱신합니다.",
+        "checks": [
+          "공정률과 기성 지급이 일치하는가",
+          "미분양·공실 증가에 대응할 방안이 있는가"
+        ]
+      },
+      {
+        "title": "준공·운영·매각과 정산",
+        "description": "사용승인 등 필요한 절차를 거쳐 인도·입주·운영을 시작합니다. 분양대금 회수, 장기 금융 전환 또는 매각을 통해 자금을 회수하고 비용과 책임을 정산합니다.",
+        "checks": [
+          "하자·운영비·잔여 공사비가 반영되었는가",
+          "매각·차환이 지연될 때 유지할 유동성이 있는가"
+        ]
+      }
+    ],
+    "source_ids": [
+      "lh-development",
+      "building-ratio",
+      "pf-review",
+      "pf-capital",
+      "kdi-metrics",
+      "occ-refinance"
+    ]
+  },
+  "investment": {
+    "title": "증권사의 부동산 투자·금융 검토",
+    "intro": "증권사의 대출·자기자본 투자·금융주선·채무보증을 이해하기 위한 교육용 프레임입니다. 공개된 감독자료와 금융 평가 원리를 조합한 설명으로, 특정 회사의 내부 규정이나 공통 승인 순서를 의미하지 않습니다. 미국 자료는 평가 개념 참고용이며 한국 규제 기준으로 적용하지 않습니다.",
+    "steps": [
+      {
+        "title": "거래 발굴과 부담할 위험 정의",
+        "description": "자산과 사업 단계, 차주·시행사, 필요한 자금과 기간을 확인합니다. 주선 수수료, 대출, 지분투자, 채무보증 중 실제로 무엇을 부담하는지부터 구분합니다.",
+        "checks": [
+          "원금·추가 지원·보증 등 최대 자금 부담은 무엇인가",
+          "지역·용도·거래 상대방 집중 위험이 있는가"
+        ]
+      },
+      {
+        "title": "실사와 핵심 가정 검증",
+        "description": "권리·인허가·계약·공사·수요를 확인합니다. 운영 자산은 임대차 명세, 실제 입금, 비용 명세를 맞추고 개발사업은 토지 확보·시공사·분양 계획의 근거를 검토합니다.",
+        "checks": [
+          "자료의 작성자·기준일·누락 항목을 확인했는가",
+          "예산과 실제 실적의 차이에 설명과 증빙이 있는가"
+        ]
+      },
+      {
+        "title": "현금흐름과 개별 사업성 분석",
+        "description": "개발사업은 분양·임대 유입과 토지·공사·금융비용을 시점별로 연결합니다. 운영 자산은 공실과 운영비를 반영하고 차입 전후 현금흐름을 구분합니다.",
+        "checks": [
+          "분양계약과 실제 대금 수납을 구분했는가",
+          "자본적 지출·세금·수수료·보증금 반환을 빠뜨리지 않았는가"
+        ]
+      },
+      {
+        "title": "손실 상황과 회수 가능성 점검",
+        "description": "분양·임대 부진, 공사비 상승, 일정 지연, 금리·매각가 변화가 겹치는 경우를 검토합니다. 만기 차환이 가능한지와 현금 부족 시점을 별도로 봅니다.",
+        "checks": [
+          "어떤 가정 변화에서 상환재원이 부족해지는가",
+          "차환 없이도 회수할 수 있는 대안은 무엇인가"
+        ]
+      },
+      {
+        "title": "계약 구조와 손실 분담 설계",
+        "description": "선·후순위, 담보, 현금 배분 순서, 집행 조건과 추가 자금 의무를 정합니다. 준공 책임이나 보증이 어느 사건에서 누구에게 어떤 의무를 만드는지 법률 검토와 연결합니다.",
+        "checks": [
+          "출자금이 먼저 손실을 흡수하는 구조가 실제 계약에 반영되었는가",
+          "책임준공 미이행 시 의무가 원리금 지급 보증과 같은가"
+        ]
+      },
+      {
+        "title": "독립 심의와 승인 조건 확정",
+        "description": "담당자의 수익성 제안에 대해 위험·준법·법률 등 관점의 검토를 거쳐 회사 기준에 따라 의사결정합니다. 예상 수익과 자본·유동성 부담을 함께 비교하고 조건을 기록합니다.",
+        "checks": [
+          "자료 미비와 예외 승인 사유가 드러나 있는가",
+          "실행 전 충족할 조건과 중단·재심의 기준은 무엇인가"
+        ]
+      },
+      {
+        "title": "집행·모니터링·회수",
+        "description": "약정한 조건과 자금 용도를 확인해 집행합니다. 공정·분양·임대·이자·만기 현황을 추적하고 전망이 악화되면 추가 출자, 조건 조정, 매각 등 대응을 검토합니다.",
+        "checks": [
+          "계획 대비 실적과 약정 위반을 누가 얼마나 자주 확인하는가",
+          "만기 전에 매각·상환·차환 가능성을 다시 검토했는가"
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "name": "NOI · 순영업소득",
+        "formula": "유효 운영수입 − 운영비용",
+        "meaning": "공실·미수 등을 반영한 반복 운영수입에서 운영비를 차감해 자산의 영업 성과를 봅니다.",
+        "caution": "이자·원금·감가상각·법인소득세와 구분합니다. 수선충당금 포함 여부는 기관별 정의를 표시하고, 자본적 지출을 별도로 검토합니다."
+      },
+      {
+        "name": "Cap rate · 자본환원율",
+        "formula": "안정화된 연간 NOI ÷ 자산가치 × 100",
+        "meaning": "운영소득과 가격의 관계입니다. 가치 추정에는 자산가치 ≈ NOI ÷ 환원율을 활용할 수 있습니다.",
+        "caution": "기간·NOI 정의를 맞춰 비교합니다. 일시적 소득이나 큰 변동이 있는 개발사업에 그대로 적용하기 어렵습니다."
+      },
+      {
+        "name": "DSCR · 원리금상환배율",
+        "formula": "동일 기간 상환 가능 현금흐름 ÷ 원리금 상환액",
+        "meaning": "운영수익 자산에서는 NOI 등을 기준으로 상환 여력을 살핍니다. 분자 정의는 약정에 맞춥니다.",
+        "caution": "이자만 지급하는 기간의 높은 배율로 만기 원금 상환 능력을 대신 판단하지 않습니다."
+      },
+      {
+        "name": "LTV · 담보가치 대비 대출",
+        "formula": "분석 범위의 대출금 ÷ 동일 기준일 담보가치 × 100",
+        "meaning": "담보가치에 비해 차입이 얼마나 큰지 봅니다. 선순위 채무를 포함한 범위를 확인합니다.",
+        "caution": "준공 후 예상 가치와 현재 가치를 구분합니다. 담보가치 하락이나 처분비용이 회수액에 영향을 줍니다."
+      },
+      {
+        "name": "LTC · 사업비 대비 대출",
+        "formula": "분석 범위의 대출금 ÷ 인정 총사업비 × 100",
+        "meaning": "사업비 중 차입으로 충당하는 비중을 봅니다.",
+        "caution": "토지비·금융비·예비비 포함 여부를 맞춥니다. 투입 비용이 크다고 자산가치도 큰 것은 아닙니다."
+      },
+      {
+        "name": "IRR · 내부수익률",
+        "formula": "Σ[CFₜ ÷ (1 + IRR)ᵗ] = 0",
+        "meaning": "CFₜ는 각 시점의 투자 순현금흐름입니다. 차입 전 사업 IRR과 차입 후 자기자본 IRR을 구분합니다.",
+        "caution": "현금흐름 부호가 여러 번 바뀌면 해가 여러 개이거나 없을 수 있습니다. 매각가·회수 시점·차입의 영향도 함께 확인합니다."
+      },
+      {
+        "name": "NPV · 순현재가치",
+        "formula": "Σ[CFₜ ÷ (1 + r)ᵗ]",
+        "meaning": "초기 투자액을 포함한 순현금흐름을 할인율 r로 할인한 합계입니다. 요구수익률을 반영한 가치 창출 규모를 살핍니다.",
+        "caution": "할인율과 현금흐름의 위험·기간·세전 또는 세후 기준을 맞춰야 합니다. 공공 편익 분석과 투자자의 현금흐름 분석을 구분합니다."
+      }
+    ],
+    "source_ids": [
+      "pf-review",
+      "pf-capital",
+      "securities-risk",
+      "trust-risk",
+      "occ-cre",
+      "occ-refinance",
+      "fannie-income",
+      "kdi-metrics",
+      "kdi-irr-limit"
+    ]
+  }
+}

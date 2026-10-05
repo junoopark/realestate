@@ -124,11 +124,13 @@ a:hover { color: var(--brand-hover); }
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; min-width: 0; max-width: 100%; }
 
 /* 화면 이동 탭: 한 덩어리의 세그먼트 버튼 (탭이 많으면 가로로 스크롤) */
 .site-header nav {
   display: flex;
+  flex: 1;
+  min-width: 0;
   gap: 2px;
   max-width: 100%;
   padding: 3px;
