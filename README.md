@@ -7,6 +7,7 @@
 
 - **Overview 탭**: 3 x 2 타일(주택가격·거래·전월세·공급·금리대출·심리)에 최신값, 전기 대비·전년동기 대비 변화, 최근 3년 추세선을 보여줍니다. 헤더의 지역 선택(17개 시도·서울 25개 구)을 따르며, 그 지역 자료가 없는 지표는 서울 → 전국 순으로 대체하고 실제 지역명을 표시합니다. 자료는 [`frontend/data/indicators/`](frontend/data/indicators)의 정적 JSON(변수별 1파일)입니다.
 - **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로 핵심 질문과 변수 목록을 보여줍니다. 내용은 [`frontend/data/drivers.json`](frontend/data/drivers.json)에서 읽습니다.
+- **조기경보**: `warning.html` — 월세가 6개월 안에 급등·급락할 확률을 추정한 기계학습 1차 실험 결과. 패널(17개 시도·서울 25개 구)·과제·지역 필터로 경보 확률 시계열과 동인별 기여(SHAP), 모형 비교(AUC), 연도별 성적, 상위 변수를 봅니다. 모든 차트에 툴팁과 표 보기가 있습니다. 자료는 [`frontend/data/warning.json`](frontend/data/warning.json)(dfmba-dashboard `export/export_warning.py` 산출)이며 백엔드 `/warning`이 같은 내용을 DB 스냅샷으로 제공합니다.
 - **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
 - **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
 - **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
@@ -26,6 +27,7 @@ realestate/
 ├─ frontend/              # Vercel (Root Directory)
 │   ├─ index.html         # 대시보드 (Overview 3 x 2 타일 + 동인 탭 6개)
 │   ├─ demo.html          # API 연동 실습
+│   ├─ warning.html       # 월세 조기경보 (ML 실험 결과: 경보 확률·동인 기여·모형 비교)
 │   ├─ learn.html         # 용어·거래·개발·기관 투자 기초
 │   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
 │   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
@@ -40,6 +42,7 @@ realestate/
 │       ├─ factors.js     # 탭 전환(#overview, #demand …) · 동인 탭 화면 (변수 카드 차트 포함)
 │       ├─ indicators.js  # 정량 지표 공용: JSON 로딩·지역 선택·변화율·스파크라인
 │       ├─ tiles.js       # Overview 타일 6개 구성과 그리기
+│       ├─ warning.js     # 조기경보 페이지(절 탭·필터) · warning-charts.js: 시계열·막대·히트맵·툴팁·표 보기
 │       └─ demo.js        # API 호출·결과 표시
 ├─ backend/               # Render (Root Directory)
 │   ├─ requirements.txt
@@ -78,6 +81,7 @@ realestate/
 | GET | `/policies` | 검토한 정책 요약 및 저장소 상태 | 200 · 503 |
 | GET | `/policies/monitor` | 수집 후보와 기관별 성공·실패 기록 | 200 · 422 |
 | GET | `/policies/history` | 최근 10년의 검토한 정책 연혁·시기별 흐름·출처 | 200 · 503 |
+| GET | `/warning` | 월세 조기경보 ML 실험 결과(성적표·연도별 AUC·SHAP·지역별 경보 시계열) | 200 · 503 |
 | POST | `/policies/refresh` | 관리자 토큰으로 공식 발표 수집 | 200 · 401 · 409 · 503 |
 
 - 정량 지표는 DB 테이블 `indicator_variables`·`indicator_series`에서 읽습니다. 로컬에서는 서버 시작 시 `frontend/data/indicators/`를 자동 적재하고, Supabase에는 `python scripts/load_indicators.py`로 적재합니다(`DATABASE_URL` 필요). DB가 비어 있거나 연결이 안 되면 정적 JSON으로 대체하고 응답의 `storage.source`가 `static_json`이 됩니다.

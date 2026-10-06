@@ -56,6 +56,15 @@ def history():
     }
 
 
+@router.get("/warning")
+def warning():
+    """월세 조기경보 ML 실험 결과 (dfmba-dashboard ml/output → export/export_warning.py). 정성 콘텐츠와 같은 스냅샷 방식."""
+    content, available = content_response("warning")
+    return {**content, "storage": storage_info(available),
+            "sync": {"mode": "reviewed_snapshot", "generated_at": content.get("generated_at"),
+                     "note": "표본외 예측 실험 결과입니다. 예측 확률은 학습용 추정치이며 투자·계약 판단의 근거가 아닙니다."}}
+
+
 @router.post("/policies/refresh")
 def refresh(x_admin_token: str | None = Header(default=None)):
     expected = os.getenv("POLICY_ADMIN_TOKEN", "").strip()

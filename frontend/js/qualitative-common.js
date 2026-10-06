@@ -64,7 +64,8 @@ window.Qual = (() => {
     } finally { clearTimeout(timer); }
   }
   // 저장된 검증 자료를 즉시 보여주고 서버가 응답하면 같은 데이터 계약으로 갱신한다.
-  async function loadContent(endpoint, filename, onData) {
+  // note: 서버 연결 뒤 붙이는 안내 문구. dateKey: 자료 날짜 필드 이름(기본 verified_at).
+  async function loadContent(endpoint, filename, onData, note = "정책·법령은 원문의 적용 조건을 함께 확인하세요.", dateKey = "verified_at") {
     const status = document.querySelector("#data-status");
     let hasData = false;
     let date = "";
@@ -78,15 +79,15 @@ window.Qual = (() => {
     }
     try {
       const data = await json(`data/${filename}`, 6000);
-      onData(data); hasData = true; date = data.verified_at || "";
+      onData(data); hasData = true; date = data[dateKey] || "";
       setStatus(`출처 확인 ${date} · 저장된 자료 표시 중 · 서버의 업데이트를 확인하고 있습니다.`);
     } catch { setStatus("저장된 자료를 읽지 못해 서버에서 자료를 확인하고 있습니다."); }
     async function update() {
       setStatus(hasData ? `출처 확인 ${date} · 저장된 자료 표시 중 · 서버 확인 중…` : "서버에서 자료를 불러오고 있습니다…");
       try {
         const data = await json(`${API_BASE_URL}${endpoint}`);
-        onData(data); hasData = true; date = data.verified_at || date;
-        setStatus(`출처 확인 ${date} · 서버 자료 연결됨 · 정책·법령은 원문의 적용 조건을 함께 확인하세요.`);
+        onData(data); hasData = true; date = data[dateKey] || date;
+        setStatus(`출처 확인 ${date} · 서버 자료 연결됨 · ${note}`);
       } catch {
         setStatus(hasData ? `출처 확인 ${date} · 서버에 연결되지 않아 저장된 자료를 표시합니다. 서버의 첫 응답에는 시간이 걸릴 수 있습니다.` : "자료를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.", true);
       }

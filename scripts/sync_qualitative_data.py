@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ("knowledge.json", "policies.json", "policy-history.json")
+FILES = ("knowledge.json", "policies.json", "policy-history.json", "warning.json")
 
 
 def main():

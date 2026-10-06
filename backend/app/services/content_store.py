@@ -41,7 +41,7 @@ def initialize_storage():
             for table in Base.metadata.sorted_tables:
                 connection.execute(text(f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY'))
     with Session(engine) as session:
-        for key in ("knowledge", "policies", "policy-history"):
+        for key in ("knowledge", "policies", "policy-history", "warning"):
             value = read_seed(key)
             if value is None:
                 continue

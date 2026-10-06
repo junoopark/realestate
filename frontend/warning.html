@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>월세 조기경보 · DFMBA 한국 주택시장 101</title>
+  <meta name="description" content="아파트 월세가 6개월 안에 급등·급락할 확률을 지역별로 추정한 기계학습 실험 결과를 경보 지수, 동인별 기여, 모형 비교로 살펴봅니다.">
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/qualitative.css">
+  <link rel="stylesheet" href="css/warning.css">
+</head>
+<body class="qual-page">
+  <a class="skip-link" href="#content">본문으로 이동</a>
+  <header class="site-header">
+    <h1><a href="index.html">DFMBA 한국 주택시장 101</a></h1>
+    <div class="header-right">
+      <nav aria-label="페이지 이동"><a href="index.html">정량 지표</a><a href="warning.html" aria-current="page">조기경보</a><a href="learn.html">부동산 기초</a><a href="policies.html">정책 모니터</a></nav>
+      <div class="controls"><button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button></div>
+    </div>
+  </header>
+  <main class="qual-main" id="content">
+    <section class="qual-hero policy-hero">
+      <div><p class="eyebrow">EARLY WARNING</p><h2>월세가 크게 움직일 확률을,<br>6개월 앞서 읽습니다.</h2><p class="hero-copy">데이터사전의 52개 변수로 지역별 아파트 월세의 급등·급락 확률을 추정한<br class="desktop-break"> 기계학습 실험 결과입니다. 경보 지수와 그 이유(동인별 기여)를 함께 보세요.</p></div>
+      <aside class="reading-guide"><p class="eyebrow">경보를 읽는 순서</p><ol><li><strong>어디를</strong><span>패널(시도·서울 구)과 지역 선택</span></li><li><strong>얼마나</strong><span>앞으로 6개월 안에 사건이 날 확률</span></li><li><strong>왜</strong><span>확률을 끌어올리거나 내린 동인</span></li></ol><a href="index.html#trigger">원자료 지표 보러 가기 →</a></aside>
+    </section>
+    <div id="data-status" class="data-note" role="status">실험 결과를 불러오고 있습니다.</div>
+    <div class="section-tabs" id="warning-tabs" aria-label="조기경보 자료 구분">
+      <a href="#overview" data-section="overview">핵심 결과</a><a href="#regions" data-section="regions">지역별 경보</a><a href="#models" data-section="models">모형 비교</a><a href="#drivers" data-section="drivers">무엇이 움직였나</a><a href="#setup" data-section="setup">실험 설정 · 한계</a>
+    </div>
+    <section id="warning-content" aria-live="polite"></section>
+    <noscript><p class="empty-state">이 페이지는 자료 표시를 위해 JavaScript가 필요합니다.</p></noscript>
+    <footer class="qual-footer"><span>DFMBA · 클라우드 컴퓨팅 팀 프로젝트 · 학습용 실험 결과이며 투자·계약 판단의 근거가 아닙니다</span><a href="policies.html">정책 모니터로 이동 →</a></footer>
+  </main>
+  <script src="js/i18n.js"></script><script src="js/main.js"></script><script src="js/config.js"></script>
+  <script src="js/qualitative-common.js"></script><script src="js/warning-charts.js"></script><script src="js/warning.js"></script>
+</body>
+</html>
