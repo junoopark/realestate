@@ -86,7 +86,7 @@
       grid.append(wide);
     } else grid.append(el("p", "empty-state", "이 패널·과제·지역의 시계열이 없습니다."));
     const rows = regionsOf().map((r) => ({ r, v: latest(r)?.p ?? 0 })).sort((a, b) => b.v - a.v);
-    const bars = C.hbars(rows.map(({ r, v }) => ({ label: r, value: v, selected: r === region, onClick: () => { region = r; render(); }, tip: [{ value: C.pct(v, 1), label: `${r} 최신 경보 확률`, cls: "brand" }] })), { max: 1, format: (v) => C.pct(v, 0) });
+    const bars = C.hbars(rows.map(({ r, v }) => ({ label: r, value: v, selected: r === region, onClick: () => { region = r; render(); }, tip: [{ value: C.pct(v, 1), label: `${r} 최신 경보 확률`, cls: "brand" }] })), { max: Math.max(0.05, ...rows.map((x) => x.v)) * 1.05, format: (v) => C.pct(v, 0) });
     grid.append(card(`지역별 최신 경보 확률 (${rows[0] ? C.monthLabel(latest(rows[0].r).month) : ""})`, "행을 누르면 그 지역의 시계열로 바뀝니다. 같은 패널·과제 안에서 비교합니다.", bars, C.tableView(["지역", "경보 확률"], rows.map(({ r, v }) => [r, C.pct(v, 1)]))));
     container.append(grid);
   }

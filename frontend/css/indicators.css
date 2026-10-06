@@ -100,3 +100,9 @@
 @media (max-width: 900px) {
   .ind-value { font-size: 22px; }
 }
+
+/* 화면 높이가 넉넉하지 않으면(노트북 등) 타일 안에서 스크롤하지 않고 페이지 자체를 스크롤한다 */
+@media (max-height: 820px) and (min-width: 721px) {
+  body.frame { height: auto; overflow: auto; }
+  .tiles { grid-template-rows: repeat(2, minmax(390px, auto)); }
+}

@@ -66,8 +66,9 @@
 .wz-href { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--line-strong); }
 .wz-hval { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
 
-/* 시계열 SVG: 위 경보 확률, 아래 동인별 기여 */
-.wz-timeline { display: block; width: 100%; height: auto; font-family: inherit; }
+/* 시계열 SVG: 위 경보 확률, 아래 동인별 기여. 좁은 화면에서는 줄이지 않고 가로로 스크롤한다 */
+.wz-chart-scroll { overflow-x: auto; }
+.wz-timeline { display: block; width: 100%; min-width: 640px; height: auto; font-family: inherit; }
 .wz-grid-line { stroke: var(--line); stroke-width: 1; }
 .wz-axis-line { stroke: var(--line-strong); stroke-width: 1; }
 .wz-axis { fill: var(--ink-soft); font-size: 11px; font-family: var(--mono); }

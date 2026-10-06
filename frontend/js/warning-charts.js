@@ -208,7 +208,9 @@ window.WarnCharts = (() => {
       if (ev.key === "ArrowRight") { ev.preventDefault(); focusAt(Math.min(n - 1, current + 1)); }
     });
     const table = tableView(["월", "경보 확률", "실제 사건", ...drivers], t.month.map((m, i) => [monthLabel(m), pct(t.p[i], 1), t.y[i] ? "발생" : "", ...drivers.map((d) => signed(t.contrib[d][i]))]));
-    return { svg: root, legend: legend([{ cls: "ink line", label: "경보 확률" }, { cls: "event", label: `실제 ${task} 발생 월` }, ...drivers.map((d) => ({ cls: driverClass(d), label: d }))]), table };
+    const scroll = el("div", "wz-chart-scroll");
+    scroll.append(root);
+    return { svg: scroll, legend: legend([{ cls: "ink line", label: "경보 확률" }, { cls: "event", label: `실제 ${task} 발생 월` }, ...drivers.map((d) => ({ cls: driverClass(d), label: d }))]), table };
   }
 
   return { DRIVERS, driverClass, monthLabel, pct, signed, legend, driverLegend, tableView, hbars, heatTable, timeline };

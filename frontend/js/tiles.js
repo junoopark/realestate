@@ -7,6 +7,7 @@
   const { el } = I;
 
   // ratio: 분자 항목 / 분모 항목 × 100 을 새 계열로 만든다 (월세 비중 등)
+  // dropLast: 끝에서 뺄 기간 수. 실거래 신고 건수는 계약 후 30일 안에 신고되므로 최신월은 미완성이라 뺀다.
   const TILES = {
     prices: {
       primary: { id: "V002", item: "지수", label: "아파트 매매가격지수" },
@@ -19,14 +20,14 @@
       primary: { id: "V036", item: "동(호)수", label: "아파트 매매거래량", unit: "호" },
       secondary: [
         { id: "V035", item: "동(호)수", label: "전체 거래량(매매·증여 등)", unit: "호" },
-        { id: "V007", item: "거래(해제 제외)", label: "서울 매매 실거래 신고", unit: "건" },
+        { id: "V007", item: "거래(해제 제외)", label: "서울 매매 실거래 신고(마감월)", unit: "건", dropLast: 1 },
       ],
     },
     rent: {
       primary: { id: "V003", item: "매매가격 대비 전세가격", label: "아파트 전세가율" },
       secondary: [
         { id: "V004", item: "전월세 전환율", label: "전월세전환율" },
-        { id: "V006", item: "월세(보증부 포함)", ratio: "전체", label: "월세 비중(전월세 신고 중)", unit: "%" },
+        { id: "V006", item: "월세(보증부 포함)", ratio: "전체", label: "월세 비중(전월세 신고 중, 마감월)", unit: "%", dropLast: 1 },
       ],
     },
     supply: {
@@ -74,6 +75,7 @@
       series = I.ratioSeries(series, den);
       unit = "%";
     }
+    if (spec.dropLast) series = { ...series, dates: series.dates.slice(0, -spec.dropLast), values: series.values.slice(0, -spec.dropLast) };
     return { series, unit, regionName: picked.name };
   }
 
