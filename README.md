@@ -47,11 +47,11 @@ realestate/
 │       ├─ main.py        # 앱 생성 + CORS + 라우터 조립
 │       ├─ schemas.py     # Pydantic 모델
 │       ├─ routers/       # indicators.py · qualitative.py
-│       ├─ services/      # 지표 목록(CATALOG) · ECOS/FRED 클라이언트 · 캐시
+│       ├─ services/      # indicator_store.py(지표 DB 적재·조회) · content_store · policy_collector · ECOS/FRED 클라이언트(미사용)
 │       ├─ db/            # 정성자료 DB 연결·모델
 │       └─ crud/          # 정량 지표 저장 기능 확장용 자리
 ├─ database/              # PostgreSQL 스키마·연결 및 테이블 설명
-├─ scripts/               # 데이터 가공 스크립트
+├─ scripts/               # 데이터 가공 스크립트 (load_indicators.py: 지표 JSON → DB 적재)
 └─ docs/                  # 작업설계서.md · qualitative-guide.md
 ```
 
@@ -72,15 +72,16 @@ realestate/
 |---|---|---|---|
 | GET | `/` | 환영 메시지 | 200 |
 | GET | `/health` | 서버 생존 확인 | 200 |
-| GET | `/indicators` | 등록된 지표 목록 | 200 |
-| GET | `/indicators/{key}` | 지표 시계열 (최근 10년, 12시간 캐시) | 200 · 404 · 502 |
+| GET | `/indicators` | 데이터사전 변수 52개 목록(항목·지역·기간 요약)과 저장소 상태 | 200 · 503 |
+| GET | `/indicators/{id}` | 변수 하나의 시계열. `?item=&region=`으로 한 계열만. 응답 모양은 `frontend/data/indicators/*.json`과 같음 | 200 · 404 |
 | GET | `/knowledge` | 출처가 있는 부동산 기초 학습 콘텐츠 | 200 · 503 |
 | GET | `/policies` | 검토한 정책 요약 및 저장소 상태 | 200 · 503 |
 | GET | `/policies/monitor` | 수집 후보와 기관별 성공·실패 기록 | 200 · 422 |
 | GET | `/policies/history` | 최근 10년의 검토한 정책 연혁·시기별 흐름·출처 | 200 · 503 |
 | POST | `/policies/refresh` | 관리자 토큰으로 공식 발표 수집 | 200 · 401 · 409 · 503 |
 
-- 지표를 추가하는 방법은 [`backend/app/services/indicators.py`](backend/app/services/indicators.py) 맨 위 주석을 참고합니다.
+- 정량 지표는 DB 테이블 `indicator_variables`·`indicator_series`에서 읽습니다. 로컬에서는 서버 시작 시 `frontend/data/indicators/`를 자동 적재하고, Supabase에는 `python scripts/load_indicators.py`로 적재합니다(`DATABASE_URL` 필요). DB가 비어 있거나 연결이 안 되면 정적 JSON으로 대체하고 응답의 `storage.source`가 `static_json`이 됩니다.
+- 지표 자료 자체를 바꾸려면 dfmba-dashboard 레포에서 `export/export_indicators.py`를 다시 실행해 JSON을 갱신한 뒤 적재합니다.
 - 허용할 프론트엔드 주소는 환경변수 `ALLOWED_ORIGINS`로 지정합니다(쉼표로 구분, 끝에 `/` 없이).
 
 ## 로컬 실행 방법

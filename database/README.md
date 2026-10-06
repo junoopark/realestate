@@ -61,6 +61,21 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 | policy_source_states | 시도·성공 시각, 상태, 오류, 마지막 성공의 후보 수 | 기관별 수집 후 |
 | policy_documents | URL별 최신 제목·발표일·RSS 발췌·키워드·관측 시각 | URL 중복 없이 최신 내용 |
 | policy_document_versions | 수집 내용의 버전 및 해시 | 변경 시 이력 추가 |
+| indicator_variables | 데이터사전 정량 변수 52개의 이름·주기·지역단위·출처·해시 | `scripts/load_indicators.py` |
+| indicator_series | 변수 × 항목 × 지역별 시계열(dates·values JSON 배열, 약 1,340행) | 변수 해시가 바뀐 것만 교체 |
+
+## 정량 지표 적재 (Supabase)
+
+지표 원본은 `frontend/data/indicators/`의 JSON(dfmba-dashboard 파이프라인 산출)입니다. 로컬 서버는 시작 시 테이블이 비어 있으면 이 폴더를 자동 적재하지만, Render(Root=backend)에는 이 폴더가 없으므로 Supabase에는 로컬 PC에서 한 번 적재합니다.
+
+~~~powershell
+$env:DATABASE_URL = "postgresql+psycopg://postgres.PROJECT:PASSWORD@HOST.pooler.supabase.com:5432/postgres"
+python -m pip install -r backend/requirements.txt
+python scripts/load_indicators.py          # 변수 52개 · 계열 약 1,340행. 같은 내용은 건너뜀
+python scripts/load_indicators.py --check  # 적재 수만 확인
+~~~
+
+적재 후 `GET /indicators`의 `storage.source`가 `database`, `storage.type`이 `postgresql`이면 정상입니다. 지표 JSON을 다시 내보냈을 때 같은 명령을 다시 실행하면 바뀐 변수만 교체됩니다.
 
 관계: policy_documents 한 건에 policy_document_versions 여러 건이 연결됩니다(document_id 외래키). source_id는 코드에 정의한 기관 ID와 policy_source_states.id에 대응하며, 원문 URL은 유일합니다. content_snapshots는 knowledge/policies/policy-history 키별 독립된 검증 콘텐츠입니다.
 

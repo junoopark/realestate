@@ -125,7 +125,15 @@
       const index = await I.loadIndex();
       buildRegionSelect(index);
       const note = document.querySelector("#tiles-note");
-      if (note) note.textContent = `자료 갱신 ${index.generated_at} · 출처: KOSIS · 한국부동산원 R-ONE · 한국은행 ECOS · 국토부 실거래 (DFMBA 파이프라인)`;
+      if (note) {
+        const base = `자료 갱신 ${index.generated_at} · 출처: KOSIS · 한국부동산원 R-ONE · 한국은행 ECOS · 국토부 실거래 (DFMBA 파이프라인)`;
+        note.textContent = `${base} · 서버 DB 확인 중…`;
+        // 백엔드(/indicators)가 같은 자료를 DB 에서 서빙하는지 표시한다. Render 가 잠들어 있으면 시간이 걸리므로 기다리지 않는다.
+        I.serverStatus().then((s) => {
+          const db = !s ? "서버 미연결 · 정적 자료 표시" : s.storage.source === "database" ? `서버 DB(${s.storage.type}) 변수 ${s.count}개 연결됨` : `서버 연결됨 · DB 미적재(정적 자료)`;
+          note.textContent = `${base} · ${db}`;
+        });
+      }
     } catch (err) {
       console.error(err);
       for (const body of document.querySelectorAll(".tile-body")) body.replaceChildren(el("p", "tile-placeholder", t("tile.error")));

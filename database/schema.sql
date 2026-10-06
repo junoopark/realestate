@@ -43,6 +43,37 @@ CREATE TABLE IF NOT EXISTS policy_document_versions (
     UNIQUE(document_id, revision)
 );
 CREATE INDEX IF NOT EXISTS ix_policy_document_versions_document_id ON policy_document_versions(document_id);
+-- Quantitative indicators (data-dictionary variables V001 …). Loaded by scripts/load_indicators.py.
+CREATE TABLE IF NOT EXISTS indicator_variables (
+    id VARCHAR(10) PRIMARY KEY,
+    name TEXT NOT NULL,
+    freq VARCHAR(4) NOT NULL,
+    level VARCHAR(20) NOT NULL,
+    source VARCHAR(40) NOT NULL,
+    table_code TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    same_as VARCHAR(10),
+    content_hash VARCHAR(64) NOT NULL,
+    updated_at VARCHAR(40) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS indicator_series (
+    id SERIAL PRIMARY KEY,
+    variable_id VARCHAR(10) NOT NULL REFERENCES indicator_variables(id),
+    item VARCHAR(100) NOT NULL,
+    region VARCHAR(30) NOT NULL,
+    freq VARCHAR(4) NOT NULL,
+    unit VARCHAR(40) NOT NULL DEFAULT '',
+    start VARCHAR(10) NOT NULL,
+    "end" VARCHAR(10) NOT NULL,
+    points INTEGER NOT NULL,
+    dates JSON NOT NULL,
+    values JSON NOT NULL,
+    UNIQUE(variable_id, item, region)
+);
+CREATE INDEX IF NOT EXISTS ix_indicator_series_variable_id ON indicator_series(variable_id);
+CREATE INDEX IF NOT EXISTS ix_indicator_series_region ON indicator_series(region);
+ALTER TABLE indicator_variables ENABLE ROW LEVEL SECURITY;
+ALTER TABLE indicator_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE policy_source_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE policy_documents ENABLE ROW LEVEL SECURITY;

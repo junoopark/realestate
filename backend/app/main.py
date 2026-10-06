@@ -11,15 +11,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import indicators, qualitative
 from app.services.content_store import initialize_storage
+from app.services.indicator_store import seed_if_empty
 
 
 @asynccontextmanager
 async def lifespan(app):
     try:
         initialize_storage()
+        # 로컬 개발: 지표 테이블이 비어 있고 frontend/data/indicators 가 곁에 있으면 한 번 적재한다.
+        # 배포 서버(Render)는 파일이 없으므로 scripts/load_indicators.py 로 Supabase 에 적재한다.
+        seed_if_empty()
     except Exception:
-        # Indicator routes stay available if a new Supabase connection is misconfigured.
-        logging.getLogger(__name__).error("Qualitative storage unavailable; serving reviewed files when possible.")
+        # Routes stay available (serving static files) if a new Supabase connection is misconfigured.
+        logging.getLogger(__name__).error("Storage unavailable; serving reviewed/static files when possible.")
     yield
 
 

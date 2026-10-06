@@ -36,11 +36,26 @@ window.Indicators = (() => {
     return index;
   }
 
+  // 정적 JSON(빠름, 배포와 함께 갱신)을 먼저 읽고, 없으면 백엔드 API(/indicators/{id}, DB)에서 받는다. 두 응답은 모양이 같다.
   function loadVariable(id) {
     if (!cache.has(id)) {
-      cache.set(id, json(`${BASE}/${id}.json`).catch((err) => { cache.delete(id); throw err; }));
+      const request = json(`${BASE}/${id}.json`)
+        .catch(() => (typeof API_BASE_URL === "string" ? json(`${API_BASE_URL}/indicators/${encodeURIComponent(id)}`) : Promise.reject(new Error("no data"))))
+        .catch((err) => { cache.delete(id); throw err; });
+      cache.set(id, request);
     }
     return cache.get(id);
+  }
+
+  // 백엔드 지표 API 상태: { count, storage: {type, source, available} } 또는 실패 시 null. 화면 표시용이라 느려도 기다리지 않는다.
+  async function serverStatus() {
+    if (typeof API_BASE_URL !== "string") return null;
+    try {
+      const res = await json(`${API_BASE_URL}/indicators`);
+      return { count: res.count, updated_at: res.updated_at, storage: res.storage };
+    } catch {
+      return null;
+    }
   }
 
   // ── 지역 선택 (헤더의 <select id="region-select">) ───────────────
@@ -177,6 +192,6 @@ window.Indicators = (() => {
     return { freq: num.freq, dates, values };
   }
 
-  return { el, loadIndex, loadVariable, region, setRegion, onRegionChange, isSeoulGu, pick, fmt, change, changeChip,
+  return { el, loadIndex, loadVariable, serverStatus, region, setRegion, onRegionChange, isSeoulGu, pick, fmt, change, changeChip,
            periodLabel, sparkline, sparkAxis, seriesBlock, ratioSeries, DEFAULT_REGION };
 })();
