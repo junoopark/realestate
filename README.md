@@ -6,7 +6,12 @@
 ## 프로젝트 소개
 
 - **Overview 탭**: 3 x 2 타일에 부동산 지표를 나눠 보여줍니다. (타일 구성은 임시)
-- **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로 핵심 질문과 변수 목록을 보여줍니다. 내용은 [`frontend/data/drivers.json`](frontend/data/drivers.json)에서 읽습니다.
+- **Overview**: 6개 동인별 대표 지표 2개(서울 기준 최신값·전년동기 대비·최근 3년 추이)를 한 화면에 보여줍니다. 타일을 누르면 해당 동인 탭으로 갑니다.
+- **동인 탭 6개**: 서울 자치구 월세 리스크 데이터사전의 6개 동인(① 임차수요 압력 ~ ⑥ 거시경기·금융시장 여건)별로
+  - 보기 설정(지역: 시도/서울 구 · 기간: 3년/5년/전체 · 값: 수준/전년동기 대비)
+  - 변수 × 지역 최신값 요약표
+  - 변수별 시계열 차트(마우스·키보드로 값 읽기, 출처·전처리 방법)를 보여줍니다.
+  - 설명은 [`frontend/data/drivers.json`](frontend/data/drivers.json), 값은 [`frontend/data/factor_sample.json`](frontend/data/factor_sample.json)에서 읽습니다.
 - **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
 - **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
 - **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
@@ -30,12 +35,14 @@ realestate/
 │   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
 │   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
 │   ├─ data/drivers.json  # 6개 동인·변수 목록 (데이터사전 엑셀에서 추출)
+│   ├─ data/factor_sample.json # 동인 탭 값 샘플 (DFMBA 전처리본에서 추출)
 │   └─ js/
 │       ├─ config.js      # API 주소 (로컬/배포 자동 선택)
 │       ├─ theme-init.js  # 다크모드 초기값 (깜빡임 방지)
 │       ├─ i18n.js        # 한국어/English 문구 사전
 │       ├─ main.js        # 테마 전환 버튼
-│       ├─ factors.js     # 탭 전환(#overview, #demand …) · 동인 탭 화면
+│       ├─ charts.js      # 숫자 표시 규칙 · SVG 선 차트 · 스파크라인
+│       ├─ factors.js     # 탭 전환(#overview, #demand …) · Overview 타일 · 동인 탭 화면
 │       └─ demo.js        # API 호출·결과 표시
 ├─ backend/               # Render (Root Directory)
 │   ├─ requirements.txt
@@ -120,6 +127,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 
 구현 내용·출처·API 응답·수집 운영은 [정성 자료 가이드](docs/qualitative-guide.md), Supabase 연결과 테이블은 [DB 설명](database/README.md)을 참고하세요.
 
+- 동인 탭 값(`frontend/data/factor_sample.json`)은 [DFMBA](https://github.com/ksroh1913/DFMBA) 파이프라인의 `데이터취합_전처리_YYYYMMDD.xlsx`(1차_결측보완 시트)에서 뽑은 **샘플**입니다(시도 서울·경기·부산, 서울 구 강남·마포·노원, 2016년~). 새 전처리본이 나오면 `python scripts/build_factor_sample.py <엑셀 경로>`로 다시 만듭니다. 국토부 실거래 신고건수(V006·V007)의 최근 3개월은 신고기한 때문에 잠정값으로 표시합니다.
 - 기초/정책/연혁 원본은 `frontend/data/knowledge.json`, `frontend/data/policies.json`, `frontend/data/policy-history.json`입니다. 연혁 수정 후 `python scripts/check_history_data.py`로 형식을 검사하고, `python scripts/sync_qualitative_data.py`로 Render 배포용 `backend/data/` 사본도 갱신합니다.
 - 실제 발표 수집: 저장소 루트에서 `python scripts/collect_policies.py --export frontend/data/monitor.json`. 수집은 DB에 기록하고, 옵션의 JSON은 프론트 서버 연결 실패 시 표시할 실제 수집 스냅샷입니다.
 - Supabase 연결 전에는 SQLite를 사용합니다. Render의 임시 디스크는 재배포 시 수집 이력이 사라질 수 있으므로, 누적 모니터링 운영 전 `DATABASE_URL`을 연결합니다.
