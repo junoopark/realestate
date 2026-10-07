@@ -327,30 +327,16 @@ code {
   color: var(--ink-soft);
 }
 
-/* ── 대시보드 틀: 한 화면에 3 x 2 타일 (index.html, body.frame) ── */
-body.frame {
-  height: 100vh;
-  height: 100dvh;            /* 모바일 주소창을 뺀 실제 화면 높이 */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;          /* 페이지 자체는 스크롤하지 않는다 */
-}
-.frame .site-header { flex: none; padding: 12px 24px; }
-
-.tiles {
-  flex: 1;
-  min-height: 0;             /* flex 자식이 내용 때문에 화면 밖으로 밀려나지 않게 한다 */
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding: 18px 24px 24px;
-}
+/* ── Overview 틀: 2열 타일 (월세 가격 1행 + 6개 동인 3행), 페이지를 스크롤한다 ── */
+.overview { max-width: 1440px; margin: 0 auto; padding: 0 24px 48px; }
+.overview .filter-bar { margin-top: 0; }
+.overview-heading { margin: 22px 2px 10px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.overview-heading span { margin-left: 8px; font-size: 12.5px; font-weight: 400; color: var(--ink-soft); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .tile {
-  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -373,7 +359,7 @@ body.frame {
   background: var(--brand);
 }
 .tile-head h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-.tile-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 18px 18px; }   /* 내용이 넘치면 타일 안에서만 스크롤 */
+.tile-body { flex: 1; min-width: 0; padding: 8px 18px 14px; }
 
 /* 준비 중 타일: 제목·축 자리의 옅은 뼈대 + 안내 문구 */
 .tile-placeholder {
@@ -403,34 +389,20 @@ body.frame {
 }
 @keyframes shimmer { to { background-position: 250% 0; } }
 
-/* ── Overview 동인 요약 타일 (factors.js renderOverview) ── */
+/* ── Overview 차트 타일 (factors.js renderOverview) ── */
+.tile-head { flex-wrap: wrap; min-height: 46px; }
 .tile-head h2 a { color: inherit; text-decoration: none; }
 .tile-head h2 a:hover { color: var(--brand); }
-.tile-scope { margin-left: auto; font-size: 12px; color: var(--ink-soft); }
-.tile-body:has(.kpi) { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+.tile-head .seg { margin-left: auto; }
+.tile-head .seg + .tile-scope { margin-left: 0; }
+.tile-scope { margin-left: auto; padding: 0 8px; border-radius: 6px; background: var(--chip-bg); font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.tile-scope:empty { display: none; }
 .tile-question { font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
-.kpi {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--chip-bg);
-  color: inherit;
-  font-weight: 400;
-  text-decoration: none;
-  transition: background-color 0.15s;
-}
-.kpi:hover { background: var(--chip-hover); color: inherit; }
-.kpi-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
-.kpi-name { font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kpi-value { font-size: clamp(18px, 1.8vw, 24px); font-weight: 700; letter-spacing: -0.02em; }
-.kpi-meta { font-size: 12px; color: var(--ink-soft); }
-.spark { flex: none; overflow: visible; }
-.spark-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.tile-metric { margin-top: 6px; font-size: 14px; }
+.tile-metric span { margin-left: 8px; font-size: 12px; color: var(--ink-soft); }
+.tile-readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-bottom: 8px; }
+.kpi-value { font-size: clamp(22px, 2vw, 28px); font-weight: 700; letter-spacing: -0.02em; }
+.kpi-meta { font-size: 12.5px; color: var(--ink-soft); }
 
 /* ── 동인 탭 (index.html #view-factor, factors.js) ── */
 .factor { max-width: 1440px; margin: 0 auto; padding: 20px 24px 48px; }
@@ -559,7 +531,8 @@ body.frame {
 .chart svg:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
 .chart-grid line { stroke: var(--line); stroke-width: 1; }
 .chart-grid line.zero { stroke: var(--ink-soft); stroke-opacity: 0.6; }
-.chart-grid text, .chart-axis text { fill: var(--ink-soft); font-size: 11px; font-family: inherit; }
+.chart-grid text, .chart-axis text { fill: var(--ink-soft); font-size: 12px; font-family: inherit; }
+.chart-axis line { stroke: var(--line-strong); stroke-width: 1; }
 .chart-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart-line-prov { stroke-dasharray: 3 4; }
 .chart-prov-band { fill: var(--chip-bg); }
@@ -601,21 +574,18 @@ body.frame {
 
 /* ── 타일별 스타일은 이 아래에 「타일 이름」 주석으로 구분해 추가한다 ── */
 
-/* 화면이 낮으면(가로 모드 휴대폰 등) 억지로 맞추지 않고 스크롤을 허용한다 */
-@media (max-height: 520px) {
-  body.frame { height: auto; overflow: auto; }
-  .tiles { grid-template-rows: repeat(2, minmax(220px, 1fr)); }
+/* 좁은 화면: Overview 타일을 1열로 쌓는다 */
+@media (max-width: 900px) {
+  .tiles { grid-template-columns: 1fr; }
 }
 
-/* 좁은 화면(휴대폰): 3 x 2 는 읽기 어려워 1열로 쌓고, 페이지를 스크롤한다 */
 @media (min-width: 721px) {
   .site-header { flex-wrap: nowrap; padding-left: 24px; padding-right: 24px; }
 }
 
 @media (max-width: 720px) {
-  body.frame { height: auto; overflow: auto; }
-  .tiles { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: minmax(200px, auto); padding: 12px 16px 20px; }
-  .frame .site-header { padding: 10px 16px; }
+  .overview { padding: 0 16px 32px; }
+  .tile-body { padding: 8px 14px 12px; }
   .header-right { width: 100%; flex-wrap: nowrap; }
   .site-header nav { flex: 1; min-width: 0; }
   .factor { padding: 14px 16px 32px; }

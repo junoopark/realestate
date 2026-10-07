@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="frame">
+<body>
   <header class="site-header">
     <h1 data-i18n="index.h1">DFMBA 한국 주택시장 101</h1>
     <div class="header-right">
@@ -27,42 +27,69 @@
   </header>
 
   <!--
-    Overview: 6개 동인별 요약 타일 (3 x 2, 한 화면). 타일 순서·id 는 동인 탭과 같다.
-    - 각 타일의 본문(<div class="tile-body" data-tile="동인 id">)은 factors.js 가 대표 지표 2개(서울 기준)로 채운다.
-    - 대표 지표는 factors.js 의 HEADLINES 에서 바꾼다.
+    Overview: 맨 위에 월세가격지수·변화율(1행 2열), 그 아래 6개 동인 타일. 타일 하나에 큰 차트 하나.
+    - 각 타일의 본문(<div class="tile-body" data-tile="...">)은 factors.js 의 renderOverview 가 채운다.
+    - 동인별 대표 지표는 factors.js 의 HEADLINES 에서 바꾼다. 타일 순서·id 는 동인 탭과 같다.
   -->
-  <main class="tiles" id="view-overview">
+  <main class="overview" id="view-overview">
+    <div id="overview-filter"></div>
 
-    <section class="tile" id="tile-demand" aria-labelledby="tile-demand-title">
-      <header class="tile-head"><h2 id="tile-demand-title"><a href="#demand">① 임차수요 압력</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="demand"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+    <h2 class="overview-heading">월세 가격</h2>
+    <div class="tiles">
 
-    <section class="tile" id="tile-supply" aria-labelledby="tile-supply-title">
-      <header class="tile-head"><h2 id="tile-supply-title"><a href="#supply">② 주택공급·재고 여건</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="supply"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+      <section class="tile" id="tile-rent-level" aria-labelledby="tile-rent-level-title">
+        <header class="tile-head"><h2 id="tile-rent-level-title">월세가격지수</h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="rent-level"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
 
-    <section class="tile" id="tile-finance" aria-labelledby="tile-finance-title">
-      <header class="tile-head"><h2 id="tile-finance-title"><a href="#finance">③ 금융여건·상대가격</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="finance"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+      <section class="tile" id="tile-rent-change" aria-labelledby="tile-rent-change-title">
+        <header class="tile-head">
+          <h2 id="tile-rent-change-title">월세가격지수 변화율</h2>
+          <div class="seg" id="rent-change-seg" role="group" aria-label="변화율 기준">
+            <button type="button" data-value="yoy">전년동월 대비</button>
+            <button type="button" data-value="mom">전월 대비</button>
+          </div>
+          <span class="tile-scope"></span>
+        </header>
+        <div class="tile-body" data-tile="rent-change"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
 
-    <section class="tile" id="tile-rental" aria-labelledby="tile-rental-title">
-      <header class="tile-head"><h2 id="tile-rental-title"><a href="#rental">④ 임대시장 수급·전환 구조</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="rental"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+    </div>
 
-    <section class="tile" id="tile-trigger" aria-labelledby="tile-trigger-title">
-      <header class="tile-head"><h2 id="tile-trigger-title"><a href="#trigger">⑤ 시장과열·단기 트리거</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="trigger"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+    <h2 class="overview-heading">6개 동인 <span>동인별 대표 지표 · 제목을 누르면 그 동인의 전체 변수를 봅니다</span></h2>
+    <div class="tiles">
 
-    <section class="tile" id="tile-macro" aria-labelledby="tile-macro-title">
-      <header class="tile-head"><h2 id="tile-macro-title"><a href="#macro">⑥ 거시경기·금융시장 여건</a></h2><span class="tile-scope">서울</span></header>
-      <div class="tile-body" data-tile="macro"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-    </section>
+      <section class="tile" id="tile-demand" aria-labelledby="tile-demand-title">
+        <header class="tile-head"><h2 id="tile-demand-title"><a href="#demand">① 임차수요 압력</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="demand"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
 
+      <section class="tile" id="tile-supply" aria-labelledby="tile-supply-title">
+        <header class="tile-head"><h2 id="tile-supply-title"><a href="#supply">② 주택공급·재고 여건</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="supply"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
+
+      <section class="tile" id="tile-finance" aria-labelledby="tile-finance-title">
+        <header class="tile-head"><h2 id="tile-finance-title"><a href="#finance">③ 금융여건·상대가격</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="finance"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
+
+      <section class="tile" id="tile-rental" aria-labelledby="tile-rental-title">
+        <header class="tile-head"><h2 id="tile-rental-title"><a href="#rental">④ 임대시장 수급·전환 구조</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="rental"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
+
+      <section class="tile" id="tile-trigger" aria-labelledby="tile-trigger-title">
+        <header class="tile-head"><h2 id="tile-trigger-title"><a href="#trigger">⑤ 시장과열·단기 트리거</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="trigger"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
+
+      <section class="tile" id="tile-macro" aria-labelledby="tile-macro-title">
+        <header class="tile-head"><h2 id="tile-macro-title"><a href="#macro">⑥ 거시경기·금융시장 여건</a></h2><span class="tile-scope"></span></header>
+        <div class="tile-body" data-tile="macro"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      </section>
+
+    </div>
   </main>
 
   <!-- 동인 탭 화면: factors.js 가 선택한 동인의 설명과 변수 카드를 그린다 -->

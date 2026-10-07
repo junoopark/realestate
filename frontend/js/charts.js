@@ -1,4 +1,4 @@
-// 동인 탭·Overview 공용: 숫자 표시 규칙, 시계열 변환, SVG 선 차트·스파크라인 (라이브러리 없이 그린다)
+// 동인 탭·Overview 공용: 숫자 표시 규칙, 시계열 변환, SVG 선 차트 (라이브러리 없이 그린다)
 // 색은 css/style.css 의 --series-1~3 (지역 비교는 최대 3개 계열, 다크모드는 따로 정한 색)
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -120,6 +120,17 @@ function periodLabel(p, long = false) {
   return long ? `${p}년` : p;
 }
 
+// 한 해에 기간이 몇 번 있는지와, 그 단위로 센 순서 번호 (x축 눈금을 연·반기 경계에 맞추는 데 쓴다)
+function periodOrdinal(p) {
+  const year = +p.slice(0, 4);
+  if (/^\d{4}-\d{2}$/.test(p)) return { perYear: 12, ord: year * 12 + +p.slice(5) - 1 };
+  if (/[QH]\d$/.test(p)) {
+    const perYear = p.includes("Q") ? 4 : 2;
+    return { perYear, ord: year * perYear + +p.slice(-1) - 1 };
+  }
+  return { perYear: 1, ord: year };
+}
+
 // 축 눈금 글자: 눈금이 깔끔한 값이므로 필요한 만큼만 소수점을 쓴다
 function fmtAxis(v) {
   return v.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
@@ -133,9 +144,6 @@ function lineChart(container, opts) {
   container.classList.add("chart");
   const width = Math.max(container.clientWidth, 240);
   const height = opts.height ?? 200;
-  const m = { top: 10, right: 12, bottom: 22, left: 52 };
-  const iw = width - m.left - m.right;
-  const ih = height - m.top - m.bottom;
   const n = opts.periods.length;
 
   const all = opts.series.flatMap((s) => s.values).filter((v) => v != null);
@@ -150,6 +158,11 @@ function lineChart(container, opts) {
     hi = Math.max(hi, 0);
   }
   const ticks = niceTicks(lo, hi);
+  // y축 글자가 잘리지 않도록 가장 긴 눈금 글자에 맞춰 왼쪽 여백을 잡는다
+  const tickText = ticks.map((t) => (opts.valueFmt ? opts.valueFmt(t, true) : fmtNumber(t)));
+  const m = { top: 10, right: 14, bottom: 28, left: Math.max(36, Math.max(...tickText.map((s) => s.length)) * 7 + 14) };
+  const iw = width - m.left - m.right;
+  const ih = height - m.top - m.bottom;
   const y0 = ticks[0];
   const y1 = ticks[ticks.length - 1];
   const x = (i) => m.left + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
@@ -160,20 +173,27 @@ function lineChart(container, opts) {
 
   // 눈금선·y축 글자 (옅게)
   const grid = svgEl("g", { class: "chart-grid" });
-  for (const t of ticks) {
+  ticks.forEach((t, k) => {
     grid.append(svgEl("line", { x1: m.left, x2: width - m.right, y1: y(t), y2: y(t), class: t === 0 && opts.zeroLine ? "zero" : "" }));
-    const label = svgEl("text", { x: m.left - 6, y: y(t), "text-anchor": "end", "dominant-baseline": "middle" });
-    label.textContent = opts.valueFmt ? opts.valueFmt(t, true) : fmtNumber(t);
+    const label = svgEl("text", { x: m.left - 8, y: y(t), "text-anchor": "end", "dominant-baseline": "middle" });
+    label.textContent = tickText[k];
     grid.append(label);
-  }
+  });
   svg.append(grid);
 
-  // x축 글자: 글자가 겹치지 않도록 폭 64px 마다 하나
+  // x축: 글자가 겹치지 않는 간격 중 연·반기·분기 경계에 맞는 것을 골라 눈금과 날짜를 적는다
   const xg = svgEl("g", { class: "chart-axis" });
-  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 64))));
-  for (let i = 0; i < n; i += step) {
-    const t = svgEl("text", { x: x(i), y: height - 6, "text-anchor": i === 0 ? "start" : "middle" });
-    t.textContent = periodLabel(opts.periods[i]);
+  const { perYear } = periodOrdinal(opts.periods[0]);
+  const steps = [1, 2, 3, 4, 6, 8, 12, 24, 36, 60, 120].filter((s) => (s < perYear ? perYear % s === 0 : s % perYear === 0));
+  const maxLabels = Math.max(2, Math.floor(iw / 52));
+  const step = steps.find((s) => n / s <= maxLabels) ?? steps[steps.length - 1];
+  const base = m.top + ih;
+  for (let i = 0; i < n; i++) {
+    const p = opts.periods[i];
+    if (periodOrdinal(p).ord % step !== 0) continue;
+    xg.append(svgEl("line", { x1: x(i), x2: x(i), y1: base, y2: base + 5 }));
+    const t = svgEl("text", { x: x(i), y: base + 19, "text-anchor": x(i) > width - 24 ? "end" : "middle" });
+    t.textContent = step >= perYear ? p.slice(0, 4) : periodLabel(p); // 1년 이상 간격이면 연도만
     xg.append(t);
   }
   svg.append(xg);
@@ -278,22 +298,6 @@ function lineChart(container, opts) {
       show((current < 0 ? n - 1 : current) + (e.key === "ArrowRight" ? 1 : -1));
     }
   });
-}
-
-// ── 스파크라인 (Overview 타일) ─────────────────────────
-function sparkline(values, color, width = 120, height = 32) {
-  const svg = svgEl("svg", { width, height, viewBox: `0 0 ${width} ${height}`, class: "spark", "aria-hidden": "true" });
-  const pts = values.map((v, i) => [i, v]).filter(([, v]) => v != null);
-  if (pts.length < 2) return svg;
-  const lo = Math.min(...pts.map((p) => p[1]));
-  const hi = Math.max(...pts.map((p) => p[1]));
-  const n = values.length - 1;
-  const x = (i) => 2 + (i / n) * (width - 6);
-  const y = (v) => (hi === lo ? height / 2 : 3 + (1 - (v - lo) / (hi - lo)) * (height - 6));
-  svg.append(svgEl("path", { d: pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(""), class: "spark-line", stroke: color }));
-  const [li, lv] = pts[pts.length - 1];
-  svg.append(svgEl("circle", { cx: x(li), cy: y(lv), r: 2.5, fill: color }));
-  return svg;
 }
 
 // 현재 테마의 계열 색 (CSS 변수)
