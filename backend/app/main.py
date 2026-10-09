@@ -8,7 +8,9 @@ load_dotenv()  # 로컬 개발용. backend/.env 가 있으면 읽어온다 (배�
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
+from app.db.session import get_engine, storage_info
 from app.routers import indicators, qualitative
 from app.services.content_store import initialize_storage
 
@@ -48,3 +50,16 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/health/db")
+def health_db():
+    """저장소 종류와 실제 연결 여부. 연결 문자열·오류 원문은 반환하지 않는다."""
+    try:
+        with get_engine().connect() as connection:
+            connection.execute(text("select 1"))
+        available = True
+    except Exception:
+        logging.getLogger(__name__).error("Database health check failed.")
+        available = False
+    return storage_info(available)

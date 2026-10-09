@@ -74,6 +74,7 @@ realestate/
 |---|---|---|---|
 | GET | `/` | 환영 메시지 | 200 |
 | GET | `/health` | 서버 생존 확인 | 200 |
+| GET | `/health/db` | 저장소 종류(sqlite/postgresql)·연결 여부 (연결 문자열은 반환하지 않음) | 200 |
 | GET | `/indicators` | 등록된 지표 목록 | 200 |
 | GET | `/indicators/{key}` | 지표 시계열 (최근 10년, 12시간 캐시) | 200 · 404 · 502 |
 | GET | `/knowledge` | 출처가 있는 부동산 기초 학습 콘텐츠 | 200 · 503 |
@@ -115,7 +116,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 
 | 플랫폼 | 설정 |
 |---|---|
-| Render | Root Directory `backend` · Build `pip install -r requirements.txt` · Start `uvicorn app.main:app --host 0.0.0.0 --port $PORT` · 환경변수 `ALLOWED_ORIGINS` = Vercel 주소, `ECOS_API_KEY`, `FRED_API_KEY` |
+| Render | Root Directory `backend` · Build `pip install -r requirements.txt` · Start `uvicorn app.main:app --host 0.0.0.0 --port $PORT` · 환경변수 `ALLOWED_ORIGINS` = Vercel 주소, `ECOS_API_KEY`, `FRED_API_KEY`, `DATABASE_URL` = Supabase Session pooler URL([설정 순서](database/README.md#supabase-연결-시-팀원이-할-일)) |
 | Vercel | Root Directory `frontend` · Framework Preset `Other` · 빌드 없음 |
 
 `main` 브랜치에 push하면 Vercel과 Render가 자동으로 다시 배포합니다.
@@ -129,4 +130,4 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 - 동인 탭 값(`frontend/data/factor_sample.json`)은 [DFMBA](https://github.com/ksroh1913/DFMBA) 파이프라인의 `데이터취합_전처리_YYYYMMDD.xlsx`(1차_결측보완 시트)에서 뽑은 **샘플**입니다(시도 서울·경기·부산, 서울 구 강남·마포·노원, 2016년~). 새 전처리본이 나오면 `python scripts/build_factor_sample.py <엑셀 경로>`로 다시 만듭니다. 국토부 실거래 신고건수(V006·V007)의 최근 3개월은 신고기한 때문에 잠정값으로 표시합니다.
 - 기초/정책/연혁 원본은 `frontend/data/knowledge.json`, `frontend/data/policies.json`, `frontend/data/policy-history.json`입니다. 연혁 수정 후 `python scripts/check_history_data.py`로 형식을 검사하고, `python scripts/sync_qualitative_data.py`로 Render 배포용 `backend/data/` 사본도 갱신합니다.
 - 실제 발표 수집: 저장소 루트에서 `python scripts/collect_policies.py --export frontend/data/monitor.json`. 수집은 DB에 기록하고, 옵션의 JSON은 프론트 서버 연결 실패 시 표시할 실제 수집 스냅샷입니다.
-- Supabase 연결 전에는 SQLite를 사용합니다. Render의 임시 디스크는 재배포 시 수집 이력이 사라질 수 있으므로, 누적 모니터링 운영 전 `DATABASE_URL`을 연결합니다.
+- Supabase 연결 전에는 SQLite를 사용합니다. Render의 임시 디스크는 재배포 시 수집 이력이 사라질 수 있으므로, 누적 모니터링 운영 전 `DATABASE_URL`을 연결하고 `python scripts/check_db.py --init`과 배포 주소의 `/health/db`로 확인합니다.

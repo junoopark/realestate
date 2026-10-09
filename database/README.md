@@ -43,11 +43,15 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 
 ## Supabase 연결 시 팀원이 할 일
 
-1. Supabase Connect → Session pooler의 PostgreSQL URL을 확인합니다.
-2. Render 서버 환경변수 DATABASE_URL에 URL을 저장합니다. 예: postgresql+psycopg://postgres.PROJECT:PASSWORD@HOST.pooler.supabase.com:5432/postgres
-3. 비밀번호의 @, /, # 등은 URL 인코딩합니다. URL·DB 비밀번호·관리자 토큰은 HTML·JS·GitHub에 넣지 않습니다.
-4. 서비스를 재시작합니다. DB 소유자 권한으로 4개 테이블을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다.
-5. /policies, /policies/monitor, /policies/history의 storage.type=postgresql, storage.available=true를 확인합니다. CLI 또는 관리자 API를 한 번 실행해 실제 정책 후보를 저장합니다.
+1. supabase.com에서 프로젝트를 만듭니다. Region은 Northeast Asia (Seoul), Database Password는 **영문 대소문자·숫자만 16자 이상**(자동 생성 버튼은 특수문자가 섞일 수 있어 쓰지 않음)으로 정하고 따로 적어 둡니다. 무료 프로젝트는 일주일 동안 활동이 없으면 일시정지되므로 대시보드에서 Resume합니다.
+2. 프로젝트 화면 위쪽 **Connect → Session pooler** 문자열을 복사해 두 곳을 고칩니다: 앞머리 `postgresql://` → `postgresql+psycopg://`, `[YOUR-PASSWORD]` → 비밀번호(대괄호까지 지움).
+   - 형식: `postgresql+psycopg://postgres.<프로젝트ref>:<비밀번호>@aws-<클러스터>-<region>.pooler.supabase.com:5432/postgres`
+   - Direct(`db.<ref>.supabase.co`)는 무료 플랜에서 IPv6 전용이라 Render에서 연결되지 않고, 포트 6543(Transaction pooler)은 서버리스용입니다. 사용자명은 `postgres`가 아니라 `postgres.<프로젝트ref>`입니다.
+3. 로컬: `backend/.env`의 `DATABASE_URL=` 뒤에 붙이고 저장소 루트에서 `python scripts/check_db.py --init`을 실행합니다. 마스킹된 URL(`***`), `연결 성공: postgresql`, 테이블 4개가 출력되면 됩니다. 위의 흔한 실수는 연결 전에 `!`로 표시합니다.
+4. Render: 서비스 → Environment에 Key `DATABASE_URL`, Value는 `.env`의 `=` 뒤 값(따옴표 없이)을 넣고 재배포합니다. 값을 빠뜨려도 배포는 Live가 되고 임시 디스크의 SQLite로 동작하므로 반드시 5번으로 확인합니다. URL·DB 비밀번호·관리자 토큰은 HTML·JS·GitHub에 넣지 않습니다.
+5. `https://<서비스>.onrender.com/health/db`가 `"type":"postgresql","available":true,"persistent":true`를 반환하는지 확인합니다. /policies, /policies/monitor, /policies/history의 storage도 같은 값입니다. 이어 CLI 또는 관리자 API를 한 번 실행해 실제 정책 후보를 저장하고, Supabase Table Editor에서 행을 확인합니다.
+
+앱 시작 시 DB 소유자 권한으로 4개 테이블을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다(`check_db.py --init`도 같은 작업). 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다.
 
 서버는 psycopg 3로 TLS 연결합니다. 브라우저에서 Supabase 익명 REST 테이블 접근을 사용하지 않고 RLS를 켭니다. FastAPI의 DB 소유자 연결로 읽고 씁니다. 별도 제한된 DB 역할을 쓰면 팀원이 테이블 권한과 RLS 정책을 설정해야 합니다.
 
