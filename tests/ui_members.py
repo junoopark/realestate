@@ -61,6 +61,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 class MockApi:
     def __init__(self):
         self.enabled = True
+        self.config_status = 200
         self.requests = []
         self.likes = {"V001": {A}, "V012": {B}}
         self.indicators = json.loads((ROOT / "frontend/data/drivers.json").read_text(encoding="utf-8"))["variables"]
@@ -87,6 +88,8 @@ class MockApi:
             return respond(status=204)
         self.requests.append((method, path, token))
         if path == "/members/config":
+            if self.config_status != 200:
+                return respond(status=self.config_status)
             return respond({"enabled": self.enabled, "supabase_url": "https://test-project.supabase.co" if self.enabled else "",
                             "supabase_publishable_key": "sb_publishable_test_only_not_a_real_key" if self.enabled else "", "provider": "google"})
         if path == "/members/me":
@@ -151,6 +154,7 @@ def main():
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
 
+            run_guest_indicator_checks(page, api, base)
             run_likes_checks(page, api, base)
             run_download_checks(page, api, base)
             run_callback_checks(page, base)
@@ -159,10 +163,64 @@ def main():
             assert not errors, errors
             browser.close()
             print(json.dumps({"member_ui": "passed", "mode": "isolated test-only mock OAuth/API", "javascript_errors": errors,
+                              "guest_indicators": {"overview_charts": 8, "driver_charts": 52,
+                                                   "auth_states": ["ready", "unavailable", "error"]},
                               "mobile_widths": [320, 390, 760], "screenshots": str(OUT)}, ensure_ascii=True))
     finally:
         server.shutdown()
         server.server_close()
+
+
+def run_guest_indicator_checks(page, api, base):
+    """Browsing every indicator must remain independent of login availability."""
+    expected_cards = {"demand": 7, "supply": 8, "finance": 14,
+                      "rental": 6, "trigger": 5, "macro": 12}
+    request_start = len(api.requests)
+    try:
+        for auth_state, enabled, config_status in [("ready", True, 200),
+                                                    ("unavailable", False, 200),
+                                                    ("error", True, 503)]:
+            api.enabled, api.config_status = enabled, config_status
+            page.goto(base + "index.html", wait_until="domcontentloaded")
+            page.wait_for_function("expected => window.MemberAuth && MemberAuth.state.status === expected", arg=auth_state)
+            assert page.evaluate("MemberAuth.state.user") is None
+            expect(page.locator("#view-overview")).to_be_visible()
+            expect(page.locator("#view-overview .chart-box svg")).to_have_count(8)
+            expect(page.locator("#view-overview .tile-placeholder")).to_have_count(0)
+
+            # A guest can use the same period and change-rate controls as a member.
+            page.locator("#overview-filter").get_by_role("button", name="전체", exact=True).click()
+            page.locator('#rent-change-seg [data-value="mom"]').click()
+            expect(page.locator('#rent-change-seg [data-value="mom"]')).to_have_attribute("aria-pressed", "true")
+            expect(page.locator("#view-overview .chart-box svg")).to_have_count(8)
+            visited_ids = set()
+            for driver, count in expected_cards.items():
+                page.locator(f'#view-nav [data-view="{driver}"]').click()
+                expect(page.locator("#view-factor")).to_be_visible()
+                expect(page.locator("#view-overview")).to_be_hidden()
+                expect(page.locator("#view-factor .var-card")).to_have_count(count)
+                expect(page.locator("#view-factor .chart-box svg")).to_have_count(count)
+                expect(page.locator("#view-factor .summary tbody tr")).to_have_count(count)
+                visited_ids.update(page.locator("#view-factor .var-card").evaluate_all("cards => cards.map(card => card.id)"))
+                expect(page.locator('[data-like-id][aria-pressed="true"]')).to_have_count(0)
+
+            assert len(visited_ids) == 52
+            # Region and value controls also work while authentication is offline.
+            page.locator("#view-factor .filter-bar").get_by_role("button", name="서울 구", exact=False).click()
+            page.locator("#view-factor .filter-bar").get_by_role("button", name="전년동기 대비", exact=True).click()
+            expect(page.locator("#view-factor .chart-box svg")).to_have_count(expected_cards["macro"])
+            assert page.evaluate("sessionStorage.getItem('test.oauth.options')") is None
+            assert page.url == base + "index.html#macro"
+            no_overflow(page)
+            if auth_state == "error":
+                page.screenshot(path=str(OUT / "guest-indicators-auth-offline.png"))
+            page.evaluate("localStorage.removeItem('factorView')")
+
+        guest_requests = api.requests[request_start:]
+        assert all(method == "GET" and token == "" for method, _, token in guest_requests)
+        assert not any(path.startswith("/members/downloads/") for _, path, _ in guest_requests)
+    finally:
+        api.enabled, api.config_status = True, 200
 
 
 def run_likes_checks(page, api, base):

@@ -181,12 +181,13 @@
       } else {
         button.textContent = state.status === "loading" ? "로그인 확인 중" : state.status === "unavailable" ? "로그인 준비 중" : state.status === "error" ? "로그인 다시 확인" : "Google 로그인";
         button.disabled = ["loading", "unavailable"].includes(state.status);
+        if (state.status === "ready") button.title = "자료 다운로드와 좋아요를 위한 Google 로그인";
         button.onclick = async () => { try { if (state.status === "error") await retry(); else await login(); } catch (error) { showNotice(error.message); } };
       }
       control.append(button);
     }
     for (const hint of document.querySelectorAll("[data-auth-hint]")) {
-      hint.textContent = state.user ? state.user.display_name + "님, 로그인되어 있습니다." : state.status === "unavailable" ? "로그인 기능을 준비 중입니다. 인기 지표와 자료 목록은 미리 볼 수 있어요." : state.status === "error" ? state.message : state.status === "loading" ? "로그인 상태를 확인하고 있습니다." : "Google 계정으로 로그인하고 자료를 내려받거나 유용한 지표에 좋아요를 남겨보세요.";
+      hint.textContent = state.user ? state.user.display_name + "님, 로그인되어 있습니다." : state.status === "unavailable" ? "로그인 기능을 준비 중입니다. 모든 지표는 로그인 없이 볼 수 있습니다." : state.status === "error" ? state.message : state.status === "loading" ? "지표는 로그인 없이 볼 수 있습니다. 로그인 상태를 확인하고 있습니다." : "모든 지표는 로그인 없이 볼 수 있습니다. Google 로그인은 자료 다운로드와 좋아요에 사용합니다.";
     }
   }
   function showNotice(message) {

@@ -5,6 +5,12 @@
 /* ── 색상 토큰: 라이트(기본) ─────────────────────────── */
 :root {
   color-scheme: light;
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont,
+               "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --content-width: 1440px;
+  --page-gutter: 24px;
+  --page-title-size: clamp(20px, 2.2vw, 24px);
+  --card-title-size: 15px;
   --bg: #f5f6f8;
   --bg-accent: rgba(31, 111, 104, 0.07);   /* 페이지 상단의 옅은 색 번짐 */
   --header-bg: rgba(245, 246, 248, 0.82);
@@ -79,8 +85,7 @@
 }
 
 body {
-  font-family: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont,
-               "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  font-family: var(--font-sans);
   background:
     radial-gradient(1200px 420px at 50% -120px, var(--bg-accent), transparent 70%) no-repeat,
     var(--bg);
@@ -120,6 +125,7 @@ a:hover { color: var(--brand-hover); }
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+.site-header h1 a { font: inherit; color: inherit; text-decoration: none; letter-spacing: inherit; }
 .site-header h1::before {          /* 로고: 둥근 사각형에서 집 모양을 오려낸 마크 (집 부분은 헤더 배경색이 비친다) */
   content: "";
   flex: none;
@@ -328,7 +334,7 @@ code {
 }
 
 /* ── Overview 틀: 2열 타일 (월세 가격 1행 + 6개 동인 3행), 페이지를 스크롤한다 ── */
-.overview { max-width: 1440px; margin: 0 auto; padding: 0 24px 48px; }
+.overview { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--page-gutter) 48px; }
 .overview .filter-bar { margin-top: 0; }
 .overview-heading { margin: 22px 2px 10px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
 .overview-heading span { margin-left: 8px; font-size: 12.5px; font-weight: 400; color: var(--ink-soft); }
@@ -358,7 +364,7 @@ code {
   border-radius: 2px;
   background: var(--brand);
 }
-.tile-head h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.tile-head h2 { font-size: var(--card-title-size); font-weight: 700; letter-spacing: -0.01em; }
 .tile-body { flex: 1; min-width: 0; padding: 8px 18px 14px; }
 
 /* 준비 중 타일: 제목·축 자리의 옅은 뼈대 + 안내 문구 */
@@ -405,12 +411,12 @@ code {
 .kpi-meta { font-size: 12.5px; color: var(--ink-soft); }
 
 /* ── 동인 탭 (index.html #view-factor, factors.js) ── */
-.factor { max-width: 1440px; margin: 0 auto; padding: 20px 24px 48px; }
+.factor { max-width: var(--content-width); margin: 0 auto; padding: 20px var(--page-gutter) 48px; }
 .factor-error { margin: 12px 24px; color: var(--err-ink); font-size: 14px; }
 
 .factor-hero { padding: 4px 2px 0; }
 .factor-top { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
-.factor-title { font-size: clamp(20px, 2.2vw, 24px); letter-spacing: -0.02em; }
+.factor-title { font-size: var(--page-title-size); letter-spacing: -0.02em; }
 .factor-question { margin-top: 4px; font-size: 16px; font-weight: 600; color: var(--brand); }
 .factor-desc { margin-top: 2px; color: var(--ink-soft); font-size: 13px; }
 
@@ -492,7 +498,7 @@ code {
   box-shadow: 0 1px 2px var(--shadow);
 }
 .var-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.var-name { font-size: 15px; line-height: 1.4; letter-spacing: -0.01em; }
+.var-name { font-size: var(--card-title-size); line-height: 1.4; letter-spacing: -0.01em; }
 .var-id { flex: none; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
 .var-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .badge {
@@ -584,11 +590,13 @@ code {
 }
 
 @media (max-width: 720px) {
-  .overview { padding: 0 16px 32px; }
+  :root { --page-gutter: 16px; }
+  .overview { padding: 0 var(--page-gutter) 32px; }
   .tile-body { padding: 8px 14px 12px; }
-  .header-right { width: 100%; flex-wrap: nowrap; }
-  .site-header nav { flex: 1; min-width: 0; }
-  .factor { padding: 14px 16px 32px; }
+  .header-right { width: 100%; flex-wrap: wrap; }
+  .site-header nav { flex: 1; flex-basis: 100%; min-width: 0; }
+  .member-account { margin-left: auto; }
+  .factor { padding: 14px var(--page-gutter) 32px; }
   .filter-bar { margin: 12px -16px 0; padding: 8px 16px; gap: 6px 12px; }
   .seg-group { max-width: 100%; }
   .var-card { padding: 14px; }
