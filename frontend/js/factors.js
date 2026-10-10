@@ -1,8 +1,8 @@
-// 탭 전환 (Overview ↔ 6개 동인) + 동인 탭 화면 + Overview 차트 타일 (index.html 전용)
+// 탭 전환 (Overview ↔ 6개 동인) + Overview(코멘터리·이달의 차트·동인 브리프) + 동인 탭(리서치 노트) (index.html 전용)
 // - data/drivers.json      : 동인·변수 설명 (데이터사전 엑셀의 동인분류_가이드·Driver_Map·Variable_Master)
 // - data/factor_sample.json: 실제 값 샘플 (DFMBA 전처리본, scripts/build_factor_sample.py 로 생성)
 // 주소 끝의 #id 로 탭을 고른다: #overview, #demand, #supply, #finance, #rental, #trigger, #macro
-// 숫자 표시·차트 함수는 charts.js 에 있다.
+// 숫자 표시·차트 함수는 charts.js, 설명 문장은 notes.js 에 있다.
 
 const viewNav = document.querySelector("#view-nav");
 const overviewView = document.querySelector("#view-overview");
@@ -38,7 +38,6 @@ const RANGE_YEARS = { 3: 3, 5: 5, all: Infinity };
 // Overview 타일에 보여줄 동인별 대표 지표 (변수 ID). 타일 하나에 차트 하나만 크게 그린다
 const HEADLINES = { demand: "V012", supply: "V023", finance: "V003", rental: "V005", trigger: "V037", macro: "V043" };
 const RENT_INDEX = "V001"; // Overview 맨 위 두 타일: 월세가격지수와 그 변화율
-const OVERVIEW_CHART_HEIGHT = 280;
 
 // 예상 부호: + 는 월세 리스크를 키우는 방향, - 는 낮추는 방향, ± 는 방향이 상황에 따라 다름
 function signClass(sign) {
@@ -192,45 +191,89 @@ function summaryTable(list) {
   return wrap;
 }
 
+// ── 공용 조각 ─────────────────────────────────────────
+// 메타 줄: '서울 · 경기 · 부산 | 2026년 8월'
+function metaLine(...parts) {
+  return el("p", "meta", parts.filter(Boolean).join(" | "));
+}
+
+// '자세히 »' 같은 파란 링크
+function moreLink(text, href) {
+  const a = el("a", "more", text);
+  a.href = href;
+  return a;
+}
+
+// 변수 하나의 대표 계열과 지역 (Overview 는 시도 기준, 서울 우선)
+function headlineMetric(varId) {
+  const m = metricsFor(varId, "sido").list[0];
+  if (!m) return null;
+  const region = m.series["서울"] ? "서울" : Object.keys(m.series)[0];
+  return { m, region, v: variables.find((x) => x.id === varId) };
+}
+
+// 차트 부제: 단위 · 주기 (변화를 그리면 변화 종류)
+function subtitleOf(m, change) {
+  const mode = yoyMode(m);
+  const unit = displayUnit(m.unit);
+  if (change) {
+    const name = change === "mom" ? "전월 대비" : changeName(m);
+    return `${name} ${mode === "pct" ? "증감률(%)" : mode === "diff-pp" ? "차이(%p)" : "증감"} · ${FREQ[m.freq]}`;
+  }
+  return `${unit || "지수"} · ${FREQ[m.freq]}`;
+}
+
+// 축 위 단위 표기
+function unitMark(m, change) {
+  if (change) return yoyMode(m) === "pct" ? "%" : yoyMode(m) === "diff-pp" ? "%p" : displayUnit(m.unit);
+  const u = displayUnit(m.unit);
+  return u.includes("=") ? "" : u.replace("연%", "%");
+}
+
+// 계열 → 리서치 차트. change: null(수준) | "yoy" | "mom"
+function drawMetric(box, m, regions, opts = {}) {
+  const colors = seriesColors();
+  const mode = yoyMode(m);
+  const lag = opts.change === "mom" ? 1 : YOY_LAG[m.freq];
+  const raw = regions.map((r) => m.series[r]);
+  const shown = opts.change ? raw.map((s) => yoySeries(s, lag, mode)) : raw;
+  const { periods, values } = sliceRange(m, shown);
+  figure(box, {
+    title: opts.title || metricTitle(m),
+    subtitle: opts.subtitle || subtitleOf(m, opts.change),
+    unitLabel: unitMark(m, opts.change),
+    source: opts.source,
+    periods,
+    provisionalAt: provisionalIndex(m, periods),
+    series: regions.map((r, k) => ({ name: r, values: values[k], color: colors[k] })),
+    valueFmt: chartFormatter(m, mode, !!opts.change),
+    zeroLine: !!opts.change,
+    height: opts.height ?? 240,
+    label: `${m.label} ${regions.join("·")} 추이`,
+  });
+}
+
+// ── 동인 탭: 변수 카드 (메타 → 헤드라인 → 차트 → 설명) ──────
 function variableCard(v) {
   const card = el("article", "var-card");
   card.id = `card-${v.id}`;
-
-  const head = el("header", "var-head");
-  head.append(el("h3", "var-name", v.name), el("span", "var-id", v.id));
-  card.append(head);
-
-  const badges = el("div", "var-badges");
-  if (v.sign) {
-    const b = el("span", `badge ${signClass(v.sign)}`, `부호 ${v.sign}`);
-    b.title = "예상 부호 (+: 월세 리스크를 키우는 방향)";
-    badges.append(b);
-  }
-  if (v.lead) badges.append(el("span", "badge", `선행 ${v.lead}`));
-  if (v.leakage && v.leakage !== "낮음") badges.append(el("span", "badge badge-warn", `Leakage ${v.leakage}`));
-  if (v.driver2) {
-    const d2 = drivers.find((d) => d.id === v.driver2);
-    if (d2) badges.append(el("span", "badge badge-ghost", `2차 ${NUMS[d2.no - 1]} ${d2.short}`));
-  }
-  card.append(badges);
-
   const { list, substituted, alias } = metricsFor(v.id, state.mode);
-  if (alias) card.append(el("p", "var-note", `${alias}와 같은 원표(R-ONE)라 ${alias} 계열을 보여줍니다.`));
-  if (substituted) {
-    card.append(el("p", "var-note", state.mode === "gu" ? "서울 구 단위 자료가 없어 시도 기준으로 보여줍니다." : "시도 단위 자료가 없어 서울 구 기준으로 보여줍니다."));
-  }
+
+  const meta = el("p", "meta");
+  meta.textContent = [v.id, v.name.replace(/_/g, " "), v.sign ? `예상 부호 ${v.sign}` : null, v.lead ? `선행 ${v.lead}` : null].filter(Boolean).join(" | ");
+  const headline = el("h3", "card-headline");
+  card.append(meta, headline);
+
   if (!list.length) {
-    card.append(el("p", "chart-empty", "샘플 데이터에 이 변수의 계열이 없습니다."));
+    headline.textContent = v.name;
+    card.append(el("p", "card-prose", "샘플 데이터에 이 변수의 계열이 없습니다. " + variableProse(v)));
     card.append(metaList(v, null));
     return card;
   }
 
-  // 같은 변수 안의 여러 열(예: 월세·전세·전체 건수)은 버튼으로 고른다
+  // 같은 변수 안의 여러 열(예: 월세·전세·전체 건수)은 글자 탭으로 고른다
   let active = 0;
   const tabs = el("div", "metric-tabs");
-  const readout = el("div", "readout");
-  const chartBox = el("div", "chart-box");
-  const metaBox = el("div");
   if (list.length > 1) {
     list.forEach((m, k) => {
       const b = el("button", null, metricTitle(m).replace(/^(국토부실거래|부동산원|주민등록인구|경제활동인구조사|임대주택공급|소비자동향조사|주택건설)\s*/, ""));
@@ -246,50 +289,32 @@ function variableCard(v) {
     });
     card.append(tabs);
   }
-  const unitLine = el("p", "var-unit");
-  card.append(unitLine, readout, chartBox);
-  if (list.some((m) => m.provisional_from)) {
-    card.append(el("p", "var-note", `최근 3개월(${periodLabel(list[0].provisional_from)}~)은 신고기한(계약 후 30일)·해제 시차로 아직 바뀌는 잠정값입니다. 점선으로 표시하고, 최신값·전년동기 대비는 확정 월 기준입니다.`));
-  }
-  card.append(metaBox);
+  const chartBox = el("div", "chart-box");
+  const prose = el("div", "card-prose");
+  const metaBox = el("div");
+  card.append(chartBox, prose, metaBox);
 
   function draw() {
     const m = list[active];
-    const colors = seriesColors();
     const regions = Object.keys(m.series);
-    const mode = yoyMode(m);
-    const yoy = state.view === "yoy";
-    const raw = regions.map((r) => m.series[r]);
-    const shown = yoy ? raw.map((s) => yoySeries(s, YOY_LAG[m.freq], mode)) : raw;
-    const { periods, values } = sliceRange(m, shown);
+    const d = describe(v, m, regions[0]);
+    headline.textContent = d.headline;
+    drawMetric(chartBox, m, regions, { change: state.view === "yoy" ? "yoy" : null, source: sourceLine(v, m) });
 
-    const unit = displayUnit(m.unit);
-    unitLine.textContent = yoy
-      ? `${metricTitle(m)} · 전년동기 대비 ${mode === "pct" ? "증감률(%)" : mode === "diff-pp" ? "차이(%p)" : "증감"} · ${FREQ[m.freq]}`
-      : `${metricTitle(m)} · ${FREQ[m.freq]}${unit.includes("=") ? ` · ${unit}` : ""}`;
-
-    // 지역별 최신값 (범례 겸용: 색 표시 + 지역 이름 + 값)
-    readout.replaceChildren();
-    regions.forEach((r, k) => {
+    prose.replaceChildren();
+    const p1 = el("p", null, d.body.join(" "));
+    // 다른 지역 최신값 한 줄
+    const others = regions.slice(1).map((r) => {
       const l = latestOf(m, r);
-      const item = el("div", "readout-item");
-      const key = el("span", "readout-key");
-      key.style.background = colors[k];
-      item.append(key, el("span", "readout-region", r));
-      item.append(el("strong", "readout-value", l ? fmtValue(l.value, m.unit) : "–"));
-      if (l?.change != null) item.append(el("span", "readout-chg", `${l.change > 0 ? "▲" : l.change < 0 ? "▼" : ""} ${fmtChange(l.change, l.mode, m.unit)}`));
-      if (l) item.append(el("span", "readout-period", periodLabel(l.period)));
-      readout.append(item);
-    });
-
-    lineChart(chartBox, {
-      periods,
-      provisionalAt: provisionalIndex(m, periods),
-      series: regions.map((r, k) => ({ name: r, values: values[k], color: colors[k] })),
-      valueFmt: chartFormatter(m, mode, yoy),
-      zeroLine: yoy,
-      label: `${v.name} ${regions.join("·")} ${yoy ? "전년동기 대비" : ""} 추이`,
-    });
+      return l ? `${r} ${fmtValue(l.value, m.unit)}${l.change != null ? `(${fmtChange(l.change, l.mode, m.unit)})` : ""}` : null;
+    }).filter(Boolean);
+    if (others.length) p1.textContent += ` 같은 시점 ${others.join(", ")}입니다.`;
+    prose.append(p1, el("p", "muted", variableProse(v)));
+    const notes = [];
+    if (alias) notes.push(`${alias}와 같은 원표(R-ONE)라 ${alias} 계열을 보여줍니다.`);
+    if (substituted) notes.push(state.mode === "gu" ? "서울 구 단위 자료가 없어 시도 기준으로 보여줍니다." : "시도 단위 자료가 없어 서울 구 기준으로 보여줍니다.");
+    if (m.provisional_from) notes.push(`최근 3개월(${periodLabel(m.provisional_from)}~)은 신고기한(계약 후 30일)·해제 시차로 아직 바뀌는 잠정값이라 점선으로 표시하고, 문장의 최신값은 확정 월 기준입니다.`);
+    for (const n of notes) prose.append(el("p", "note", n));
     metaBox.replaceChildren(metaList(v, m));
   }
   card._draw = draw;
@@ -317,109 +342,266 @@ function metaList(v, m) {
   return details;
 }
 
+// 동인 핵심 포인트: 최근 3년 최고·최저인 지표를 먼저, 나머지는 사전 순서대로 최대 5개
+function keyPoints(list) {
+  const items = [];
+  for (const v of list) {
+    const m = metricsFor(v.id, state.mode).list[0];
+    if (!m) continue;
+    const region = Object.keys(m.series)[0];
+    const d = describe(v, m, region);
+    if (!d.latest) continue;
+    const pos = recentPosition(m, region);
+    items.push({ text: d.headline, rank: pos === "최근 3년 최고" || pos === "최근 3년 최저" ? 0 : 1, id: v.id });
+  }
+  return items.sort((a, b) => a.rank - b.rank).slice(0, 5);
+}
+
+// ── 동인 탭 화면 (리서치 노트 형식) ─────────────────────
 function renderFactor(driver) {
   const list = variables.filter((v) => v.driver === driver.id);
   factorView.replaceChildren();
+  const wrap = el("div", "container");
 
-  const hero = el("section", "factor-hero");
-  const top = el("div", "factor-top");
-  top.append(el("h2", "factor-title", `${NUMS[driver.no - 1]} ${driver.name}`), el("span", "badge badge-ghost", driver.position));
-  hero.append(top);
-  hero.append(el("p", "factor-question", driver.question));
-  const sub = el("p", "factor-desc");
-  sub.textContent = `${driver.description} · 하위영역: ${driver.subareas.join(", ")} · 변수 ${list.length}개`;
-  hero.append(sub);
-  factorView.append(hero);
+  const crumb = el("p", "crumb");
+  crumb.append(moreLink("Overview", "#overview"), document.createTextNode(" › "), el("span", null, `${NUMS[driver.no - 1]} ${driver.name}`));
+  wrap.append(crumb);
 
-  factorView.append(filterBar());
-  factorView.append(summaryTable(list));
+  const split = el("div", "split");
+  const note = el("article", "note-main");
+  note.append(metaLine(driver.position, `변수 ${list.length}개`, `자료 ${sample.generated.split("|")[0].trim()} 생성`));
+  note.append(el("h2", "note-title", `${NUMS[driver.no - 1]} ${driver.name}`));
+  note.append(el("p", "note-dek", driver.question));
+  note.append(el("p", null, `${driver.description}. 데이터사전에서 이 동인은 '${driver.position}'으로 분류되며, 주요 하위영역은 ${driver.subareas.join(", ")}입니다. 분류 원칙: ${driver.principle}.`));
+  note.append(el("h3", "note-sub", "핵심 포인트"));
+  const ul = el("ul", "bullets");
+  for (const k of keyPoints(list)) {
+    const li = el("li");
+    const a = el("a", null, k.text);
+    a.href = `#${driver.id}`;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(`card-${k.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    li.append(a);
+    ul.append(li);
+  }
+  note.append(ul);
+  note.append(el("p", "byline", `기준: ${state.mode === "gu" ? "서울 구 " + sample.regions.gu[0] : "시도 " + sample.regions.sido[0]} 첫 계열 · 최근 3년 최고·최저인 지표를 먼저 보여줍니다`));
+  split.append(note);
 
+  // 오른쪽: 다른 동인 코멘터리 목록
+  const side = el("aside", "side");
+  const sh = el("div", "sec-head");
+  sh.append(el("h2", "sec-title sm", "다른 동인"));
+  side.append(sh);
+  side.append(driverList(drivers.filter((d) => d.id !== driver.id)));
+  split.append(side);
+  wrap.append(split);
+
+  wrap.append(el("hr", "rule"));
+  const th = el("div", "sec-head");
+  th.append(el("h2", "sec-title", "주요 지표"));
+  wrap.append(th);
+  wrap.append(filterBar());
+  wrap.append(summaryTable(list));
+
+  wrap.append(el("hr", "rule"));
+  const ch = el("div", "sec-head");
+  ch.append(el("h2", "sec-title", "차트와 해설"));
+  wrap.append(ch);
   const grid = el("div", "var-grid");
   const cards = list.map(variableCard);
   grid.append(...cards);
-  factorView.append(grid);
-  factorView.append(el("p", "data-note", `자료: ${sample._source}. 생성 ${sample.generated.split("|")[0].trim()}. 전처리본의 보완값이 포함되어 있으며 각 카드의 '출처·처리 방법'에서 방법을 확인할 수 있습니다.`));
+  wrap.append(grid);
+  wrap.append(el("p", "data-note", `자료: ${sample._source}. 생성 ${sample.generated.split("|")[0].trim()}. 전처리본의 보완값이 포함되어 있으며 각 카드의 '출처·처리 방법'에서 방법을 확인할 수 있습니다. 해설 문장은 수치에서 자동으로 만들며, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.`));
+  factorView.append(wrap);
 
   // 너비가 정해진 뒤에 그린다
   for (const c of cards) c._draw?.();
 }
 
-// ── Overview 타일 ─────────────────────────────────────
-const shortLabel = (m) => m.label.replace(/^(국토부실거래|주민등록인구|인구이동|주택건설|소비자동향조사)\s*/, "").replace(/\(구지수연결\)$/, "");
-
-// 타일 하나: 지표 이름·단위, 최신값 한 줄, 축과 날짜가 있는 큰 선 차트 (서울, 없으면 전국 한 계열)
-// change: null 이면 수준, "yoy"·"mom" 이면 전년동월·전월 대비 변화
-function overviewTile(id, m, change, question) {
-  const body = document.querySelector(`[data-tile="${id}"]`);
-  if (!body) return;
-  body.replaceChildren();
-  if (!m) {
-    body.append(el("p", "chart-empty", "샘플 데이터에 이 지표의 계열이 없습니다."));
-    return;
+// 동인 목록 (제목 = 대표 지표 헤드라인, 메타 = 동인 이름 | 기준시점)
+function driverList(list) {
+  const ul = el("ul", "side-list");
+  for (const d of list) {
+    const h = headlineMetric(HEADLINES[d.id]);
+    const li = el("li");
+    const a = el("a", "side-title");
+    a.href = `#${d.id}`;
+    const desc = h ? describe(h.v, h.m, h.region) : null;
+    a.textContent = desc ? desc.headline : d.name;
+    li.append(a, metaLine(`${NUMS[d.no - 1]} ${d.short}`, desc?.latest ? periodLabel(desc.latest.period, true) : null));
+    ul.append(li);
   }
-  const region = m.series["서울"] ? "서울" : Object.keys(m.series)[0];
-  body.closest(".tile").querySelector(".tile-scope").textContent = region;
-
-  const mode = yoyMode(m);
-  const lag = change === "mom" ? 1 : YOY_LAG[m.freq];
-  const changeName = change === "mom" ? "전월 대비" : m.freq === "M" ? "전년동월 대비" : "전년동기 대비";
-  const shown = change ? yoySeries(m.series[region], lag, mode) : m.series[region];
-  const { periods, values } = sliceRange(m, [shown]);
-  const fmt = chartFormatter(m, mode, !!change);
-
-  if (question) body.append(el("p", "tile-question", question));
-  const unit = displayUnit(m.unit);
-  const metric = el("p", "tile-metric");
-  metric.append(el("strong", null, shortLabel(m)));
-  const kind = change ? `${changeName} ${mode === "pct" ? "증감률(%)" : mode === "diff-pp" ? "차이(%p)" : "증감"}` : unit || "지수";
-  metric.append(el("span", null, `${kind} · ${FREQ[m.freq]}`));
-  body.append(metric);
-
-  // 최신값 한 줄 (잠정 구간은 건너뛴 마지막 확정값)
-  const readout = el("p", "tile-readout");
-  const l = latestOf(m, region);
-  if (change) {
-    const i = shown.findLastIndex((v, k) => v != null && k < provisionalIndex(m));
-    readout.append(el("strong", "kpi-value", i < 0 ? "–" : fmt(shown[i])));
-    if (i >= 0) readout.append(el("span", "kpi-meta", `${periodLabel(m.periods[i], true)} · ${changeName}`));
-  } else {
-    readout.append(el("strong", "kpi-value", l ? fmtValue(l.value, m.unit) : "–"));
-    if (l) readout.append(el("span", "kpi-meta", `${periodLabel(l.period, true)} · ${changeName} ${fmtChange(l.change, l.mode, m.unit)}`));
-  }
-  body.append(readout);
-
-  const box = el("div", "chart-box");
-  body.append(box);
-  lineChart(box, {
-    periods,
-    provisionalAt: provisionalIndex(m, periods),
-    series: [{ name: region, values: values[0], color: seriesColors()[0] }],
-    valueFmt: fmt,
-    zeroLine: !!change,
-    height: OVERVIEW_CHART_HEIGHT,
-    label: `${shortLabel(m)} ${region} ${change ? changeName : ""} 추이`,
-  });
+  return ul;
 }
+
+// ── Overview ─────────────────────────────────────────
+// 맨 위 시장 코멘터리: 월세가격지수 (서울·경기·부산)
+function renderFeature() {
+  const box = document.querySelector("#ov-feature");
+  const m = metricsFor(RENT_INDEX, "sido").list[0];
+  const v = variables.find((x) => x.id === RENT_INDEX);
+  box.replaceChildren();
+  if (!m || !v) return;
+  const regions = Object.keys(m.series);
+  const d = describe(v, m, regions[0]);
+  const driver = drivers.find((x) => x.id === v.driver);
+
+  box.append(metaLine(regions.join(" · "), d.latest ? `${periodLabel(d.latest.period, true)} 기준` : null));
+  box.append(el("h3", "feature-title", d.headline));
+  const cols = el("div", "feature-cols");
+  const text = el("div", "feature-text");
+  const ul = el("ul", "bullets");
+  ul.append(el("li", null, d.body[0]));
+  for (const r of regions.slice(1)) {
+    const l = latestOf(m, r);
+    if (l) ul.append(el("li", null, `${r}는 ${fmtValue(l.value, m.unit)}로 ${changeName(m)} ${fmtChange(l.change, l.mode, m.unit)}입니다.`));
+  }
+  const pos = recentPosition(m, regions[0]);
+  if (pos) ul.append(el("li", null, `${regions[0]}의 현재 수준은 ${pos}${pos.endsWith("최고") || pos.endsWith("최저") ? "치" : ""}입니다.`));
+  if (v.role) ul.append(el("li", null, `데이터사전에서 이 지수의 역할은 '${v.role}'입니다.`));
+  text.append(ul);
+
+  const by = el("p", "byline");
+  by.append(document.createTextNode("by: DFMBA 자동 요약 | in: "));
+  by.append(moreLink(`${NUMS[driver.no - 1]} ${driver.name}`, `#${driver.id}`));
+  text.append(by);
+
+  const chartCol = el("div", "feature-chart");
+  const seg = el("div", "text-tabs");
+  seg.setAttribute("role", "group");
+  seg.setAttribute("aria-label", "차트 값");
+  for (const [val, label] of [["level", "수준"], ["yoy", "전년동월 대비"], ["mom", "전월 대비"]]) {
+    const b = el("button", null, label);
+    b.type = "button";
+    b.setAttribute("aria-pressed", String((state.rentChange || "level") === val));
+    b.addEventListener("click", () => {
+      state.rentChange = val;
+      saveState();
+      renderFeature();
+    });
+    seg.append(b);
+  }
+  const plot = el("div");
+  chartCol.append(seg, plot);
+  cols.append(text, chartCol);
+  box.append(cols);
+  const change = state.rentChange === "level" || !state.rentChange ? null : state.rentChange;
+  drawMetric(plot, m, regions, { title: "아파트 월세통합가격지수", change, height: 300, source: sourceLine(v, m) });
+}
+
+// 기간이 끝나는 달의 순번 (월·분기·반기·연을 한 줄로 비교하려고)
+function periodEndMonth(p) {
+  const { perYear, ord } = periodOrdinal(p);
+  const year = Math.floor(ord / perYear);
+  const k = ord % perYear;
+  return year * 12 + (k + 1) * (12 / perYear) - 1;
+}
+
+// 최근 기준시점 지표: 변수별 최신 기준시점이 늦은 순
+function renderReleases() {
+  const ul = document.querySelector("#ov-releases");
+  ul.replaceChildren();
+  const rows = [];
+  for (const v of variables) {
+    const h = headlineMetric(v.id);
+    if (!h) continue;
+    const l = latestOf(h.m, h.region);
+    if (!l) continue;
+    rows.push({ v, h, l, key: periodEndMonth(l.period) });
+  }
+  rows.sort((a, b) => b.key - a.key);
+  for (const { v, h, l } of rows.slice(0, 7)) {
+    const li = el("li");
+    const a = el("a", "side-title", `${v.name.replace(/_/g, " ")} (${periodLabel(l.period)})`);
+    a.href = `#${v.driver}`;
+    const meta = el("p", "meta");
+    meta.append(el("span", "src", (h.m.source || v.source || "").split(/\s*[\/|]\s*/)[0] || "출처 미기재"));
+    meta.append(document.createTextNode(` | ${h.region} ${fmtValue(l.value, h.m.unit)}`));
+    li.append(a, meta);
+    ul.append(li);
+  }
+}
+
+// 이달의 차트: 금리 3종 (모두 연%라 한 축에 그릴 수 있다)
+function renderGraphOfMonth() {
+  const box = document.querySelector("#ov-gow");
+  const note = document.querySelector("#ov-gow-note");
+  const ids = [["V043", "기준금리"], ["V045", "국고채 3년"], ["V056", "주택담보대출(신규)"]];
+  const ms = ids.map(([id]) => metricsFor(id, "sido").list[0]);
+  if (ms.some((m) => !m)) return;
+  // 기간을 합쳐 맞춘다
+  const periods = [...new Set(ms.flatMap((m) => m.periods))].sort();
+  const fake = { ...ms[0], periods, series: {} };
+  ids.forEach(([, name], k) => {
+    const m = ms[k];
+    const s = m.series[Object.keys(m.series)[0]];
+    fake.series[name] = periods.map((p) => s[m.periods.indexOf(p)] ?? null);
+  });
+  fake.provisional_from = null;
+  drawMetric(box, fake, ids.map(([, n]) => n), {
+    title: "금리: 기준금리 · 국고채 3년 · 주택담보대출",
+    subtitle: "연% · 월 · 전국",
+    height: 300,
+    source: "자료: 한국은행, DFMBA 전처리본(1차_결측보완)",
+  });
+  const lasts = ids.map(([, n]) => latestOf(fake, n));
+  const [base, ktb, mort] = lasts;
+  const parts = ids.map(([, n], k) => (lasts[k] ? `${n} ${fmtValue(lasts[k].value, "연%")}(${periodLabel(lasts[k].period)})` : null)).filter(Boolean);
+  let text = `최신값은 ${parts.join(", ")}입니다.`;
+  if (mort && ktb) {
+    const i = fake.periods.indexOf(mort.period);
+    const k3 = fake.series["국고채 3년"][i];
+    if (k3 != null) text += ` 같은 달(${periodLabel(mort.period, true)}) 주택담보대출 금리와 국고채 3년의 차이는 ${fmtNumber(mort.value - k3, 2)}%p입니다.`;
+  }
+  note.textContent = text;
+}
+
+// 동인 브리프 카드 (작은 차트 + 메타 + 헤드라인 + 한 줄 설명)
+function renderBriefs() {
+  const row = document.querySelector("#ov-briefs");
+  row.replaceChildren();
+  const cards = [];
+  for (const d of drivers) {
+    const h = headlineMetric(HEADLINES[d.id]);
+    const card = el("article", "brief");
+    const plot = el("div", "brief-plot");
+    card.append(plot);
+    const desc = h ? describe(h.v, h.m, h.region) : null;
+    card.append(metaLine(`${NUMS[d.no - 1]} ${d.short}`, desc?.latest ? periodLabel(desc.latest.period, true) : null));
+    const t = el("a", "brief-title", desc ? desc.headline : d.name);
+    t.href = `#${d.id}`;
+    card.append(el("h3", null), el("p", "brief-dek", d.question));
+    card.querySelector("h3").append(t);
+    const by = el("p", "byline");
+    by.append(document.createTextNode("in: "), moreLink(`${d.name} »`, `#${d.id}`));
+    card.append(by);
+    row.append(card);
+    cards.push([plot, h]);
+  }
+  for (const [plot, h] of cards) {
+    if (h) drawMetric(plot, h.m, [h.region], { title: shortTitle(h.m), height: 200, source: sourceLine(h.v, h.m) });
+  }
+}
+const shortTitle = (m) => m.label.replace(/^(국토부실거래|주민등록인구|인구이동|주택건설|소비자동향조사|부동산원)\s*/, "").replace(/\((구지수연결|권역역산 학습용)\)$/, "");
 
 function renderOverview() {
-  document.querySelector("#overview-filter").replaceChildren(filterBar(["range"]));
-
-  const rent = metricsFor(RENT_INDEX, "sido").list[0];
-  overviewTile("rent-level", rent, null);
-  overviewTile("rent-change", rent, state.rentChange);
-  for (const b of document.querySelectorAll("#rent-change-seg button")) {
-    b.setAttribute("aria-pressed", String(b.dataset.value === state.rentChange));
-  }
-
-  for (const d of drivers) overviewTile(d.id, metricsFor(HEADLINES[d.id], "sido").list[0], null, d.question);
+  document.querySelector("#ov-range").replaceChildren(filterBar(["range"]));
+  renderFeature();
+  document.querySelector("#ov-recent").replaceChildren(...driverList(drivers).children);
+  renderReleases();
+  renderGraphOfMonth();
+  renderBriefs();
 }
 
-// 변화율 타일의 기준 고르기 (전년동월 대비 / 전월 대비)
-for (const b of document.querySelectorAll("#rent-change-seg button")) {
+// 동인 브리프 좌우 넘기기
+for (const b of document.querySelectorAll("[data-scroll]")) {
   b.addEventListener("click", () => {
-    state.rentChange = b.dataset.value;
-    saveState();
-    renderOverview();
+    const row = document.querySelector("#ov-briefs");
+    const card = row.querySelector(".brief");
+    row.scrollBy({ left: (card ? card.offsetWidth + 24 : 300) * (b.dataset.scroll === "next" ? 1 : -1), behavior: "smooth" });
   });
 }
 
