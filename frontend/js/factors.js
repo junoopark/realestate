@@ -199,6 +199,7 @@ function variableCard(v) {
   const head = el("header", "var-head");
   head.append(el("h3", "var-name", v.name), el("span", "var-id", v.id));
   card.append(head);
+  if (window.MemberLikes) head.append(MemberLikes.button(v.id, v.name));
 
   const badges = el("div", "var-badges");
   if (v.sign) {
@@ -353,6 +354,8 @@ function overviewTile(id, m, change, question) {
   const body = document.querySelector(`[data-tile="${id}"]`);
   if (!body) return;
   body.replaceChildren();
+  const indicatorId = id.startsWith("rent-") ? RENT_INDEX : HEADLINES[id];
+  if (window.MemberLikes && indicatorId) body.append(MemberLikes.button(indicatorId, m?.label || indicatorId));
   if (!m) {
     body.append(el("p", "chart-empty", "샘플 데이터에 이 지표의 계열이 없습니다."));
     return;
@@ -470,6 +473,11 @@ async function initFactors() {
   }
   showView();
   window.scrollTo(0, 0);
+  // Popularity links can point directly to one variable inside a driver tab.
+  const selectedIndicator = new URLSearchParams(location.search).get("indicator");
+  if (selectedIndicator && /^V\d{3}$/.test(selectedIndicator)) {
+    requestAnimationFrame(() => document.getElementById(`card-${selectedIndicator}`)?.scrollIntoView({ block: "start" }));
+  }
 }
 
 window.addEventListener("hashchange", () => {

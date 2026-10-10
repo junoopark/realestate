@@ -1,0 +1,262 @@
+[
+  {
+    "id": "V001",
+    "name": "아파트 월세통합가격지수",
+    "driver": "trigger"
+  },
+  {
+    "id": "V002",
+    "name": "아파트 매매가격지수",
+    "driver": "finance"
+  },
+  {
+    "id": "V003",
+    "name": "아파트 전세가율",
+    "driver": "finance"
+  },
+  {
+    "id": "V004",
+    "name": "아파트 전월세전환율",
+    "driver": "finance"
+  },
+  {
+    "id": "V005",
+    "name": "아파트 월세 수급동향",
+    "driver": "rental"
+  },
+  {
+    "id": "V006",
+    "name": "아파트 전월세 실거래 원본",
+    "driver": "rental"
+  },
+  {
+    "id": "V007",
+    "name": "아파트 매매 실거래 원본",
+    "driver": "finance"
+  },
+  {
+    "id": "V009",
+    "name": "주민등록 인구",
+    "driver": "demand"
+  },
+  {
+    "id": "V010",
+    "name": "주민등록 세대수",
+    "driver": "demand"
+  },
+  {
+    "id": "V011",
+    "name": "20–29세·30–39세 인구",
+    "driver": "demand"
+  },
+  {
+    "id": "V012",
+    "name": "순이동자수",
+    "driver": "demand"
+  },
+  {
+    "id": "V013",
+    "name": "고용률·취업자",
+    "driver": "demand"
+  },
+  {
+    "id": "V015",
+    "name": "1인당 GRDP",
+    "driver": "demand"
+  },
+  {
+    "id": "V017",
+    "name": "1인당 가계총처분가능소득",
+    "driver": "demand"
+  },
+  {
+    "id": "V021",
+    "name": "아파트 인허가 호수",
+    "driver": "supply"
+  },
+  {
+    "id": "V022",
+    "name": "아파트 착공 호수",
+    "driver": "supply"
+  },
+  {
+    "id": "V023",
+    "name": "아파트 준공 호수",
+    "driver": "supply"
+  },
+  {
+    "id": "V024",
+    "name": "서울 구 주거용 신축허가",
+    "driver": "supply"
+  },
+  {
+    "id": "V026",
+    "name": "아파트 전세가격지수",
+    "driver": "finance"
+  },
+  {
+    "id": "V031",
+    "name": "아파트 매매수급동향지수",
+    "driver": "finance"
+  },
+  {
+    "id": "V032",
+    "name": "아파트 전세수급동향지수",
+    "driver": "rental"
+  },
+  {
+    "id": "V033",
+    "name": "아파트 월세수급동향지수",
+    "driver": "rental"
+  },
+  {
+    "id": "V034",
+    "name": "구(舊) 수급동향 통합지수",
+    "driver": "rental"
+  },
+  {
+    "id": "V035",
+    "name": "행정구역별 아파트 거래현황(동·호수, 면적)",
+    "driver": "rental"
+  },
+  {
+    "id": "V036",
+    "name": "행정구역별 아파트 매매거래현황(동·호수, 면적)",
+    "driver": "finance"
+  },
+  {
+    "id": "V037",
+    "name": "주택시장 소비심리지수",
+    "driver": "trigger"
+  },
+  {
+    "id": "V038",
+    "name": "미분양주택현황",
+    "driver": "supply"
+  },
+  {
+    "id": "V043",
+    "name": "한국은행 기준금리",
+    "driver": "macro"
+  },
+  {
+    "id": "V044",
+    "name": "CD(91일) 시장금리",
+    "driver": "macro"
+  },
+  {
+    "id": "V045",
+    "name": "국고채 3년 시장금리",
+    "driver": "macro"
+  },
+  {
+    "id": "V046",
+    "name": "M2 통화량(평잔, 원계열)",
+    "driver": "macro"
+  },
+  {
+    "id": "V047",
+    "name": "가계신용 총액",
+    "driver": "macro"
+  },
+  {
+    "id": "V048",
+    "name": "소비자물가지수 총지수",
+    "driver": "macro"
+  },
+  {
+    "id": "V049",
+    "name": "시간당 명목임금지수(비농전산업)",
+    "driver": "macro"
+  },
+  {
+    "id": "V050",
+    "name": "지역별 주택관련대출(예금은행)",
+    "driver": "finance"
+  },
+  {
+    "id": "V056",
+    "name": "은행대출금리_주택담보대출(신규취급액)",
+    "driver": "finance"
+  },
+  {
+    "id": "V057",
+    "name": "은행대출금리_전세자금(신규취급액)",
+    "driver": "finance"
+  },
+  {
+    "id": "V059",
+    "name": "비은행대출금리_주택담보대출",
+    "driver": "finance"
+  },
+  {
+    "id": "V060",
+    "name": "대출행태서베이(대출태도)_은행_가계(주택)",
+    "driver": "finance"
+  },
+  {
+    "id": "V061",
+    "name": "소비자동향조사_주택가격전망CSI_서울",
+    "driver": "trigger"
+  },
+  {
+    "id": "V062",
+    "name": "소비자동향조사_주택가격전망CSI_6대광역시",
+    "driver": "trigger"
+  },
+  {
+    "id": "V063",
+    "name": "소비자동향조사_주택가격전망CSI_기타도시",
+    "driver": "trigger"
+  },
+  {
+    "id": "V064",
+    "name": "KOSPI_종가",
+    "driver": "macro"
+  },
+  {
+    "id": "V066",
+    "name": "사업체노동력조사 - 산업/규모별 임금 및 근로시간",
+    "driver": "macro"
+  },
+  {
+    "id": "V067",
+    "name": "선행지수 순환변동치",
+    "driver": "macro"
+  },
+  {
+    "id": "V069",
+    "name": "예금취급기관 가계대출(용도별) 전체대출/주택관련대출",
+    "driver": "finance"
+  },
+  {
+    "id": "V070",
+    "name": "수출입 동향 - 수출",
+    "driver": "macro"
+  },
+  {
+    "id": "V071",
+    "name": "주택금융공사 및 주택도시기금의 정책대출",
+    "driver": "finance"
+  },
+  {
+    "id": "V072",
+    "name": "서울시 및 구별 가구 및 주택 수",
+    "driver": "supply"
+  },
+  {
+    "id": "V074",
+    "name": "가구당 월평균 가계수지 (도시, 2인인상) (명목) - 소득",
+    "driver": "macro"
+  },
+  {
+    "id": "V076",
+    "name": "임대주택공급현황",
+    "driver": "supply"
+  },
+  {
+    "id": "V077",
+    "name": "임대주택건설공급현황",
+    "driver": "supply"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "buildCommand": "node build-config.mjs",
+  "outputDirectory": ".",
+  "framework": null,
+  "headers": [
+    {
+      "source": "/auth-callback.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Referrer-Policy", "value": "no-referrer" }
+      ]
+    },
+    {
+      "source": "/js/runtime-config.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ]
+}

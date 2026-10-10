@@ -9,7 +9,8 @@ load_dotenv()  # 로컬 개발용. backend/.env 가 있으면 읽어온다 (배�
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import indicators, qualitative
+from app.routers import engagement, indicators, members, qualitative
+from app.member_store import initialize_member_storage
 from app.services.content_store import initialize_storage
 
 
@@ -20,6 +21,10 @@ async def lifespan(app):
     except Exception:
         # Indicator routes stay available if a new Supabase connection is misconfigured.
         logging.getLogger(__name__).error("Qualitative storage unavailable; serving reviewed files when possible.")
+    try:
+        initialize_member_storage()
+    except Exception:
+        logging.getLogger(__name__).error("Member storage unavailable; indicator like routes remain closed.")
     yield
 
 
@@ -38,6 +43,19 @@ app.add_middleware(
 
 app.include_router(indicators.router)
 app.include_router(qualitative.router)
+app.include_router(members.router)
+app.include_router(engagement.router)
+
+
+@app.middleware("http")
+async def member_response_privacy(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith(("/members", "/engagement")):
+        # Includes errors and the per-user liked_by_me flag.
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Vary"] = ", ".join(filter(None, [response.headers.get("Vary"), "Authorization"]))
+        response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 @app.get("/")

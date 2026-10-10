@@ -2,6 +2,8 @@
 
 기초 자료와 검증한 정책 요약은 JSON을 원본으로 관리하고, FastAPI 시작 시 DB에 반영합니다. 자동 수집한 정책 후보는 별도 테이블에 누적합니다. 기존 ECOS·FRED 지표 API와 메모리 캐시는 그대로 사용합니다.
 
+회원 좋아요는 별도 `member_space.indicator_likes` 테이블에 저장합니다. `(user_id, indicator_id)` 기본키로 사용자당 지표 한 표를 보장하며, 서버 시작 시 스키마·테이블·RLS·브라우저 역할 권한 회수를 하나의 트랜잭션에서 적용합니다. Supabase Data API의 Exposed schemas에 `member_space`를 추가하지 않습니다. Google 로그인, 환경변수, 연결 확인과 팀 프리뷰 절차는 [회원 기능 가이드](../docs/members-likes-guide.md)를 참고하세요.
+
 ## 구성
 
 공식 RSS / 공개 보도자료 목록 → CLI 또는 관리자 수집 API → SQLite / PostgreSQL → FastAPI → 웹페이지

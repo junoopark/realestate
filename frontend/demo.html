@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/members.css">
 </head>
 <body>
   <header class="site-header">
@@ -16,10 +17,10 @@
     <div class="header-right">
       <nav aria-label="페이지 이동" data-i18n-attr="aria-label:nav.aria">
         <a href="index.html" data-i18n="nav.overview">Overview</a>
-      </nav>
+      <a href="downloads.html" data-page-link>자료실</a><a href="popular.html" data-page-link>인기 지표</a></nav>
       <div class="controls">
         <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>
-      </div>
+      </div><div class="member-account" data-member-controls></div>
     </div>
   </header>
 
@@ -63,7 +64,8 @@
     <p><a href="index.html" data-i18n="demo.back">← 대시보드로</a></p>
   </footer>
 
-  <script src="js/config.js"></script>
+  <script src="js/runtime-config.js"></script><script src="js/config.js"></script>
+  <script src="js/member-auth.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
   <script src="js/demo.js"></script>

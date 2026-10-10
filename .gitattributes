@@ -1,0 +1,3 @@
+# Keep generated downloads reproducible on Windows and Linux checkouts.
+backend/data/member-downloads/*.csv text eol=crlf
+backend/data/member-indicators.json text eol=lf

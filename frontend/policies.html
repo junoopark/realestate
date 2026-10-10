@@ -9,14 +9,15 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/qualitative.css">
   <link rel="stylesheet" href="css/policy-history.css">
+  <link rel="stylesheet" href="css/members.css">
 </head>
 <body class="qual-page">
   <a class="skip-link" href="#content">본문으로 이동</a>
   <header class="site-header">
     <h1><a href="index.html">DFMBA 한국 주택시장 101</a></h1>
     <div class="header-right">
-      <nav aria-label="페이지 이동"><a href="index.html">정량 지표</a><a href="learn.html">부동산 기초</a><a href="policies.html" aria-current="page">정책 모니터</a></nav>
-      <div class="controls"><button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button></div>
+      <nav aria-label="페이지 이동"><a href="index.html">정량 지표</a><a href="learn.html">부동산 기초</a><a href="policies.html" aria-current="page">정책 모니터</a><a href="downloads.html" data-page-link>자료실</a><a href="popular.html" data-page-link>인기 지표</a></nav>
+      <div class="controls"><button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button></div><div class="member-account" data-member-controls></div>
     </div>
   </header>
   <main class="qual-main" id="content">
@@ -32,7 +33,8 @@
     <noscript><p class="empty-state">이 페이지는 자료 표시를 위해 JavaScript가 필요합니다.</p></noscript>
     <footer class="qual-footer"><span>DFMBA · 클라우드 컴퓨팅 팀 프로젝트</span><a href="learn.html">부동산 기초로 이동 →</a></footer>
   </main>
-  <script src="js/i18n.js"></script><script src="js/main.js"></script><script src="js/config.js"></script>
+  <script src="js/i18n.js"></script><script src="js/main.js"></script><script src="js/runtime-config.js"></script><script src="js/config.js"></script>
+  <script src="js/member-auth.js"></script>
   <script src="js/qualitative-common.js"></script><script src="js/policy-history.js"></script><script src="js/policies.js"></script>
 </body>
 </html>
