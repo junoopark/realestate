@@ -671,9 +671,4 @@ function redraw() {
 window.addEventListener("resize", redraw);
 new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
-// 보기 설정 줄이 헤더 바로 아래에 붙도록 헤더 높이를 CSS 변수로 알려준다
-new ResizeObserver(([entry]) => {
-  document.documentElement.style.setProperty("--header-h", `${Math.ceil(entry.target.getBoundingClientRect().height)}px`);
-}).observe(document.querySelector(".site-header"));
-
 initFactors();
