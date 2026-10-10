@@ -16,12 +16,12 @@ const I18N = {
     "factor.loadError": "동인 데이터를 불러오지 못했습니다 (data/drivers.json)",
 
     // 대시보드 페이지
-    "index.title": "DFMBA 한국 주택시장 101",
+    "index.title": "KHMI",
     "index.desc": "주요 부동산 지표를 한 화면에 모아 보는 대시보드",
-    "index.h1": "DFMBA 한국 주택시장 101",
+    "index.h1": "KHMI",
 
     // 연동 실습 페이지
-    "demo.title": "API 연동 실습 — DFMBA 한국 주택시장 101",
+    "demo.title": "API 연동 실습 — KHMI",
     "demo.desc": "FastAPI 백엔드 API를 호출하고 결과를 보여주는 연동 실습 페이지",
     "demo.h1": "API 연동 실습",
     "demo.lead":
@@ -66,12 +66,12 @@ const I18N = {
     "factor.loadError": "Failed to load driver data (data/drivers.json)",
 
     // Dashboard page
-    "index.title": "DFMBA Korea Housing Market 101",
+    "index.title": "KHMI",
     "index.desc": "A dashboard that gathers key real estate indicators on one screen",
-    "index.h1": "DFMBA Korea Housing Market 101",
+    "index.h1": "KHMI",
 
     // API demo page
-    "demo.title": "API Demo — DFMBA Korea Housing Market 101",
+    "demo.title": "API Demo — KHMI",
     "demo.desc": "A demo page that calls a FastAPI backend and displays the results",
     "demo.h1": "API Integration Demo",
     "demo.lead":

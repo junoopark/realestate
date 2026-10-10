@@ -1,4 +1,4 @@
-# DFMBA 한국 주택시장 101
+# KHMI — Korea Housing Market Intelligence
 
 주요 부동산 지표를 한 화면에 모아 보는 대시보드입니다.
 [mypage](https://github.com/junoopark/mypage) 프로젝트의 뼈대(프론트엔드 틀 · FastAPI 백엔드 · 배포 구성)를 가져와 시작했습니다.

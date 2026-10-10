@@ -111,27 +111,31 @@ a:hover { color: var(--brand-hover); }
   box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.35);
 }
 .site-header h1 {
+  position: relative;
+  isolation: isolate;          /* 뒤의 집 스케치(::before)를 로고 글자 아래에만 깐다 */
   flex: none;
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 10px 12px;
-  align-items: center;
+  gap: 10px;
   white-space: nowrap;
   font-family: var(--serif);
-  font-size: clamp(19px, 1.9vw, 25px);
+  font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.12em;
   color: var(--masthead-ink);
 }
 .site-header h1 a { color: inherit; font-weight: inherit; text-decoration: none; }
-.site-header h1::before {          /* 집 마크: 둥근 사각형에서 집 모양을 오려낸 흰 마크 (집 부분은 머리띠 색이 비친다) */
+.site-header h1::before {          /* 로고 뒤 스케치풍 집: 형상만 보이도록 옅게 */
   content: "";
-  grid-row: 1 / span 2;
-  width: 30px;
-  height: 30px;
-  background: var(--masthead-ink);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill-rule='evenodd' d='M8 0H18A8 8 0 0 1 26 8V18A8 8 0 0 1 18 26H8A8 8 0 0 1 0 18V8A8 8 0 0 1 8 0ZM13 5.5L20.5 12.2H18.6V20H14.7V15.4H11.3V20H7.4V12.2H5.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 172px;
+  height: 98px;
+  transform: translate(-50%, -52%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 222 126' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 64 L111 9 L212 63'/%3E%3Cpath d='M16 61 L109 13 L207 66'/%3E%3Cpath d='M30 55 L29 118'/%3E%3Cpath d='M33 57 Q31 88 33 117'/%3E%3Cpath d='M192 55 L193 118'/%3E%3Cpath d='M189 58 Q191 90 190 116'/%3E%3Cpath d='M20 118 Q110 115 204 119'/%3E%3Cpath d='M26 121 L198 117'/%3E%3Cpath d='M152 36 L151 15 L168 14 L169 45'/%3E%3Cpath d='M155 17 L166 16'/%3E%3Cpath d='M98 118 L97 83 Q110 80 124 83 L125 118'/%3E%3Cpath d='M101 101 L103 101'/%3E%3Cpath d='M44 74 L72 73 L73 96 L45 97 Z'/%3E%3Cpath d='M58 74 L59 96 M45 85 L72 84'/%3E%3Cpath d='M150 74 L178 73 L179 96 L151 97 Z'/%3E%3Cpath d='M164 74 L165 96 M151 85 L178 84'/%3E%3Cpath d='M70 34 L84 30 M62 41 L80 35 M128 32 L142 38 M136 31 L154 41'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0.17;
+  pointer-events: none;
 }
 .site-header h1::after {           /* 로고 아래 물결 두 줄 + 부제 */
   content: "Korea Housing Market Intelligence (KHMI)";
@@ -732,6 +736,7 @@ code {
 @media (max-width: 720px) {
   .site-header { padding: 12px 16px; }
   .site-header h1::after { font-size: 9.5px; }
+  .site-header h1::before { width: 138px; height: 79px; }
   .header-right { width: 100%; justify-content: space-between; gap: 6px; }
   .main-nav { gap: 0; }
   .main-nav > a,
