@@ -53,26 +53,32 @@
 
   <!--
     Home (#home, 기본 화면): home.js 가 채운다
-    ① Overview: 월세가격지수 시장 코멘터리 + 동인별 코멘터리 목록
-    ② 시도별 가격 상승률 지도 (17개 시도, 매매·전세·월세 / 전년동월·전월 대비)
-    ③ 이달의 차트(금리 3종) + 최근 기준시점 지표
-    ④ 주요 정책 동향 (data/policies.json, 최근 발표 4건)
+    첫째 단락 KHMI Dashboard: 주택시장 가격 동향(월세가격지수) · 이달의 차트(금리 3종) · 주요 정책 동향(data/policies.json 최근 4건)
+    둘째 단락: 시도별 가격 상승률 지도 (17개 시도, 매매·전세·월세 / 전년동월·전월 대비)
   -->
   <main class="overview" id="view-home">
     <div class="container">
 
-      <section aria-labelledby="home-ov-title">
+      <section aria-labelledby="home-dash-title">
         <div class="sec-head">
-          <h2 class="sec-title" id="home-ov-title">Overview</h2>
-          <span class="sec-sub">시장 코멘터리</span>
+          <h2 class="sec-title" id="home-dash-title">KHMI Dashboard</h2>
           <a class="more" href="#overview">부동산 대시보드 »</a>
         </div>
-        <div class="split">
-          <article class="feature" id="home-feature"><p class="tile-placeholder">내용 준비 중</p></article>
-          <aside class="side">
-            <div class="sec-head"><h2 class="sec-title sm">동인별 코멘터리</h2><a class="more" href="#overview">전체 보기 »</a></div>
-            <ul class="side-list" id="home-recent"></ul>
-          </aside>
+        <div class="home-row">
+          <article class="home-col" aria-labelledby="home-price-title">
+            <h3 class="col-title" id="home-price-title">주택시장 가격 동향</h3>
+            <div id="home-feature"><p class="tile-placeholder">내용 준비 중</p></div>
+          </article>
+          <article class="home-col" aria-labelledby="home-gow-title">
+            <h3 class="col-title" id="home-gow-title">이달의 차트</h3>
+            <div id="home-gow"></div>
+            <p class="gow-note" id="home-gow-note"></p>
+          </article>
+          <article class="home-col" aria-labelledby="home-policy-title">
+            <div class="col-head"><h3 class="col-title" id="home-policy-title">주요 정책 동향</h3><a class="more" href="policies.html">부동산 정책 »</a></div>
+            <div class="policy-list" id="home-policies"></div>
+            <p class="data-note" id="home-policy-note"></p>
+          </article>
         </div>
       </section>
 
@@ -85,32 +91,6 @@
           <div class="sec-tools filter-inline" id="home-map-tools"></div>
         </div>
         <div id="home-map"></div>
-      </section>
-
-      <hr class="rule">
-
-      <section class="split split-even">
-        <div class="gow-main">
-          <div class="sec-head"><h2 class="sec-title">이달의 차트</h2></div>
-          <div id="home-gow"></div>
-          <p class="gow-note" id="home-gow-note"></p>
-        </div>
-        <div class="side">
-          <div class="sec-head"><h2 class="sec-title sm">최근 기준시점 지표</h2></div>
-          <ul class="side-list releases" id="home-releases"></ul>
-        </div>
-      </section>
-
-      <hr class="rule">
-
-      <section aria-labelledby="home-policy-title">
-        <div class="sec-head">
-          <h2 class="sec-title" id="home-policy-title">주요 정책 동향</h2>
-          <span class="sec-sub">최근 발표 순</span>
-          <a class="more" href="policies.html">부동산 정책 »</a>
-        </div>
-        <div class="policy-row" id="home-policies"></div>
-        <p class="data-note" id="home-policy-note"></p>
       </section>
 
     </div>

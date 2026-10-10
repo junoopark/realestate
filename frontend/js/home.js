@@ -1,4 +1,4 @@
-// Home 화면 (index.html #home): ① Overview(시장 코멘터리) ② 시도별 가격 상승률 지도 ③ 이달의 차트 ④ 주요 정책 동향
+// Home 화면 (index.html #home): KHMI Dashboard(주택시장 가격 동향 · 이달의 차트 · 주요 정책 동향) + 시도별 가격 상승률 지도
 // factors.js 가 자료를 읽은 뒤 renderHome() 을 부른다. 차트·숫자 함수는 charts.js, 문장은 notes.js 에 있다.
 // - data/korea_sido.json : 17개 시도 경계 SVG 경로 (scripts/build_korea_map.py, 통계청 SGIS 2018 경계)
 // - data/policies.json   : 부동산 정책 페이지와 같은 정책 정리 자료
@@ -14,7 +14,7 @@ const MAP_METRICS = [
 ];
 const homeState = { mapVar: "V002", mapChange: "yoy" };
 
-// ── ① Overview: 시장 코멘터리 (월세가격지수) + 동인별 코멘터리 목록 ──────
+// ── 주택시장 가격 동향: 월세가격지수 (고른 시도) ──────
 function renderFeature() {
   const box = document.querySelector("#home-feature");
   const m = metricsFor(RENT_INDEX, "sido").list[0];
@@ -27,24 +27,8 @@ function renderFeature() {
   const driver = drivers.find((x) => x.id === v.driver);
 
   box.append(metaLine(regions.map((x) => x.r).join(" · "), d.latest ? `${periodLabel(d.latest.period, true)} 기준` : null));
-  box.append(el("h3", "feature-title", d.headline));
-  const cols = el("div", "feature-cols");
-  const text = el("div", "feature-text");
-  const ul = el("ul", "bullets");
-  ul.append(el("li", null, d.body[0]));
-  for (const { r } of regions.slice(1)) {
-    const l = latestOf(m, r);
-    if (l) ul.append(el("li", null, `${r}는 ${fmtValue(l.value, m.unit)}로 ${changeName(m)} ${fmtChange(l.change, l.mode, m.unit)}입니다.`));
-  }
-  const pos = recentPosition(m, first);
-  if (pos) ul.append(el("li", null, `${first}의 현재 수준은 ${pos}${pos.endsWith("최고") || pos.endsWith("최저") ? "치" : ""}입니다.`));
-  text.append(ul);
-  const by = el("p", "byline");
-  by.append(document.createTextNode("by: DFMBA 자동 요약 | in: "));
-  by.append(moreLink(`${NUMS[driver.no - 1]} ${driver.name}`, `#${driver.id}`));
-  text.append(by);
+  box.append(el("h4", "col-headline", d.headline));
 
-  const chartCol = el("div", "feature-chart");
   const seg = el("div", "text-tabs");
   seg.setAttribute("role", "group");
   seg.setAttribute("aria-label", "차트 값");
@@ -60,30 +44,26 @@ function renderFeature() {
     seg.append(b);
   }
   const plot = el("div");
-  chartCol.append(seg, plot);
-  cols.append(text, chartCol);
-  box.append(cols);
-  const change = state.rentChange === "level" || !state.rentChange ? null : state.rentChange;
-  drawMetric(plot, m, regions, { title: "아파트 월세통합가격지수", change, height: 300, source: sourceLine(v, m) });
-}
+  box.append(seg, plot);
 
-// 동인 목록 (제목 = 대표 지표 헤드라인, 메타 = 동인 이름 | 기준시점)
-function driverList(list) {
-  const ul = el("ul", "side-list");
-  for (const d of list) {
-    const h = headlineMetric(HEADLINES[d.id]);
-    const li = el("li");
-    const a = el("a", "side-title");
-    a.href = `#${d.id}`;
-    const desc = h ? describe(h.v, h.m, h.region) : null;
-    a.textContent = desc ? desc.headline : d.name;
-    li.append(a, metaLine(`${NUMS[d.no - 1]} ${d.short}`, desc?.latest ? periodLabel(desc.latest.period, true) : null));
-    ul.append(li);
+  const ul = el("ul", "bullets compact");
+  ul.append(el("li", null, d.body[0]));
+  for (const { r } of regions.slice(1)) {
+    const l = latestOf(m, r);
+    if (l) ul.append(el("li", null, `${r}는 ${fmtValue(l.value, m.unit)}로 ${changeName(m)} ${fmtChange(l.change, l.mode, m.unit)}입니다.`));
   }
-  return ul;
+  const pos = recentPosition(m, first);
+  if (pos) ul.append(el("li", null, `${first}의 현재 수준은 ${pos}${pos.endsWith("최고") || pos.endsWith("최저") ? "치" : ""}입니다.`));
+  box.append(ul);
+  const by = el("p", "byline");
+  by.append(document.createTextNode("by: DFMBA 자동 요약 | in: "));
+  by.append(moreLink(`${NUMS[driver.no - 1]} ${driver.name}`, `#${driver.id}`));
+  box.append(by);
+  const change = state.rentChange === "level" || !state.rentChange ? null : state.rentChange;
+  drawMetric(plot, m, regions, { title: "아파트 월세통합가격지수", change, height: 240, source: sourceLine(v, m) });
 }
 
-// ── ② 시도별 가격 상승률 지도 ───────────────────────────
+// ── 시도별 가격 상승률 지도 ───────────────────────────
 // 색: 상승은 파랑, 하락은 빨강, 0 근처는 회색. 각 방향 4단계 (단계 폭은 그 달 최대 변화폭으로 정한다)
 function divergingColors() {
   const cs = getComputedStyle(document.documentElement);
@@ -294,40 +274,7 @@ function mapTools() {
   }
 }
 
-// ── ③ 이달의 차트 + 최근 기준시점 지표 ─────────────────────
-// 기간이 끝나는 달의 순번 (월·분기·반기·연을 한 줄로 비교하려고)
-function periodEndMonth(p) {
-  const { perYear, ord } = periodOrdinal(p);
-  const year = Math.floor(ord / perYear);
-  const k = ord % perYear;
-  return year * 12 + (k + 1) * (12 / perYear) - 1;
-}
-
-function renderReleases() {
-  const ul = document.querySelector("#home-releases");
-  ul.replaceChildren();
-  const rows = [];
-  for (const v of variables) {
-    const h = headlineMetric(v.id);
-    if (!h) continue;
-    const l = latestOf(h.m, h.region);
-    if (!l) continue;
-    rows.push({ v, h, l, key: periodEndMonth(l.period) });
-  }
-  rows.sort((a, b) => b.key - a.key);
-  for (const { v, h, l } of rows.slice(0, 6)) {
-    const li = el("li");
-    const a = el("a", "side-title", `${v.name.replace(/_/g, " ")} (${periodLabel(l.period)})`);
-    a.href = `#${v.driver}`;
-    const meta = el("p", "meta");
-    meta.append(el("span", "src", (h.m.source || v.source || "").split(/\s*[\/|]\s*/)[0] || "출처 미기재"));
-    meta.append(document.createTextNode(` | ${h.region} ${fmtValue(l.value, h.m.unit)}`));
-    li.append(a, meta);
-    ul.append(li);
-  }
-}
-
-// 이달의 차트: 금리 3종 (모두 연%라 한 축에 그릴 수 있다)
+// ── 이달의 차트: 금리 3종 (모두 연%라 한 축에 그릴 수 있다)
 function renderGraphOfMonth() {
   const box = document.querySelector("#home-gow");
   const note = document.querySelector("#home-gow-note");
@@ -342,9 +289,9 @@ function renderGraphOfMonth() {
     merged.series[name] = periods.map((p) => s[m.periods.indexOf(p)] ?? null);
   });
   drawMetric(box, merged, ids.map(([, n], k) => ({ r: n, slot: k })), {
-    title: "금리: 기준금리 · 국고채 3년 · 주택담보대출",
+    title: "기준금리 · 국고채 3년 · 주택담보대출",
     subtitle: "연% · 월 · 전국",
-    height: 300,
+    height: 270,
     source: "자료: 한국은행, DFMBA 전처리본(1차_결측보완)",
   });
   const lasts = ids.map(([, n]) => latestOf(merged, n));
@@ -358,7 +305,7 @@ function renderGraphOfMonth() {
   note.textContent = text;
 }
 
-// ── ④ 주요 정책 동향 (부동산 정책 페이지의 정리 자료에서 최근 발표 순) ─────
+// ── 주요 정책 동향 (부동산 정책 페이지의 정리 자료에서 최근 발표 순) ─────
 function renderPolicies() {
   const box = document.querySelector("#home-policies");
   box.replaceChildren();
@@ -368,15 +315,14 @@ function renderPolicies() {
     return;
   }
   for (const p of items) {
-    const card = el("article", "policy-item");
+    const card = el("div", "policy-item");
     card.append(metaLine(p.agency, p.published_at, p.category));
-    const h = el("h3");
+    const h = el("h4");
     const a = el("a", null, p.title);
     a.href = "policies.html#briefs";
     h.append(a);
     card.append(h);
     if (p.summary) card.append(el("p", "policy-sum", p.summary));
-    if (p.status) card.append(el("p", "byline", `상태: ${p.status}`));
     box.append(card);
   }
   document.querySelector("#home-policy-note").textContent = policyData.verified_at ? `공식 발표 원문 확인일 ${policyData.verified_at}. 전체 목록과 적용 조건은 부동산 정책 페이지에서 봅니다.` : "";
@@ -385,12 +331,10 @@ function renderPolicies() {
 // ── Home 그리기 ──────────────────────────────────────
 function renderHome() {
   renderFeature();
-  document.querySelector("#home-recent").replaceChildren(...driverList(drivers).children);
+  renderGraphOfMonth();
+  renderPolicies();
   mapTools();
   renderMap();
-  renderGraphOfMonth();
-  renderReleases();
-  renderPolicies();
 }
 
 // 지도 경계·정책 자료는 Home 에서만 쓰므로 따로 읽는다 (실패해도 나머지 화면은 그린다)
