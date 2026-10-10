@@ -35,6 +35,7 @@
   /* 차트 계열 색 (지역 비교, 최대 3개). 색약 구분·대비 검증을 통과한 순서 그대로 쓴다 */
   --series-1: #2a78d6;  --series-2: #eb6834;  --series-3: #1baf7a;
   --radius: 4px;
+  --page-max: 1200px;        /* 본문 최대 폭 (머리띠 좌우 여백도 여기에 맞춘다) */
   /* 리서치 사이트 머리띠(남색)·세리프 제목 */
   --masthead: #233a70;
   --masthead-ink: #ffffff;
@@ -105,7 +106,7 @@ a:hover { color: var(--brand-hover); }
   align-items: center;
   flex-wrap: wrap;            /* 900px 미만에서는 메뉴가 로고 아래 줄로 내려간다 */
   gap: 12px;
-  padding: 16px max(24px, calc((100% - 1440px) / 2 + 24px));
+  padding: 16px max(24px, calc((100% - var(--page-max)) / 2));
   background: var(--masthead);
   color: var(--masthead-ink);
   box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.35);
@@ -276,7 +277,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ══ 리서치형 본문 공통 (index.html · about.html) ═════════════════════ */
-.container { max-width: 1440px; margin: 0 auto; padding: 32px 24px 56px; }
+.container { max-width: calc(var(--page-max) + 48px); margin: 0 auto; padding: 32px 24px 56px; }
 .sec-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 18px; }
 .sec-title { font-family: var(--serif); font-size: clamp(22px, 2.1vw, 28px); font-weight: 700; letter-spacing: -0.01em; color: var(--title-ink); }
 .sec-title.sm { font-size: 21px; }

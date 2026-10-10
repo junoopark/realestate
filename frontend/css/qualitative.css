@@ -4,7 +4,7 @@
 .qual-page .header-right { min-width: 0; }
 .skip-link { position: fixed; left: 20px; top: -80px; z-index: 30; padding: 10px 18px; background: var(--brand); color: var(--on-brand); border-radius: 8px; }
 .skip-link:focus { top: 12px; }
-.qual-main { max-width: 1280px; margin: auto; padding: 0 40px; }
+.qual-main { max-width: calc(var(--page-max) + 80px); margin: auto; padding: 0 40px; }
 .qual-hero { padding: 56px 0 34px; border-bottom: 1px solid var(--line); }
 .eyebrow { font-size: 11px; font-weight: 750; color: var(--brand); letter-spacing: .14em; }
 .qual-hero h2 { margin: 14px 0 20px; font-size: clamp(29px, 3.4vw, 43px); font-weight: 750; line-height: 1.25; letter-spacing: -.045em; }

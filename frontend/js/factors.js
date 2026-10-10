@@ -649,6 +649,10 @@ async function initFactors() {
   window.scrollTo(0, 0);
 }
 
+document.querySelector(".site-header h1 a")?.addEventListener("click", () => {
+  if (location.hash === "#overview") window.scrollTo(0, 0);
+});
+
 window.addEventListener("hashchange", () => {
   showView();
   window.scrollTo(0, 0);
