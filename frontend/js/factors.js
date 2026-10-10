@@ -35,16 +35,9 @@ const NUMS = ["①", "②", "③", "④", "⑤", "⑥"];
 const FREQ = { M: "월", Q: "분기", H: "반기", A: "연" };
 const RANGE_YEARS = { 3: 3, 5: 5, all: Infinity };
 
-// Overview 타일에 보여줄 동인별 대표 지표 (변수 ID). 타일 하나에 차트 하나만 크게 그린다
+// 동인별 대표 지표 (변수 ID): Overview 의 동인별 코멘터리·동인 브리프 카드와 동인 탭의 다른 동인 목록에 쓴다
 const HEADLINES = { demand: "V012", supply: "V023", finance: "V003", rental: "V005", trigger: "V037", macro: "V043" };
-const RENT_INDEX = "V001"; // Overview 맨 위 두 타일: 월세가격지수와 그 변화율
-
-// 예상 부호: + 는 월세 리스크를 키우는 방향, - 는 낮추는 방향, ± 는 방향이 상황에 따라 다름
-function signClass(sign) {
-  if (sign === "+") return "sign-up";
-  if (sign === "-") return "sign-down";
-  return "sign-mixed";
-}
+const RENT_INDEX = "V001"; // Overview 맨 위 시장 코멘터리: 월세가격지수
 
 // ── 데이터 고르기 ─────────────────────────────────────
 // 지역 단위(시도/서울 구)에 맞는 계열을 고른다. 없으면 다른 단위로 대신하고 그 사실을 알린다.
