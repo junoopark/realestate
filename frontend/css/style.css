@@ -646,17 +646,19 @@ code {
   height: 30px;
   background: var(--masthead-ink);
 }
-.site-header h1::after {            /* 로고 아래 이중선 + 부제 */
+.site-header h1::after {            /* 로고 아래 물결 두 줄 + 부제 */
   content: "SEOUL RENT RISK MONITOR · 6 DRIVERS";
-  padding-top: 9px;
+  padding-top: 15px;
   font-family: "Pretendard Variable", "Pretendard", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--masthead-ink);
-  background:
-    linear-gradient(var(--masthead-btn), var(--masthead-btn)) 0 0 / 100% 2px no-repeat,
-    linear-gradient(var(--masthead-btn), var(--masthead-btn)) 0 4px / 62% 2px no-repeat;
+  /* 물결 무늬 한 칸(28px)을 가로로 반복한다. 색은 --masthead-btn 과 같은 값 (SVG 안에서는 변수를 못 쓴다) */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12'%3E%3Cpath d='M0 4 Q7 0 14 4 T28 4' fill='none' stroke='%235b8ce6' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M0 9 Q7 5 14 9 T28 9' fill='none' stroke='%235b8ce6' stroke-width='1.2' stroke-linecap='round' opacity='0.55'/%3E%3C/svg%3E") 0 0 / 28px 12px repeat-x;
+}
+:root[data-theme="dark"] .site-header h1::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12'%3E%3Cpath d='M0 4 Q7 0 14 4 T28 4' fill='none' stroke='%233f6fc9' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M0 9 Q7 5 14 9 T28 9' fill='none' stroke='%233f6fc9' stroke-width='1.2' stroke-linecap='round' opacity='0.55'/%3E%3C/svg%3E");
 }
 .site-header nav,
 .site-header nav a[aria-current="page"] { background: transparent; box-shadow: none; }
