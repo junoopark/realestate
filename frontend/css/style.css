@@ -589,7 +589,7 @@ code {
   .tiles { grid-template-columns: 1fr; }
 }
 
-@media (min-width: 721px) {
+@media (min-width: 900px) {   /* 이보다 좁으면 메뉴가 로고 아래 줄로 내려간다 */
   .site-header { flex-wrap: nowrap; padding-left: 24px; padding-right: 24px; }
 }
 
@@ -831,4 +831,131 @@ code {
   .guide-row { grid-template-columns: 1fr; gap: 24px; }
   .rule { margin: 28px 0; }
   .var-grid { gap: 28px; }
+}
+
+/* ── 주요 메뉴 4개 + 하위 메뉴 (모든 페이지) ───────────────────────── */
+.site-header nav.main-nav { overflow: visible; flex: none; align-items: center; gap: 6px; }
+.main-nav > a,
+.main-nav .nav-top { font-size: 15px; padding: 8px 10px; }
+.nav-item { position: relative; display: flex; align-items: center; }
+.nav-item .nav-top { padding-right: 2px; }
+.nav-caret {
+  width: 22px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.nav-caret::before {               /* ▾ 모양 */
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin: -3px auto 0;
+  border-right: 1.6px solid var(--masthead-soft);
+  border-bottom: 1.6px solid var(--masthead-soft);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+.nav-caret[aria-expanded="true"]::before { transform: translateY(3px) rotate(-135deg); }
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  min-width: 230px;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--card-bg);
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--masthead-btn);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.35);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+}
+.nav-menu-end { left: auto; right: 0; }
+.nav-menu::before {                /* 메뉴 이름과 메뉴 사이 빈틈에서도 마우스가 떨어지지 않게 */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+}
+.nav-item:hover .nav-menu,
+.nav-item:focus-within .nav-menu,
+.nav-caret[aria-expanded="true"] + .nav-menu { visibility: visible; opacity: 1; transform: none; }
+.site-header nav .nav-menu a {
+  display: block;
+  padding: 8px 16px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.site-header nav .nav-menu a:hover { background: var(--brand-soft); color: var(--brand); box-shadow: none; }
+.site-header nav .nav-menu a[aria-current="page"] { color: var(--brand); font-weight: 700; box-shadow: inset 3px 0 0 var(--brand); }
+
+/* 동인 화면 맨 위 하위 탭 줄 (주택시장 지표 > 6개 동인) */
+.subnav {
+  display: flex;
+  align-items: center;
+  gap: 4px 2px;
+  margin: -8px 0 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-strong);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav::-webkit-scrollbar { display: none; }
+.subnav-label { flex: none; margin-right: 10px; font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--title-ink); }
+.subnav a {
+  flex: none;
+  padding: 4px 10px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: inset 0 -2px 0 transparent;
+}
+.subnav a:hover { color: var(--brand); }
+.subnav a[aria-current="page"] { color: var(--title-ink); font-weight: 700; box-shadow: inset 0 -2px 0 var(--brand); }
+
+@media (max-width: 720px) {
+  .site-header .header-right { width: 100%; justify-content: space-between; gap: 6px; }
+  .site-header nav.main-nav { gap: 0; min-width: 0; }
+  .site-header nav.main-nav > a,
+  .site-header nav.main-nav .nav-top { font-size: 13px; padding: 6px 5px; }
+  .nav-item .nav-top { padding-right: 0; }
+  .nav-caret { width: 16px; }
+  .nav-menu { min-width: 200px; }
+  .controls button { padding: 0 9px; }
+  .controls .lbl { display: none; }            /* 좁은 화면: 테마 버튼은 아이콘만 (이름은 aria-label 로 남아 있다) */
+}
+
+/* ── About (about.html) ── */
+.about-sec { margin-top: 8px; scroll-margin-top: calc(var(--header-h, 110px) + 16px); }
+.about-sec > p { font-size: 15.5px; line-height: 1.7; }
+.about-list { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px 24px; margin-top: 14px; }
+.about-list dt { font-weight: 700; color: var(--title-ink); }
+.about-list dt a { color: inherit; }
+.about-list dd { margin: 0; font-size: 15px; line-height: 1.7; }
+.guide h3 a { color: inherit; text-decoration: none; }
+.guide h3 a:hover { text-decoration: underline; }
+.about #project { scroll-margin-top: calc(var(--header-h, 110px) + 16px); }
+@media (max-width: 720px) {
+  .about-list { grid-template-columns: 1fr; gap: 4px; }
+  .about-list dd { margin-bottom: 12px; }
+}
+@media (max-width: 380px) {
+  .site-header nav.main-nav > a,
+  .site-header nav.main-nav .nav-top { font-size: 12px; padding: 6px 3px; }
+  .nav-caret { width: 14px; }
 }

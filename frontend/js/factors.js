@@ -363,9 +363,18 @@ function renderFactor(driver) {
   factorView.replaceChildren();
   const wrap = el("div", "container");
 
-  const crumb = el("p", "crumb");
-  crumb.append(moreLink("Overview", "#overview"), document.createTextNode(" › "), el("span", null, `${NUMS[driver.no - 1]} ${driver.name}`));
-  wrap.append(crumb);
+  // 주택시장 지표 > 동인 하위 탭 (현재 동인 표시)
+  const sub = el("nav", "subnav");
+  sub.setAttribute("aria-label", "주택시장 지표 동인");
+  sub.append(el("span", "subnav-label", "주택시장 지표"));
+  for (const d of drivers) {
+    const a = el("a", null, `${NUMS[d.no - 1]} ${d.short}`);
+    a.href = `#${d.id}`;
+    a.title = d.name;
+    if (d.id === driver.id) a.setAttribute("aria-current", "page");
+    sub.append(a);
+  }
+  wrap.append(sub);
 
   const split = el("div", "split");
   const note = el("article", "note-main");
@@ -617,12 +626,12 @@ function showView() {
   if (driver && sample) renderFactor(driver);
   if (!driver && sample) renderOverview();
 
-  for (const a of viewNav.querySelectorAll("a")) {
-    if (a.dataset.view === view) a.setAttribute("aria-current", "page");
+  // 머리 메뉴: Overview 또는 '주택시장 지표'(동인 화면일 때)에 현재 위치 표시, 하위 메뉴는 해당 동인
+  for (const a of viewNav.querySelectorAll("a[data-view], a[data-nav='indicators']")) {
+    const on = a.dataset.view ? a.dataset.view === view : !!driver;
+    if (on) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   }
-  const current = viewNav.querySelector('[aria-current="page"]');
-  if (current) current.scrollIntoView({ block: "nearest", inline: "nearest" }); // 좁은 화면에서 선택한 탭이 보이게
 }
 
 async function initFactors() {
@@ -643,13 +652,6 @@ async function initFactors() {
     return;
   }
 
-  for (const d of drivers) {
-    const a = el("a", null, `${NUMS[d.no - 1]} ${d.short}`);
-    a.href = `#${d.id}`;
-    a.dataset.view = d.id;
-    a.title = d.name;
-    viewNav.insertBefore(a, viewNav.querySelector("[data-page-link]"));
-  }
   showView();
   window.scrollTo(0, 0);
 }

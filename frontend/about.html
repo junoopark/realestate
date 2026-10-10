@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About · DFMBA 한국 주택시장 101</title>
+  <meta name="description" content="DFMBA 한국 주택시장 101 소개: 사이트 구성, 데이터와 방법, 부동산 기초">
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1><a href="index.html">DFMBA 한국 주택시장 101</a></h1>
+    <div class="header-right">
+      <nav id="view-nav" class="main-nav" aria-label="주요 메뉴">
+        <!-- 주요 메뉴 4개. 모든 페이지에 같은 내용이 들어 있으니 바꿀 때는 index·learn·policies·about·demo 를 함께 고친다 -->
+        <a href="index.html#overview" data-view="overview">Overview</a>
+        <div class="nav-item">
+          <a href="index.html#demand" class="nav-top" data-nav="indicators">주택시장 지표</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-indicators"><span class="sr-only">주택시장 지표 하위 메뉴 열기</span></button>
+          <ul class="nav-menu" id="menu-indicators">
+            <li><a href="index.html#demand" data-view="demand">① 임차수요 압력</a></li>
+            <li><a href="index.html#supply" data-view="supply">② 주택공급·재고 여건</a></li>
+            <li><a href="index.html#finance" data-view="finance">③ 금융여건·상대가격</a></li>
+            <li><a href="index.html#rental" data-view="rental">④ 임대시장 수급·전환 구조</a></li>
+            <li><a href="index.html#trigger" data-view="trigger">⑤ 시장과열·단기 트리거</a></li>
+            <li><a href="index.html#macro" data-view="macro">⑥ 거시경기·금융시장 여건</a></li>
+          </ul>
+        </div>
+        <a href="policies.html" data-nav="policy">부동산 정책</a>
+        <div class="nav-item">
+          <a href="about.html" class="nav-top" data-nav="about" aria-current="page">About</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-about"><span class="sr-only">About 하위 메뉴 열기</span></button>
+          <ul class="nav-menu nav-menu-end" id="menu-about">
+            <li><a href="about.html#intro">사이트 소개</a></li>
+            <li><a href="about.html#data">데이터·방법</a></li>
+            <li><a href="learn.html">부동산 기초</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="controls"><button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button></div>
+    </div>
+  </header>
+
+  <!-- About: 사이트 소개 · 데이터·방법 · 부동산 기초 · 프로젝트. 내용은 이 저장소와 DFMBA 저장소의 README·데이터사전 기준 -->
+  <main class="container about">
+    <div class="split">
+      <article>
+        <p class="meta">About</p>
+        <h2 class="note-title">서울 월세 리스크를 6개 동인으로 읽습니다</h2>
+        <p class="note-dek">DFMBA 한국 주택시장 101은 서울 자치구 아파트 월세 리스크와 관련된 공공 통계를 한곳에 모아, 차트와 짧은 해설로 보여주는 대시보드입니다.</p>
+
+        <section id="intro" class="about-sec">
+          <h3 class="note-sub">사이트 소개</h3>
+          <p>지표는 데이터사전이 정한 6개 동인으로 나눠 봅니다. ①~④는 지역별 구조적 취약성, ⑤는 급등 직전의 단기 트리거, ⑥은 전 자치구에 공통인 거시·금융 환경입니다.</p>
+          <dl class="about-list">
+            <dt><a href="index.html#overview">Overview</a></dt>
+            <dd>월세가격지수 코멘터리, 이달의 차트, 6개 동인의 대표 지표를 한 화면에서 봅니다.</dd>
+            <dt><a href="index.html#demand">주택시장 지표</a></dt>
+            <dd>동인별 리서치 노트입니다. 개요와 핵심 포인트, 지역별 최신값 표, 변수마다 차트와 해설이 있습니다. 지역(시도·서울 구), 기간, 수준·전년동기 대비를 고를 수 있습니다.</dd>
+            <dt><a href="policies.html">부동산 정책</a></dt>
+            <dd>주요 정책 정리, 새 발표 모니터링, 정책 히스토리를 공식 발표 기준으로 정리합니다.</dd>
+            <dt><a href="about.html">About</a></dt>
+            <dd>이 사이트의 구성과 데이터·방법, 그리고 <a href="learn.html">부동산 기초</a> 학습 자료를 모았습니다.</dd>
+          </dl>
+        </section>
+
+        <section id="data" class="about-sec">
+          <h3 class="note-sub">데이터·방법</h3>
+          <dl class="about-list">
+            <dt>데이터사전</dt>
+            <dd>팀원 세 명의 데이터사전을 하나로 합친 마스터 템플릿입니다. 원본 변수·자료행 77개를 지우지 않고 보존하고, Variable_Master 52개 변수를 6개 동인으로 1차·2차 분류합니다. 변수마다 예상 부호, 기대 선행성, 정보 누출(Leakage) 위험, 권장 가공 방법이 적혀 있습니다.</dd>
+            <dt>수집·전처리</dt>
+            <dd><a href="https://github.com/ksroh1913/DFMBA" target="_blank" rel="noopener">DFMBA 파이프라인</a>이 KOSIS·R-ONE·ECOS·국토부 실거래 API로 수집하고 전처리합니다. 화면의 값은 전처리본의 1차_결측보완 시트로, 기준기간 값이며 빈칸만 정해진 규칙으로 채웠습니다. 예측 모형용으로는 공표 시차만큼 값을 미룬 2차 시트를 따로 씁니다.</dd>
+            <dt>화면의 샘플 범위</dt>
+            <dd>시도는 서울·경기·부산, 서울 구는 강남구·마포구·노원구, 2016년부터입니다. 국토부 실거래 신고건수의 최근 3개월은 신고기한(계약 후 30일)·해제 시차로 바뀌는 잠정값이라 점선으로 그립니다.</dd>
+            <dt>해설 문장</dt>
+            <dd>차트의 헤드라인과 설명은 데이터에서 계산한 값(최신값, 전년동기 대비, 최근 3개월 방향, 최근 3년 범위 위치)으로 자동으로 만듭니다. 원인이나 전망은 쓰지 않고, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.</dd>
+          </dl>
+        </section>
+      </article>
+
+      <aside class="side">
+        <div class="sec-head"><h2 class="sec-title sm">About</h2></div>
+        <ul class="side-list">
+          <li><a class="side-title" href="#intro">사이트 소개</a><p class="meta">구성 · 6개 동인</p></li>
+          <li><a class="side-title" href="#data">데이터·방법</a><p class="meta">데이터사전 · 전처리 · 해설 규칙</p></li>
+          <li><a class="side-title" href="learn.html">부동산 기초</a><p class="meta">용어 · 매매·전월세 절차 · 개발·투자</p></li>
+          <li><a class="side-title" href="#project">프로젝트</a><p class="meta">저장소 · 배포</p></li>
+        </ul>
+      </aside>
+    </div>
+
+    <hr class="rule">
+
+    <section aria-labelledby="about-cards-title">
+      <div class="sec-head"><h2 class="sec-title" id="about-cards-title">더 알아보기</h2></div>
+      <div class="guide-row">
+        <article class="guide">
+          <p class="meta">About | 학습 자료</p>
+          <h3><a href="learn.html">부동산 기초</a></h3>
+          <p>처음 만나는 용어부터 매매·전세·월세 계약의 흐름, 부동산 개발과 투자 심사까지 공식 자료를 바탕으로 정리했습니다.</p>
+        </article>
+        <article class="guide">
+          <p class="meta">주택시장 지표 | 시작하기</p>
+          <h3><a href="index.html#demand">① 임차수요 압력부터</a></h3>
+          <p>지역의 인구·세대·이동·고용·소득으로 임차수요가 얼마나 늘어나는지 봅니다. 나머지 동인은 화면 위 하위 탭으로 옮겨 갑니다.</p>
+        </article>
+        <article class="guide">
+          <p class="meta">부동산 정책 | 모니터</p>
+          <h3><a href="policies.html">정책 발표 따라가기</a></h3>
+          <p>발표일과 실제 적용일, 대상과 조건을 나눠 읽습니다. 새 발표 모니터링과 정책 히스토리를 함께 봅니다.</p>
+        </article>
+        <article class="guide" id="project">
+          <p class="meta">프로젝트 | 저장소·배포</p>
+          <h3>DFMBA 클라우드 컴퓨팅 팀 프로젝트</h3>
+          <p>화면은 Vercel, API 서버는 Render에 배포합니다. 코드: <a href="https://github.com/junoopark/realestate" target="_blank" rel="noopener">realestate</a> · 데이터 파이프라인: <a href="https://github.com/ksroh1913/DFMBA" target="_blank" rel="noopener">DFMBA</a></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

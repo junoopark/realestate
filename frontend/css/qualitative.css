@@ -119,8 +119,7 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
 @media (max-width: 700px) {
   .qual-page .site-header { padding: 13px 18px; }
   .qual-page .header-right { flex-wrap: nowrap; width: 100%; }
-  .qual-page .site-header nav { flex: 1; }
-  .qual-page .site-header nav a { padding: 6px 10px; font-size: 12px; }
+  /* 머리 메뉴 크기는 style.css 의 공통 규칙(주요 메뉴 4개)이 정한다 */
   .qual-page .controls button { padding: 0 9px; }
   .qual-main { padding: 0 20px; }
   .qual-hero { padding-top: 32px; }

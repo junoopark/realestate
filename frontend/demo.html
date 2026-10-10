@@ -17,8 +17,31 @@
   <header class="site-header">
     <h1 data-i18n="demo.h1">API 연동 실습</h1>
     <div class="header-right">
-      <nav aria-label="페이지 이동" data-i18n-attr="aria-label:nav.aria">
-        <a href="index.html" data-i18n="nav.overview">Overview</a>
+      <nav id="view-nav" class="main-nav" aria-label="주요 메뉴">
+        <!-- 주요 메뉴 4개. 모든 페이지에 같은 내용이 들어 있으니 바꿀 때는 index·learn·policies·about·demo 를 함께 고친다 -->
+        <a href="index.html#overview" data-view="overview">Overview</a>
+        <div class="nav-item">
+          <a href="index.html#demand" class="nav-top" data-nav="indicators">주택시장 지표</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-indicators"><span class="sr-only">주택시장 지표 하위 메뉴 열기</span></button>
+          <ul class="nav-menu" id="menu-indicators">
+            <li><a href="index.html#demand" data-view="demand">① 임차수요 압력</a></li>
+            <li><a href="index.html#supply" data-view="supply">② 주택공급·재고 여건</a></li>
+            <li><a href="index.html#finance" data-view="finance">③ 금융여건·상대가격</a></li>
+            <li><a href="index.html#rental" data-view="rental">④ 임대시장 수급·전환 구조</a></li>
+            <li><a href="index.html#trigger" data-view="trigger">⑤ 시장과열·단기 트리거</a></li>
+            <li><a href="index.html#macro" data-view="macro">⑥ 거시경기·금융시장 여건</a></li>
+          </ul>
+        </div>
+        <a href="policies.html" data-nav="policy">부동산 정책</a>
+        <div class="nav-item">
+          <a href="about.html" class="nav-top" data-nav="about">About</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-about"><span class="sr-only">About 하위 메뉴 열기</span></button>
+          <ul class="nav-menu nav-menu-end" id="menu-about">
+            <li><a href="about.html#intro">사이트 소개</a></li>
+            <li><a href="about.html#data">데이터·방법</a></li>
+            <li><a href="learn.html">부동산 기초</a></li>
+          </ul>
+        </div>
       </nav>
       <div class="controls">
         <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>

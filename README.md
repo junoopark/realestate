@@ -12,6 +12,8 @@
   - 변수 × 지역 최신값 요약표
   - 변수별 시계열 차트(마우스·키보드로 값 읽기, 출처·전처리 방법)를 보여줍니다.
   - 설명은 [`frontend/data/drivers.json`](frontend/data/drivers.json), 값은 [`frontend/data/factor_sample.json`](frontend/data/factor_sample.json)에서 읽습니다.
+- **상단 메뉴 4개**: Overview · 주택시장 지표(하위 메뉴: 6개 동인) · 부동산 정책 · About(하위 메뉴: 사이트 소개, 데이터·방법, 부동산 기초). 다섯 페이지(`index`·`learn`·`policies`·`about`·`demo`)에 같은 메뉴가 들어 있으니 바꿀 때는 함께 고칩니다.
+- **About**: `about.html` — 사이트 구성, 데이터사전·전처리·해설 규칙, 부동산 기초·프로젝트 안내.
 - **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
 - **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
 - **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
@@ -30,6 +32,7 @@
 realestate/
 ├─ frontend/              # Vercel (Root Directory)
 │   ├─ index.html         # 대시보드 (Overview 차트 타일 + 동인 탭 6개)
+│   ├─ about.html         # 사이트 소개 · 데이터·방법
 │   ├─ demo.html          # API 연동 실습
 │   ├─ learn.html         # 용어·거래·개발·기관 투자 기초
 │   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
