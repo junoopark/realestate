@@ -137,8 +137,9 @@ function fmtAxis(v) {
 }
 
 // ── 선 차트 ───────────────────────────────────────────
-// opts: { periods, series: [{name, values, color}], valueFmt(v, axis), height, zeroLine, provisionalAt }
+// opts: { periods, series: [{name, values, color}], valueFmt(v, axis), height, zeroLine, provisionalAt, frame, unitLabel }
 // provisionalAt: 이 위치부터는 잠정값 → 점선으로 이어 그리고 말풍선에 '잠정' 표시
+// frame: 리서치 차트 모양 — 플롯 테두리, x 눈금 세로선, 오른쪽에도 같은 y 눈금(같은 척도, 이중축 아님), 축 위 단위(unitLabel)
 function lineChart(container, opts) {
   container.replaceChildren();
   container.classList.add("chart");
@@ -160,7 +161,8 @@ function lineChart(container, opts) {
   const ticks = niceTicks(lo, hi);
   // y축 글자가 잘리지 않도록 가장 긴 눈금 글자에 맞춰 왼쪽 여백을 잡는다
   const tickText = ticks.map((t) => (opts.valueFmt ? opts.valueFmt(t, true) : fmtNumber(t)));
-  const m = { top: 10, right: 14, bottom: 28, left: Math.max(36, Math.max(...tickText.map((s) => s.length)) * 7 + 14) };
+  const labelW = Math.max(36, Math.max(...tickText.map((s) => s.length)) * 7 + 14);
+  const m = { top: opts.frame ? 26 : 10, right: opts.frame ? labelW : 14, bottom: 28, left: labelW };
   const iw = width - m.left - m.right;
   const ih = height - m.top - m.bottom;
   const y0 = ticks[0];
@@ -178,7 +180,22 @@ function lineChart(container, opts) {
     const label = svgEl("text", { x: m.left - 8, y: y(t), "text-anchor": "end", "dominant-baseline": "middle" });
     label.textContent = tickText[k];
     grid.append(label);
+    if (opts.frame) {
+      const right = svgEl("text", { x: width - m.right + 8, y: y(t), "text-anchor": "start", "dominant-baseline": "middle" });
+      right.textContent = tickText[k];
+      grid.append(right);
+    }
   });
+  if (opts.frame) {
+    grid.append(svgEl("rect", { x: m.left, y: m.top, width: width - m.left - m.right, height: height - m.top - m.bottom, class: "chart-frame" }));
+    if (opts.unitLabel) {
+      for (const [ux, anchor] of [[m.left - 8, "end"], [width - m.right + 8, "start"]]) {
+        const u = svgEl("text", { x: ux, y: m.top - 14, "text-anchor": anchor, class: "chart-unit" });
+        u.textContent = opts.unitLabel;
+        grid.append(u);
+      }
+    }
+  }
   svg.append(grid);
 
   // x축: 글자가 겹치지 않는 간격 중 연·반기·분기 경계에 맞는 것을 골라 눈금과 날짜를 적는다
@@ -192,6 +209,7 @@ function lineChart(container, opts) {
     const p = opts.periods[i];
     if (periodOrdinal(p).ord % step !== 0) continue;
     xg.append(svgEl("line", { x1: x(i), x2: x(i), y1: base, y2: base + 5 }));
+    if (opts.frame) xg.append(svgEl("line", { x1: x(i), x2: x(i), y1: m.top, y2: base, class: "chart-vgrid" }));
     const t = svgEl("text", { x: x(i), y: base + 19, "text-anchor": x(i) > width - 24 ? "end" : "middle" });
     t.textContent = step >= perYear ? p.slice(0, 4) : periodLabel(p); // 1년 이상 간격이면 연도만
     xg.append(t);
@@ -298,6 +316,51 @@ function lineChart(container, opts) {
       show((current < 0 ? n - 1 : current) + (e.key === "ArrowRight" ? 1 : -1));
     }
   });
+  return { margin: m };
+}
+
+// ── 리서치 차트 틀: 가운데 제목·부제 + 차트 + 안쪽 범례 + 자료 줄 ─────────
+// opts: lineChart 옵션 + { title, subtitle, source }
+function figure(container, opts) {
+  container.replaceChildren();
+  const fig = document.createElement("figure");
+  fig.className = "fig";
+  const cap = document.createElement("figcaption");
+  cap.className = "fig-title";
+  const t = document.createElement("strong");
+  t.textContent = opts.title || "";
+  cap.append(t);
+  if (opts.subtitle) {
+    const sub = document.createElement("span");
+    sub.textContent = opts.subtitle;
+    cap.append(sub);
+  }
+  const box = document.createElement("div");
+  box.className = "fig-plot";
+  fig.append(cap, box);
+  container.append(fig);
+  const drawn = lineChart(box, { ...opts, frame: true });
+  // 계열이 2개 이상이면 플롯 안 왼쪽 위에 선 모양 범례
+  if (drawn && opts.series.length > 1) {
+    const legend = document.createElement("ul");
+    legend.className = "fig-legend";
+    legend.style.left = `${drawn.margin.left + 8}px`;
+    legend.style.top = `${drawn.margin.top + 6}px`;
+    for (const s of opts.series) {
+      const li = document.createElement("li");
+      const key = document.createElement("span");
+      key.style.background = s.color;
+      li.append(key, document.createTextNode(s.name));
+      legend.append(li);
+    }
+    box.append(legend);
+  }
+  if (opts.source) {
+    const src = document.createElement("p");
+    src.className = "fig-source";
+    src.textContent = opts.source;
+    fig.append(src);
+  }
 }
 
 // 현재 테마의 계열 색 (CSS 변수)

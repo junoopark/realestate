@@ -66,7 +66,7 @@ def main():
 
         for width in [390, 760]:
             page.set_viewport_size({"width": width, "height": 844})
-            for path, ready in [("learn.html", ".term-card"), ("learn.html#transactions", ".process-step"), ("learn.html#investment", ".metric-card"), ("policies.html", ".policy-card"), ("policies.html#monitor", ".monitor-card"), ("index.html", '[data-view="macro"]')]:
+            for path, ready in [("learn.html", ".term-card"), ("learn.html#transactions", ".process-step"), ("learn.html#investment", ".metric-card"), ("policies.html", ".policy-card"), ("policies.html#monitor", ".monitor-card"), ("index.html", "#ov-briefs .brief"), ("index.html#macro", ".var-card"), ("about.html", ".about-list")]:
                 page.goto(BASE + path, wait_until="domcontentloaded")
                 page.locator(ready).first.wait_for()
                 check_overflow(page)

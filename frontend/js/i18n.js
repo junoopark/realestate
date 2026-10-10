@@ -7,51 +7,21 @@
 const I18N = {
   ko: {
     // 공통
-    "nav.aria": "화면 이동",
-    "nav.overview": "Overview",
-    "nav.demo": "API 연동 실습",
     "theme.toDark": "다크",
     "theme.toLight": "라이트",
     "theme.aria.toDark": "다크 모드로 전환",
     "theme.aria.toLight": "라이트 모드로 전환",
-    "lang.other": "EN",
-    "lang.aria": "Switch to English",
-
-    // 대시보드 — 6개 타일 (좌상단부터 가로 순서)
-    "tile.prices.title": "주택가격 동향",
-    "tile.transactions.title": "거래 동향",
-    "tile.rent.title": "전월세 시장",
-    "tile.supply.title": "공급·분양",
-    "tile.finance.title": "금리·대출",
-    "tile.sentiment.title": "시장 심리",
-    "tile.placeholder": "내용 준비 중",
-    "tile.error": "데이터를 불러오지 못했습니다",
 
     // 동인 탭 (factors.js)
-    "factor.question": "핵심 질문",
-    "factor.subareas": "주요 하위영역",
-    "factor.principle": "분류 원칙",
-    "factor.variables": "변수 {n}개",
-    "factor.secondary": "2차 동인",
-    "factor.sign": "예상 부호",
-    "factor.lead": "기대 선행성",
-    "factor.freq": "빈도",
-    "factor.source": "출처",
-    "factor.region": "지역 범위",
-    "factor.release": "발표·가용 시점",
-    "factor.period": "수록기간",
-    "factor.transform": "권장 가공",
-    "factor.leakage": "Leakage {level}",
-    "factor.chart": "차트 준비 중",
     "factor.loadError": "동인 데이터를 불러오지 못했습니다 (data/drivers.json)",
 
     // 대시보드 페이지
-    "index.title": "DFMBA 한국 주택시장 101",
+    "index.title": "KHMI",
     "index.desc": "주요 부동산 지표를 한 화면에 모아 보는 대시보드",
-    "index.h1": "DFMBA 한국 주택시장 101",
+    "index.h1": "KHMI",
 
     // 연동 실습 페이지
-    "demo.title": "API 연동 실습 — DFMBA 한국 주택시장 101",
+    "demo.title": "API 연동 실습 — KHMI",
     "demo.desc": "FastAPI 백엔드 API를 호출하고 결과를 보여주는 연동 실습 페이지",
     "demo.h1": "API 연동 실습",
     "demo.lead":
@@ -87,35 +57,21 @@ const I18N = {
 
   en: {
     // Common
-    "nav.aria": "View navigation",
-    "nav.overview": "Overview",
-    "nav.demo": "API Demo",
     "theme.toDark": "Dark",
     "theme.toLight": "Light",
     "theme.aria.toDark": "Switch to dark mode",
     "theme.aria.toLight": "Switch to light mode",
-    "lang.other": "한국어",
-    "lang.aria": "한국어로 전환",
 
-    // Dashboard — 6 tiles (left to right, top to bottom)
-    "tile.prices.title": "Housing Prices",
-    "tile.transactions.title": "Transactions",
-    "tile.rent.title": "Rental Market",
-    "tile.supply.title": "Supply & Presales",
-    "tile.finance.title": "Rates & Lending",
-    "tile.sentiment.title": "Market Sentiment",
-    "tile.placeholder": "Content coming soon",
-    "tile.error": "Failed to load data",
-    "factor.chart": "Chart coming soon",
+    // Driver tabs (factors.js)
     "factor.loadError": "Failed to load driver data (data/drivers.json)",
 
     // Dashboard page
-    "index.title": "DFMBA Korea Housing Market 101",
+    "index.title": "KHMI",
     "index.desc": "A dashboard that gathers key real estate indicators on one screen",
-    "index.h1": "DFMBA Korea Housing Market 101",
+    "index.h1": "KHMI",
 
     // API demo page
-    "demo.title": "API Demo — DFMBA Korea Housing Market 101",
+    "demo.title": "API Demo — KHMI",
     "demo.desc": "A demo page that calls a FastAPI backend and displays the results",
     "demo.h1": "API Integration Demo",
     "demo.lead":
@@ -156,15 +112,6 @@ function detectLang() {
 }
 
 let currentLang = detectLang();
-
-function getLang() {
-  return currentLang;
-}
-
-// 날짜 표시에 쓸 로케일
-function getLocale() {
-  return currentLang === "ko" ? "ko-KR" : "en-US";
-}
 
 // 문구 조회. "{이름}" 자리는 params 로 채운다. 없는 키는 한국어 → 키 이름 순으로 대신한다.
 function t(key, params = {}) {

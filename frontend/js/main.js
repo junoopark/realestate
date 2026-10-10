@@ -1,4 +1,4 @@
-// 공통 동작: 다크모드 전환 버튼 (index.html, demo.html 공용)
+// 공통 동작: 다크모드 전환 버튼 + 머리 메뉴의 하위 메뉴 열고 닫기 (모든 페이지 공용)
 // theme-init.js(테마 초기값)와 i18n.js(문구 사전)가 먼저 로드되어 있어야 한다.
 
 const themeBtn = document.querySelector("#theme-btn");
@@ -52,3 +52,25 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 
 applyI18n();
 renderControls();
+
+// 머리 메뉴 하위 메뉴: 마우스를 올리거나 키보드로 들어가면 CSS 가 연다.
+// 터치 화면처럼 올릴 수 없는 경우를 위해 ▾ 버튼으로도 열고 닫는다.
+for (const btn of document.querySelectorAll(".nav-caret")) {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = btn.getAttribute("aria-expanded") !== "true";
+    document.querySelectorAll(".nav-caret").forEach((b) => b.setAttribute("aria-expanded", "false"));
+    btn.setAttribute("aria-expanded", String(open));
+  });
+}
+document.addEventListener("click", () => {
+  document.querySelectorAll(".nav-caret[aria-expanded='true']").forEach((b) => b.setAttribute("aria-expanded", "false"));
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") document.querySelectorAll(".nav-caret[aria-expanded='true']").forEach((b) => b.setAttribute("aria-expanded", "false"));
+});
+// 하위 메뉴에서 같은 페이지 안의 동인을 고르면 메뉴를 닫는다
+window.addEventListener("hashchange", () => {
+  document.querySelectorAll(".nav-caret[aria-expanded='true']").forEach((b) => b.setAttribute("aria-expanded", "false"));
+  if (document.activeElement?.closest(".nav-menu")) document.activeElement.blur();
+});

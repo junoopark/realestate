@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="index.title">DFMBA 한국 주택시장 101</title>
+  <title data-i18n="index.title">KHMI</title>
   <meta name="description" content="주요 부동산 지표를 한 화면에 모아 보는 대시보드" data-i18n-attr="content:index.desc">
   <script src="js/theme-init.js"></script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700;900&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="site-header">
-    <h1 data-i18n="index.h1">DFMBA 한국 주택시장 101</h1>
+    <h1><a href="index.html#overview" title="Overview로 이동" data-i18n="index.h1">KHMI</a></h1>
     <div class="header-right">
       <!-- 탭: Overview + 6개 동인. 동인 탭 링크는 factors.js 가 data/drivers.json 을 읽어 채운다 -->
-      <nav id="view-nav" aria-label="화면 이동" data-i18n-attr="aria-label:nav.aria">
-        <a href="#overview" data-view="overview" aria-current="page" data-i18n="nav.overview">Overview</a>
-        <a href="learn.html" data-page-link>부동산 기초</a>
-        <a href="policies.html" data-page-link>정책 모니터</a>
+      <nav id="view-nav" class="main-nav" aria-label="주요 메뉴">
+        <!-- 주요 메뉴 4개. 모든 페이지에 같은 내용이 들어 있으니 바꿀 때는 index·learn·policies·about·demo 를 함께 고친다 -->
+        <a href="index.html#overview" data-view="overview" aria-current="page">Overview</a>
+        <div class="nav-item">
+          <a href="index.html#demand" class="nav-top" data-nav="indicators">주택시장 지표</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-indicators"><span class="sr-only">주택시장 지표 하위 메뉴 열기</span></button>
+          <ul class="nav-menu" id="menu-indicators">
+            <li><a href="index.html#demand" data-view="demand">① 임차수요 압력</a></li>
+            <li><a href="index.html#supply" data-view="supply">② 주택공급·재고 여건</a></li>
+            <li><a href="index.html#finance" data-view="finance">③ 금융여건·상대가격</a></li>
+            <li><a href="index.html#rental" data-view="rental">④ 임대시장 수급·전환 구조</a></li>
+            <li><a href="index.html#trigger" data-view="trigger">⑤ 시장과열·단기 트리거</a></li>
+            <li><a href="index.html#macro" data-view="macro">⑥ 거시경기·금융시장 여건</a></li>
+          </ul>
+        </div>
+        <a href="policies.html" data-nav="policy">부동산 정책</a>
+        <div class="nav-item">
+          <a href="about.html" class="nav-top" data-nav="about">About</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-about"><span class="sr-only">About 하위 메뉴 열기</span></button>
+          <ul class="nav-menu nav-menu-end" id="menu-about">
+            <li><a href="about.html#intro">사이트 소개</a></li>
+            <li><a href="about.html#data">데이터·방법</a></li>
+            <li><a href="learn.html">부동산 기초</a></li>
+          </ul>
+        </div>
       </nav>
       <div class="controls">
         <button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button>
@@ -27,66 +51,83 @@
   </header>
 
   <!--
-    Overview: 맨 위에 월세가격지수·변화율(1행 2열), 그 아래 6개 동인 타일. 타일 하나에 큰 차트 하나.
-    - 각 타일의 본문(<div class="tile-body" data-tile="...">)은 factors.js 의 renderOverview 가 채운다.
-    - 동인별 대표 지표는 factors.js 의 HEADLINES 에서 바꾼다. 타일 순서·id 는 동인 탭과 같다.
+    Overview: 리서치 사이트 첫 화면 구성 (factors.js renderOverview 가 채운다)
+    1) 시장 코멘터리: 월세가격지수 해설 + 차트, 오른쪽에 동인별 코멘터리 목록
+    2) 최근 기준시점 지표 / 이달의 차트(금리 3종)
+    3) 동인 브리프: 6개 동인 대표 지표 카드 (좌우로 넘김). 대표 지표는 factors.js 의 HEADLINES
+    4) 읽는 법: 데이터사전·전처리본의 원칙 요약 (고정 문구)
   -->
   <main class="overview" id="view-overview">
-    <div id="overview-filter"></div>
+    <div class="container">
 
-    <h2 class="overview-heading">월세 가격</h2>
-    <div class="tiles">
-
-      <section class="tile" id="tile-rent-level" aria-labelledby="tile-rent-level-title">
-        <header class="tile-head"><h2 id="tile-rent-level-title">월세가격지수</h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="rent-level"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      <section aria-labelledby="ov-commentary-title">
+        <div class="sec-head">
+          <h2 class="sec-title" id="ov-commentary-title">시장 코멘터리</h2>
+          <div id="ov-range" class="sec-tools"></div>
+        </div>
+        <div class="split">
+          <article class="feature" id="ov-feature"><p class="tile-placeholder">내용 준비 중</p></article>
+          <aside class="side">
+            <div class="sec-head"><h2 class="sec-title sm">동인별 코멘터리</h2><a class="more" href="#demand">동인 탭 »</a></div>
+            <ul class="side-list" id="ov-recent"></ul>
+          </aside>
+        </div>
       </section>
 
-      <section class="tile" id="tile-rent-change" aria-labelledby="tile-rent-change-title">
-        <header class="tile-head">
-          <h2 id="tile-rent-change-title">월세가격지수 변화율</h2>
-          <div class="seg" id="rent-change-seg" role="group" aria-label="변화율 기준">
-            <button type="button" data-value="yoy">전년동월 대비</button>
-            <button type="button" data-value="mom">전월 대비</button>
+      <hr class="rule">
+
+      <section class="split split-even">
+        <div>
+          <div class="sec-head"><h2 class="sec-title">최근 기준시점 지표</h2><span class="sec-sub">자료 기준월이 늦은 순</span></div>
+          <ul class="side-list releases" id="ov-releases"></ul>
+        </div>
+        <div class="gow">
+          <div class="sec-head"><h2 class="sec-title muted-title">이달의 차트</h2></div>
+          <div id="ov-gow"></div>
+          <p class="gow-note" id="ov-gow-note"></p>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <section aria-labelledby="ov-briefs-title">
+        <div class="sec-head">
+          <h2 class="sec-title" id="ov-briefs-title">동인 브리프</h2>
+          <span class="sec-sub">차트: DFMBA 전처리본 샘플</span>
+          <div class="carousel-nav">
+            <button type="button" data-scroll="prev" aria-label="이전 카드">‹</button>
+            <button type="button" data-scroll="next" aria-label="다음 카드">›</button>
           </div>
-          <span class="tile-scope"></span>
-        </header>
-        <div class="tile-body" data-tile="rent-change"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+        </div>
+        <div class="brief-row" id="ov-briefs"></div>
       </section>
 
-    </div>
+      <hr class="rule">
 
-    <h2 class="overview-heading">6개 동인 <span>동인별 대표 지표 · 제목을 누르면 그 동인의 전체 변수를 봅니다</span></h2>
-    <div class="tiles">
-
-      <section class="tile" id="tile-demand" aria-labelledby="tile-demand-title">
-        <header class="tile-head"><h2 id="tile-demand-title"><a href="#demand">① 임차수요 압력</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="demand"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-      </section>
-
-      <section class="tile" id="tile-supply" aria-labelledby="tile-supply-title">
-        <header class="tile-head"><h2 id="tile-supply-title"><a href="#supply">② 주택공급·재고 여건</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="supply"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-      </section>
-
-      <section class="tile" id="tile-finance" aria-labelledby="tile-finance-title">
-        <header class="tile-head"><h2 id="tile-finance-title"><a href="#finance">③ 금융여건·상대가격</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="finance"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-      </section>
-
-      <section class="tile" id="tile-rental" aria-labelledby="tile-rental-title">
-        <header class="tile-head"><h2 id="tile-rental-title"><a href="#rental">④ 임대시장 수급·전환 구조</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="rental"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-      </section>
-
-      <section class="tile" id="tile-trigger" aria-labelledby="tile-trigger-title">
-        <header class="tile-head"><h2 id="tile-trigger-title"><a href="#trigger">⑤ 시장과열·단기 트리거</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="trigger"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
-      </section>
-
-      <section class="tile" id="tile-macro" aria-labelledby="tile-macro-title">
-        <header class="tile-head"><h2 id="tile-macro-title"><a href="#macro">⑥ 거시경기·금융시장 여건</a></h2><span class="tile-scope"></span></header>
-        <div class="tile-body" data-tile="macro"><p class="tile-placeholder" data-i18n="tile.placeholder">내용 준비 중</p></div>
+      <section aria-labelledby="ov-guide-title">
+        <div class="sec-head"><h2 class="sec-title" id="ov-guide-title">읽는 법</h2><a class="more" href="learn.html">부동산 기초 »</a></div>
+        <div class="guide-row">
+          <article class="guide">
+            <p class="meta">데이터사전 | 분류 구조</p>
+            <h3>6개 동인은 세 층으로 나뉩니다</h3>
+            <p>①~④는 지역별 구조적 취약성, ⑤는 급등 직전의 단기 트리거, ⑥은 전 자치구에 공통인 거시·금융 환경입니다.</p>
+          </article>
+          <article class="guide">
+            <p class="meta">데이터사전 | 예상 부호</p>
+            <h3>부호 +, −, ± 읽기</h3>
+            <p>+는 값이 오르면 월세 리스크가 커지는 쪽, −는 줄어드는 쪽, ±는 국면에 따라 방향이 달라지는 변수입니다. 해설 문장의 방향 해석은 이 부호만 근거로 합니다.</p>
+          </article>
+          <article class="guide">
+            <p class="meta">전처리본 | 시점 관리</p>
+            <h3>기준기간과 공표시점은 다릅니다</h3>
+            <p>화면의 값은 기준기간(그 달·분기의 값)입니다. 예측 모형에는 실제로 그때 알 수 있던 값만 쓰도록 공표 시차를 반영한 별도 시트를 씁니다.</p>
+          </article>
+          <article class="guide">
+            <p class="meta">전처리본 | 보완·잠정</p>
+            <h3>보완값과 잠정값 표시</h3>
+            <p>빈칸은 전처리본 규칙으로 채운 값이 섞여 있고, 실거래 신고건수의 최근 3개월은 신고기한 때문에 바뀌는 잠정값이라 점선으로 그립니다.</p>
+          </article>
+        </div>
       </section>
 
     </div>
@@ -99,6 +140,7 @@
   <script src="js/main.js"></script>
   <script src="js/config.js"></script>
   <script src="js/charts.js"></script>
+  <script src="js/notes.js"></script>
   <script src="js/factors.js"></script>
 </body>
 </html>
