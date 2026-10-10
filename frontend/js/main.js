@@ -1,4 +1,4 @@
-// 공통 동작: 다크모드 전환 버튼 + 머리 메뉴의 하위 메뉴 열고 닫기 (모든 페이지 공용)
+// 공통 동작: 다크모드 전환 버튼 + 머리 메뉴의 하위 메뉴 열고 닫기 + 머리띠 높이 알림 (모든 페이지 공용)
 // theme-init.js(테마 초기값)와 i18n.js(문구 사전)가 먼저 로드되어 있어야 한다.
 
 const themeBtn = document.querySelector("#theme-btn");
@@ -74,3 +74,12 @@ window.addEventListener("hashchange", () => {
   document.querySelectorAll(".nav-caret[aria-expanded='true']").forEach((b) => b.setAttribute("aria-expanded", "false"));
   if (document.activeElement?.closest(".nav-menu")) document.activeElement.blur();
 });
+
+// 머리띠 높이를 CSS 변수(--header-h)로 알려준다. 머리띠 아래에 붙는 요소(동인 탭의 보기 설정 줄,
+// demo.html 의 상태 줄, 앵커 이동 위치)가 이 값을 쓴다. 화면 폭에 따라 머리띠 높이가 바뀌므로 계속 따라간다
+const siteHeader = document.querySelector(".site-header");
+if (siteHeader) {
+  new ResizeObserver(([entry]) => {
+    document.documentElement.style.setProperty("--header-h", `${Math.ceil(entry.target.getBoundingClientRect().height)}px`);
+  }).observe(siteHeader);
+}

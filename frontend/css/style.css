@@ -606,7 +606,7 @@ code {
 
 .status {
   position: sticky;
-  top: 72px;                 /* 고정 헤더 바로 아래 */
+  top: calc(var(--header-h, 124px) + 8px);   /* 머리띠 바로 아래 (머리띠 높이는 main.js 가 잰다) */
   z-index: 1;
   display: flex;
   align-items: center;
@@ -753,9 +753,6 @@ code {
   .var-grid { gap: 28px; }
   .about-list { grid-template-columns: 1fr; gap: 4px; }
   .about-list dd { margin-bottom: 12px; }
-}
-@media (max-width: 600px) {
-  .status { top: 108px; }   /* 좁은 화면에서는 헤더가 두 줄이 된다 */
 }
 @media (max-width: 380px) {
   .main-nav > a,
