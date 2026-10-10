@@ -238,27 +238,27 @@ a:hover { color: var(--brand-hover); }
 .nav-menu a:hover { background: var(--brand-soft); color: var(--brand); }
 .nav-menu a[aria-current="page"] { color: var(--brand); font-weight: 700; box-shadow: inset 3px 0 0 var(--brand); }
 
-/* 테마 버튼 */
+/* 테마 버튼: 머리띠 위에서 눈에 덜 띄게 아이콘만 작게 (이름은 main.js 가 aria-label 로 붙인다) */
 .controls { display: flex; gap: 6px; }
 .controls button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--masthead-btn);
-  color: #fff;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--masthead-soft);
+  opacity: 0.7;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: opacity 0.15s, border-color 0.15s;
 }
-.controls button:hover { background: #4a7bd6; }
+.controls button:hover { opacity: 1; border-color: rgba(255, 255, 255, 0.35); }
+.controls .lbl { display: none; }
 .controls .ico { display: inline-flex; }
-.controls .ico svg { width: 15px; height: 15px; }
+.controls .ico svg { width: 14px; height: 14px; }
 
 /* 키보드 이동 시 포커스 표시 */
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
@@ -744,8 +744,6 @@ code {
   .nav-item .nav-top { font-size: 13px; padding: 6px 5px; }
   .nav-caret { width: 16px; }
   .nav-menu { min-width: 200px; }
-  .controls button { padding: 0 9px; }
-  .controls .lbl { display: none; }           /* 테마 버튼은 아이콘만 (이름은 aria-label 로 남아 있다) */
   .container { padding: 20px 16px 40px; }
   .rule { margin: 28px 0; }
   .filter-bar { gap: 6px 12px; }
