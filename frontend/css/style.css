@@ -298,14 +298,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .meta { font-size: 14px; color: var(--ink-soft); }
 .byline { margin-top: 18px; font-size: 14px; color: var(--ink-soft); }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: 0 48px; }
-.split-even { grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr); }
 .side { border-left: 1px solid var(--line-strong); padding-left: 32px; }
 .side-list { list-style: none; padding: 0; }
 .side-list li { margin-bottom: 20px; }
 .side-title { display: block; color: var(--ink); font-size: 16.5px; font-weight: 500; line-height: 1.45; text-decoration: none; }
 .side-title:hover { color: var(--brand); text-decoration: underline; }
 .side-list .meta { margin-top: 3px; }
-.releases .src { color: var(--brand); font-weight: 600; }
 .bullets { padding-left: 20px; }
 .bullets li { margin: 0 0 12px; font-size: 15.5px; line-height: 1.6; }
 .bullets li::marker { color: var(--ink-soft); }
@@ -381,9 +379,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .seg button[aria-pressed="true"] { background: var(--card-bg); color: var(--ink); box-shadow: 0 1px 2px var(--shadow-strong), 0 0 0 1px var(--line); }
 
 /* ══ Overview (index.html #view-overview, factors.js renderOverview) ═══════ */
-/* 대표 코멘터리 */
-.feature-title { margin: 6px 0 22px; font-family: var(--serif); font-size: clamp(24px, 2.4vw, 34px); font-weight: 800; line-height: 1.3; letter-spacing: -0.015em; color: var(--title-ink); }
-.feature-cols { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr); gap: 32px; align-items: start; }
+/* 차트 값 고르기 (수준 / 전년동월 / 전월) */
 .text-tabs { display: flex; justify-content: center; gap: 16px; margin-bottom: 6px; }
 .text-tabs button {
   padding: 2px 0;
@@ -584,13 +580,35 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .rank-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 2px; }
 .rank-value { text-align: right; font-weight: 600; }
 
-/* 주요 정책 동향 */
-.policy-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
-.policy-item h3 { margin: 6px 0 8px; font-family: var(--serif); font-size: 17.5px; font-weight: 700; line-height: 1.4; }
-.policy-item h3 a { color: var(--title-ink); text-decoration: none; }
-.policy-item h3 a:hover { text-decoration: underline; }
-.policy-sum { font-size: 14px; line-height: 1.6; color: var(--ink); }
-.policy-item .byline { margin-top: 8px; font-size: 12.5px; }
+/* KHMI Dashboard: 주택시장 가격 동향 · 이달의 차트 · 주요 정책 동향 세 칸 (칸 사이 세로선) */
+.home-row { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 0.85fr); }
+.home-col { min-width: 0; padding: 0 28px; border-left: 1px solid var(--line-strong); }
+.home-col:first-child { padding-left: 0; border-left: 0; }
+.home-col:last-child { padding-right: 0; }
+.col-head { display: flex; align-items: baseline; gap: 12px; }
+.col-head .more { margin-left: auto; font-size: 13px; }
+.col-title { margin-bottom: 10px; font-family: var(--serif); font-size: 19px; font-weight: 700; color: var(--title-ink); }
+.col-headline { margin: 4px 0 12px; font-family: var(--serif); font-size: 18px; font-weight: 700; line-height: 1.4; color: var(--title-ink); }
+.bullets.compact li { margin-bottom: 6px; font-size: 14px; line-height: 1.55; }
+.home-col .bullets { margin-top: 12px; }
+.home-col .gow-note { font-size: 14px; }
+
+/* 주요 정책 동향 (좁은 칸 목록) */
+.policy-item { padding: 12px 0; border-top: 1px solid var(--line); }
+.policy-item:first-child { padding-top: 0; border-top: 0; }
+.policy-item h4 { margin: 4px 0 6px; font-family: var(--serif); font-size: 16px; font-weight: 700; line-height: 1.4; }
+.policy-item h4 a { color: var(--title-ink); text-decoration: none; }
+.policy-item h4 a:hover { text-decoration: underline; }
+.policy-item .meta { font-size: 12.5px; }
+.policy-sum {                /* 요약은 두 줄까지만 */
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 /* ══ 부동산 대시보드 (index.html #view-dash, factors.js) ══════════════════ */
 /* Overview: 동인별 코멘터리 (헤드라인 + 차트 + 짧은 설명) */
@@ -814,14 +832,14 @@ code {
   .filter-bar { position: sticky; }   /* 좁은 화면에서는 시도 토글까지 붙으면 화면을 많이 가리므로 고정하지 않는다 */
 }
 @media (max-width: 1100px) {
-  .policy-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-row { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 32px; }
+  .home-col:nth-child(3) { grid-column: 1 / -1; padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line-strong); }
   .map-layout { grid-template-columns: 1fr; }
   .guide-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .feature-cols { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
   .ov-grid { grid-template-columns: 1fr; }
-  .split, .split-even { grid-template-columns: 1fr; }
+  .split { grid-template-columns: 1fr; }
   .side { border-left: 0; padding-left: 0; border-top: 1px solid var(--line-strong); padding-top: 24px; margin-top: 28px; }
 }
 @media (max-width: 720px) {
@@ -840,7 +858,9 @@ code {
   .filter-bar { gap: 6px 12px; }
   .seg-group { max-width: 100%; }
   .guide-row { grid-template-columns: 1fr; gap: 24px; }
-  .policy-row { grid-template-columns: 1fr; gap: 20px; }
+  .home-row { grid-template-columns: 1fr; }
+  .home-col, .home-col:nth-child(3) { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line-strong); }
+  .home-col:first-child { padding-top: 0; border-top: 0; }
   .var-grid { gap: 28px; }
   .about-list { grid-template-columns: 1fr; gap: 4px; }
   .about-list dd { margin-bottom: 12px; }
