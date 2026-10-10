@@ -647,7 +647,7 @@ code {
   background: var(--masthead-ink);
 }
 .site-header h1::after {            /* 로고 아래 물결 두 줄 + 부제 */
-  content: "SEOUL RENT RISK MONITOR · 6 DRIVERS";
+  content: "Korea Housing Market Intelligence (KHMI)";
   padding-top: 15px;
   font-family: "Pretendard Variable", "Pretendard", sans-serif;
   font-size: 11px;
@@ -958,4 +958,13 @@ code {
   .site-header nav.main-nav > a,
   .site-header nav.main-nav .nav-top { font-size: 12px; padding: 6px 3px; }
   .nav-caret { width: 14px; }
+}
+.about-origin {
+  margin: 4px 0 8px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--masthead-btn);
+  background: var(--brand-soft);
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--title-ink);
 }
