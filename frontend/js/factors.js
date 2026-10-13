@@ -432,12 +432,12 @@ function renderFactor(driver) {
 
   const head = el("div", "factor-head");
   head.append(el("h2", "note-title", `${NUMS[driver.no - 1]} ${driver.name}`));
-  head.append(el("p", "note-dek", driver.question));
+  head.append(el("p", "note-dek", `${driver.question} · ${driver.scope}`));
   wrap.append(head);
 
   // 개요·핵심 포인트 (접힘)
   const about = el("div", "fold-body");
-  about.append(el("p", null, `${driver.description}. 데이터사전에서 이 동인은 '${driver.position}'으로 분류되며, 주요 하위영역은 ${driver.subareas.join(", ")}입니다. 분류 원칙: ${driver.principle}.`));
+  about.append(el("p", null, `${driver.description}. 구분은 '${driver.scope}'이고, 주요 하위영역은 ${driver.subareas.join(", ")}입니다. 분류 원칙: ${driver.principle}. 선행연구: ${driver.lit}.`));
   about.append(el("h3", "note-sub", "핵심 포인트"));
   const ul = el("ul", "bullets");
   for (const k of keyPoints(list)) {
@@ -489,7 +489,7 @@ function renderDashOverview() {
     const h = headlineMetric(HEADLINES[d.id]);
     const item = el("article", "ov-item");
     const desc = h ? describe(h.v, h.m, h.region) : null;
-    item.append(metaLine(`${NUMS[d.no - 1]} ${d.name}`, desc?.latest ? periodLabel(desc.latest.period, true) : null));
+    item.append(metaLine(`${NUMS[d.no - 1]} ${d.name} · ${d.scope}`, desc?.latest ? periodLabel(desc.latest.period, true) : null));
     const t = el("a", "ov-title", desc ? desc.headline : d.name);
     t.href = `#${d.id}`;
     const h3 = el("h3");
