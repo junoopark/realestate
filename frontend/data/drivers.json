@@ -1,114 +1,107 @@
 {
- "_source": "서울 자치구 월세 리스크 변수 통합 데이터사전(260928) — 동인분류_가이드·Driver_Map·Variable_Master 시트",
+ "_source": "서울 자치구 월세 리스크 변수 통합 데이터사전(260928) — 동인분류_가이드·Driver_Map·Variable_Master 시트 / 동인 이름·구분·선행연구는 발표 자료 'STEP 1 선행연구에서 반복된 변수를 6개 동인으로 분류' 기준(대출금리·가계대출은 ⑥, 월세가격지수는 ④로 재배치; 원 분류는 driver_dict)",
  "drivers": [
   {
    "id": "demand",
    "no": 1,
    "name": "임차수요 압력",
    "short": "임차수요",
-   "position": "Local Vulnerability",
-   "question": "해당 지역의 임차수요가 얼마나 증가하는가?",
+   "question": "집을 빌리려는 사람의 증가",
    "subareas": [
     "인구",
     "세대",
-    "연령",
+    "청년층",
     "이동",
     "고용",
     "소득"
    ],
-   "examples": "세대수, 청년인구, 순이동, 지역 고용/소득",
    "principle": "지역별 수요의 기초 펀더멘털이면 ①",
-   "description": "지역별 인구·가구·이동·고용·소득 등 임차수요의 기초 펀더멘털을 측정"
+   "description": "지역별 인구·세대·청년층·이동·고용·소득 등 임차수요의 기초 펀더멘털을 측정",
+   "scope": "지역",
+   "lit": "전해정(2017), 한제선 외(2021)"
   },
   {
    "id": "supply",
    "no": 2,
-   "name": "주택공급·재고 여건",
+   "name": "주택공급·재고",
    "short": "공급·재고",
-   "position": "Local Vulnerability",
-   "question": "늘어나는 수요를 주택공급이 흡수할 수 있는가?",
+   "question": "늘어난 수요를 흡수할 공급 여력",
    "subareas": [
-    "재고",
     "인허가",
     "착공",
     "준공",
     "미분양",
     "임대주택"
    ],
-   "examples": "준공, 착공, 미분양, 주택수",
    "principle": "물리적 주택 공급·재고면 ②",
-   "description": "주택의 물리적 재고와 신규 공급·미분양 등 공급 흡수력을 측정"
+   "description": "인허가·착공·준공·미분양·임대주택 등 신규 공급과 재고의 흡수 여력을 측정",
+   "scope": "지역",
+   "lit": "Asquith 외(2023), Saiz(2010)"
   },
   {
    "id": "finance",
    "no": 3,
-   "name": "금융여건·상대가격",
-   "short": "금융·상대가격",
-   "position": "Local Vulnerability",
-   "question": "주거 선택의 금융비용과 상대가격이 어떻게 변하는가?",
+   "name": "매매·전세 시장",
+   "short": "매매·전세",
+   "question": "옆 시장(매매·전세) 가격의 영향",
    "subareas": [
-    "주담대",
-    "전세대출",
-    "매매/전세가격",
+    "매매가격지수",
+    "전세가격지수",
     "전세가율",
     "전환율"
    ],
-   "examples": "주담대금리, 전세대출금리, 전세가율",
-   "principle": "주택금융·매매/전세/월세 상대비용이면 ③",
-   "description": "매매·전세·월세 선택에 영향을 주는 주택금융비용과 상대가격을 측정"
+   "principle": "매매·전세 가격과 전세가율·전환율이면 ③",
+   "description": "매매·전세 가격과 전세가율·전월세전환율 등 인접 시장의 가격 영향을 측정",
+   "scope": "지역",
+   "lit": "Gallin(2008), 이장무 외(2009)"
   },
   {
    "id": "rental",
    "no": 4,
-   "name": "임대시장 수급·전환 구조",
-   "short": "임대 수급·전환",
-   "position": "Local Vulnerability / Transmission",
-   "question": "펀더멘털이 실제 임대계약 구성에 어떻게 나타나는가?",
+   "name": "임대시장 수급",
+   "short": "임대 수급",
+   "question": "임대 수요와 공급의 균형",
    "subareas": [
-    "월세비중",
-    "전세수급",
-    "월세수급",
-    "실거래 구성"
+    "월세 수급동향",
+    "전세 수급동향",
+    "거래량"
    ],
-   "examples": "전월세 실거래, 월세수급지수",
-   "principle": "임대계약 수급·전환·구성변화면 ④",
-   "description": "실제 임대계약의 수급, 전세↔월세 전환 및 거래구성 변화를 측정"
+   "principle": "임대계약 수급·거래량이면 ④",
+   "description": "월세·전세 수급동향과 실거래량으로 임대시장의 수요·공급 균형을 측정",
+   "scope": "지역",
+   "lit": "성은영 외(2023), Lansing 외(2022)"
   },
   {
    "id": "trigger",
    "no": 5,
-   "name": "시장과열·단기 트리거",
-   "short": "단기 트리거",
-   "position": "Near-term Trigger",
-   "question": "급등 직전 가격·거래·심리의 이상 신호가 있는가?",
+   "name": "시장심리",
+   "short": "시장심리",
+   "question": "가격이 오를 거라는 기대",
    "subareas": [
-    "가격 모멘텀",
-    "변동성",
-    "심리",
-    "거래 shock"
+    "주택시장 소비심리",
+    "가격전망 CSI"
    ],
-   "examples": "월세가격 모멘텀, 주택가격전망CSI",
-   "principle": "단기 가속/충격/심리 신호면 ⑤",
-   "description": "가격·심리·거래의 단기 모멘텀 또는 급변동 직전 신호를 측정"
+   "principle": "가격 기대·심리 신호면 ⑤",
+   "description": "주택시장 소비심리와 주택가격전망 CSI로 가격 상승 기대를 측정하는 단기 신호",
+   "scope": "단기",
+   "lit": "김구회 외(2016)"
   },
   {
    "id": "macro",
    "no": 6,
-   "name": "거시경기·금융시장 여건",
-   "short": "거시·금융",
-   "position": "Common Macro State",
-   "question": "전 자치구에 공통인 경기·금융 국면은 어떤가?",
+   "name": "금리·대출·거시경제",
+   "short": "금리·대출·거시",
+   "question": "전국 공통의 금리·대출·경기 국면",
    "subareas": [
-    "정책금리",
-    "시장금리",
-    "유동성",
-    "주가",
+    "기준·대출금리",
+    "물가",
     "경기",
-    "물가"
+    "대출규제정책(LTV·DSR)"
    ],
-   "examples": "기준금리, KOSPI, M2, CPI, 선행지수",
-   "principle": "전국 공통 거시·금융 변수면 ⑥",
-   "description": "전 자치구에 공통으로 작용하는 경기·금리·유동성·금융시장 국면을 측정"
+   "principle": "전국 공통 금리·대출·거시 변수면 ⑥",
+   "description": "기준·대출금리, 가계대출, 물가·경기 등 전국에 공통으로 작용하는 거시 환경을 측정",
+   "scope": "전국",
+   "lit": "Dias & Duarte(2019), 김상진 외(2016)"
   }
  ],
  "variables": [
@@ -533,7 +526,7 @@
   {
    "id": "V050",
    "name": "지역별 주택관련대출(예금은행)",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": "macro",
    "role": "설명변수 후보",
    "type": "Housing Finance",
@@ -547,12 +540,13 @@
    "region": "17개 시도(서울 포함) 시도단위만. 서울 자치구 없음. 세종은 2012-09부터.",
    "seoul25": "N",
    "source": "한국은행",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V056",
    "name": "은행대출금리_주택담보대출(신규취급액)",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -566,12 +560,13 @@
    "region": "전국 단일값 또는 전국 표본(공통 거시변수)",
    "seoul25": "N(공통값)",
    "source": "한국은행",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V057",
    "name": "은행대출금리_전세자금(신규취급액)",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -585,12 +580,13 @@
    "region": "전국 단일값 또는 전국 표본(공통 거시변수)",
    "seoul25": "N(공통값)",
    "source": "한국은행",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V059",
    "name": "비은행대출금리_주택담보대출",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -604,12 +600,13 @@
    "region": "전국 단일값 또는 전국 표본(공통 거시변수)",
    "seoul25": "N(공통값)",
    "source": "한국은행",
-   "code": "BEDBMC41"
+   "code": "BEDBMC41",
+   "driver_dict": "finance"
   },
   {
    "id": "V060",
    "name": "대출행태서베이(대출태도)_은행_가계(주택)",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -623,12 +620,13 @@
    "region": "전국 단일값 또는 전국 표본(공통 거시변수)",
    "seoul25": "N(공통값)",
    "source": "한국은행",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V069",
    "name": "예금취급기관 가계대출(용도별) 전체대출/주택관련대출",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -642,12 +640,13 @@
    "region": "전국 또는 시도단위 여부 원표 확인 필요",
    "seoul25": null,
    "source": "KOSIS/해당 작성기관",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V071",
    "name": "주택금융공사 및 주택도시기금의 정책대출",
-   "driver": "finance",
+   "driver": "macro",
    "driver2": null,
    "role": "설명변수 후보",
    "type": "Financial/Relative Price",
@@ -661,7 +660,8 @@
    "region": "전국 또는 시도단위 여부 원표 확인 필요",
    "seoul25": null,
    "source": "KOSIS/해당 작성기관",
-   "code": null
+   "code": null,
+   "driver_dict": "finance"
   },
   {
    "id": "V005",
@@ -780,7 +780,7 @@
   {
    "id": "V001",
    "name": "아파트 월세통합가격지수",
-   "driver": "trigger",
+   "driver": "rental",
    "driver2": null,
    "role": "종속변수 후보 / 시차 사용 시 설명변수",
    "type": "Market Signal",
@@ -794,7 +794,8 @@
    "region": "17개 시도·서울 25개 구",
    "seoul25": "Y",
    "source": "한국부동산원 R-ONE",
-   "code": "A_2024_00054"
+   "code": "A_2024_00054",
+   "driver_dict": "trigger"
   },
   {
    "id": "V037",
