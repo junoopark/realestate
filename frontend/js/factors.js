@@ -1,6 +1,8 @@
 // index.html 의 화면 전환과 '부동산 대시보드' (Overview + 6개 동인)
 // - data/drivers.json      : 동인·변수 설명 (데이터사전 엑셀의 동인분류_가이드·Driver_Map·Variable_Master)
-// - data/factor_sample.json: 실제 값 샘플 (DFMBA 전처리본, scripts/build_factor_sample.py 로 생성)
+// - data/factor_sample.json: 값의 기본본 (DFMBA 전처리본, scripts/build_factor_sample.py 로 생성) — 먼저 그린다
+// - API /indicators/bundle : 백엔드가 R-ONE·ECOS Open API 에서 받아 DB 에 캐시한 실제 값 — 도착하면 같은 변수를 덮어쓴다
+//   (서버가 잠들어 있거나 실패하면 기본본으로 계속 보여 준다)
 // 주소 끝의 #id 로 화면을 고른다: #home(기본), #overview, #demand, #supply, #finance, #rental, #trigger, #macro
 // Home 화면은 home.js, 숫자 표시·차트는 charts.js, 설명 문장은 notes.js 에 있다.
 
@@ -537,6 +539,36 @@ function showView() {
   }
 }
 
+// 백엔드의 실제 수집값(/indicators/bundle)을 받아 같은 변수·지역단위 계열을 덮어쓴다. 실패하면 조용히 기본본을 유지한다.
+const LIVE_TIMEOUT_MS = 20000; // Render 무료 플랜은 첫 요청이 느릴 수 있다 — 그동안은 기본본을 보여 준다
+async function overlayLiveIndicators() {
+  if (typeof API_BASE_URL === "undefined" || !sample) return;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LIVE_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_BASE_URL}/indicators/bundle`, { signal: controller.signal });
+    if (!res.ok) throw new Error(`bundle: HTTP ${res.status}`);
+    const bundle = await res.json();
+    let replaced = 0;
+    for (const live of bundle.metrics || []) {
+      if (!live.periods?.length) continue;
+      const when = live.fetched_at ? live.fetched_at.slice(0, 16).replace("T", " ") + " UTC" : "";
+      live.method = `${live.method || "원자료 그대로"} · Open API 수집본 (${live.origin}${when ? `, ${when}` : ""})`;
+      const i = sample.metrics.findIndex((m) => m.var === live.var && m.scope === live.scope);
+      if (i >= 0) sample.metrics[i] = live;
+      else sample.metrics.push(live);
+      replaced++;
+    }
+    sample.live = { generated: bundle.generated, origin: bundle.origin, count: replaced, missing: bundle.missing || [] };
+    if (replaced) showView(); // 이미 그린 화면을 실제 값으로 다시 그린다
+    console.info(`[KHMI] 실시간 지표 ${replaced}개 반영 (${bundle.origin})`, sample.live);
+  } catch (err) {
+    console.info("[KHMI] 실시간 지표를 받지 못해 기본본(factor_sample.json)을 사용합니다:", err.message);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function initFactors() {
   try {
     const [d, s] = await Promise.all(
@@ -560,6 +592,7 @@ async function initFactors() {
   }
   showView();
   window.scrollTo(0, 0);
+  overlayLiveIndicators(); // 기다리지 않는다 — 도착하면 덮어쓰고 다시 그린다
 }
 
 // 이미 같은 화면에 있을 때 로고를 눌러도 맨 위로 (같은 주소면 hashchange 가 일어나지 않는다)

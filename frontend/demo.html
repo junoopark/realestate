@@ -76,10 +76,10 @@
     </section>
 
     <section class="panel">
-      <h2><span data-i18n="demo.p3.title">3. 지표 데이터</span> <span class="method">GET /indicators/{key}</span></h2>
+      <h2><span data-i18n="demo.p3.title">3. 지표 데이터</span> <span class="method">GET /indicators/{var}</span></h2>
       <form id="series-form" class="row">
         <label for="series-key" class="sr-only" data-i18n="demo.form.key">지표 key</label>
-        <input id="series-key" name="key" required autocomplete="off" placeholder="hpi_seoul">
+        <input id="series-key" name="key" required autocomplete="off" placeholder="V002" value="V002">
         <button type="submit" data-i18n="demo.call">호출하기</button>
       </form>
       <pre id="out-series" class="out" data-i18n="demo.out.empty" data-i18n-attr="aria-label:demo.out.seriesAria">아직 호출하지 않았습니다.</pre>

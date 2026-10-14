@@ -1,0 +1,6 @@
+# 줄바꿈을 LF 로 통일 — Windows 에서 clone 해도 CRLF 로 바뀌어 전체 파일이 수정으로 잡히는 일을 막는다
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary

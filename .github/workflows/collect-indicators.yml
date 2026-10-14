@@ -1,0 +1,89 @@
+name: Collect quantitative indicators
+
+# 하루 1회(KST 09:40) Render 백엔드의 관리자 수집 API 를 호출한다.
+# 월·분기 단위 통계라 하루 한 번이면 충분하다. 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
+# 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
+
+on:
+  workflow_dispatch:
+    inputs:
+      vars:
+        description: '쉼표 구분 변수 ID (비우면 전체)'
+        required: false
+        default: ''
+      force:
+        description: '신선해도 다시 받기'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '40 0 * * *'   # 00:40 UTC = 09:40 KST
+
+permissions: {}
+
+concurrency:
+  group: indicator-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install HTTP client
+        run: python -m pip install 'requests>=2.32,<3'
+      - name: Refresh indicators when secrets are configured
+        env:
+          POLICY_API_BASE_URL: ${{ secrets.POLICY_API_BASE_URL }}
+          POLICY_ADMIN_TOKEN: ${{ secrets.POLICY_ADMIN_TOKEN }}
+          INPUT_VARS: ${{ github.event.inputs.vars }}
+          INPUT_FORCE: ${{ github.event.inputs.force }}
+        run: |
+          python - <<'PY'
+          import os, sys, time
+          from urllib.parse import urlsplit
+          import requests
+
+          base = os.environ.get('POLICY_API_BASE_URL', '').strip().rstrip('/')
+          token = os.environ.get('POLICY_ADMIN_TOKEN', '').strip()
+          if not base or not token:
+              print('::notice::Skipped: configure POLICY_API_BASE_URL and POLICY_ADMIN_TOKEN repository secrets.')
+              sys.exit(0)
+          target = urlsplit(base)
+          if target.scheme != 'https' or not target.hostname or target.username or target.password or target.query or target.fragment:
+              print('::error::POLICY_API_BASE_URL must be an HTTPS API base URL without credentials, query, or fragment.')
+              sys.exit(1)
+          params = {}
+          if os.environ.get('INPUT_VARS', '').strip():
+              params['vars'] = os.environ['INPUT_VARS'].strip()
+          if os.environ.get('INPUT_FORCE', '').strip().lower() == 'true':
+              params['force'] = 'true'
+          # Render 무료 플랜은 잠들어 있을 수 있다 — /health 로 먼저 깨운다 (최대 90초)
+          for attempt in range(6):
+              try:
+                  if requests.get(base + '/health', timeout=30).status_code == 200:
+                      break
+              except requests.RequestException:
+                  pass
+              time.sleep(15)
+          try:
+              response = requests.post(base + '/indicators/refresh', params=params, headers={'X-Admin-Token': token}, timeout=300, allow_redirects=False)
+              if response.status_code == 409:
+                  print('::notice::Collection is already running. Existing job will complete it.')
+                  sys.exit(0)
+              if response.status_code != 200:
+                  print(f'::error::Indicator API returned HTTP {response.status_code}. Check Render availability and the administrator token.')
+                  sys.exit(1)
+              result = response.json()
+              for item in result.get('results', []):
+                  print(f"{item.get('id')}: {item.get('status')} rows={item.get('rows', '')} last={item.get('last_period', '')} {item.get('error', '')}")
+              if result.get('status') != 'ok':
+                  print('::error::Some indicators failed. Prior data was preserved; inspect /indicators/status.')
+                  sys.exit(1)
+              print('Indicator collection completed.')
+          except (requests.RequestException, ValueError):
+              print('::error::Collection request failed or returned invalid JSON.')
+              sys.exit(1)
+          PY

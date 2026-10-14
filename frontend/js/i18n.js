@@ -36,7 +36,7 @@ const I18N = {
     "demo.out.listAria": "지표 목록 응답",
     "demo.out.seriesAria": "지표 데이터 응답",
     "demo.form.key": "지표 key",
-    "demo.hint": "key 는 2번 지표 목록에서 확인할 수 있습니다.",
+    "demo.hint": "변수 ID(V002 등)는 2번 지표 목록에서 확인할 수 있습니다. 응답의 origin 이 db(cache) 면 DB 에서, api(…) 면 방금 외부 API 로 받아 저장한 것입니다.",
     "demo.back": "← 대시보드로",
 
     // 요청 상태
