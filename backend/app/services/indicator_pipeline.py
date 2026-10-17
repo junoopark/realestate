@@ -5,6 +5,8 @@
   - 자료가 오래됐으면(REFRESH_HOURS 경과) DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate).
   - 정기 갱신은 CLI(scripts/collect_indicators.py) 또는 관리자 API(POST /indicators/refresh) 가 맡는다.
   - 같은 (변수, 지역, 시점) 은 INSERT … ON CONFLICT DO UPDATE 로 제자리 갱신 — 재수집해도 중복이 없다.
+  - 바뀐 값만 쓴다: 받은 값을 DB 값과 비교해 새로 생긴 것·달라진 것만 저장하고, 수집 기록에 새로·수정·변화 없음을 남긴다.
+  - 받은 값은 기본 패널(indicator_series)의 같은 계열에도 이어붙인다(레지스트리의 outputs). 화면은 그 계열을 읽는다.
 """
 
 import logging
@@ -18,7 +20,7 @@ from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.orm import Session
 
 from app.db.models import IndicatorFetchLog, IndicatorObservation, IndicatorVariable
-from app.services.indicator_registry import REGISTRY, SOURCES, IndicatorSpec, enabled_specs, get_spec
+from app.services.indicator_registry import REGISTRY, SOURCES, IndicatorSpec, enabled_specs, get_spec, specs_for_var
 from app.services.regions import SIDO, normalize_sido
 
 log = logging.getLogger(__name__)
@@ -39,8 +41,15 @@ def refresh_hours() -> int:
 
 
 def today_period(freq: str = "M") -> str:
+    """오늘이 속한 시점. 표기는 기본 패널과 같다: 월 2026-10 · 분기 2026Q4 · 반기 2026H2 · 연 2026."""
     t = date.today()
-    return f"{t.year:04d}-{t.month:02d}" if freq == "M" else f"{t.year:04d}"
+    if freq == "M":
+        return f"{t.year:04d}-{t.month:02d}"
+    if freq == "Q":
+        return f"{t.year:04d}Q{(t.month - 1) // 3 + 1}"
+    if freq == "H":
+        return f"{t.year:04d}H{1 if t.month <= 6 else 2}"
+    return f"{t.year:04d}"
 
 
 def shift_month(period: str, months: int) -> str:
@@ -88,17 +97,31 @@ def _rone_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[
     return out, chosen
 
 
+def _ecos_calls(spec: IndicatorSpec, start: str, end: str) -> list[tuple]:
+    """ECOS 호출 목록 (통계표, 항목 경로, 시작, 끝, 지역). 표가 바뀐 계열(segments)·지역별 항목(region_items)을 풀어 쓴다."""
+    p = spec.params
+    if p.get("segments"):
+        calls = []
+        for g in p["segments"]:
+            s, e = max(start, g.get("from", start)), min(end, g.get("until", end))
+            if s <= e:
+                calls.append((g["stat_code"], g["item_code"], s, e, None))
+        return calls
+    if p.get("region_items"):
+        return [(p["stat_code"], f"{p['item_code']}/{code}", start, end, region) for region, code in p["region_items"].items()]
+    return [(p["stat_code"], p["item_code"], start, end, None)]
+
+
 def _ecos_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[tuple], str | None]:
     from app.services.ecos_client import to_period
-    p = spec.params
-    raw = client.fetch_rows(p["stat_code"], p["item_code"], start, end, freq=spec.freq)
     out, item = [], None
-    for r in raw:
-        item = item or r.get("ITEM_NAME1")
-        value = _to_float(r.get("DATA_VALUE"))
-        if value is None:
-            continue
-        out.append(("전국", to_period(r.get("TIME", ""), spec.freq), value))
+    for stat_code, item_path, s, e, region in _ecos_calls(spec, start, end):
+        for r in client.fetch_rows(stat_code, item_path, s, e, freq=spec.freq):
+            item = item or r.get("ITEM_NAME1")
+            value = _to_float(r.get("DATA_VALUE"))
+            if value is None:
+                continue
+            out.append((region or "전국", to_period(r.get("TIME", ""), spec.freq), value))
     return out, item
 
 
@@ -169,11 +192,19 @@ def sync_registry(session: Session) -> None:
     session.commit()
 
 
+def _dialect_insert(session: Session):
+    return postgresql.insert if session.get_bind().dialect.name == "postgresql" else sqlite.insert
+
+
+def _same(a, b) -> bool:
+    return a is not None and b is not None and abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b))
+
+
 def upsert_observations(session: Session, variable_id: str, rows: list[tuple], fetched_at: str) -> int:
+    """(지역, 시점, 값) 을 저장한다. 이미 같은 값이 있으면 다시 쓰지 않는다(ON CONFLICT … WHERE 값이 다를 때만)."""
     if not rows:
         return 0
-    dialect = session.get_bind().dialect.name
-    insert = postgresql.insert if dialect == "postgresql" else sqlite.insert
+    insert = _dialect_insert(session)
     # 같은 (지역, 시점) 이 응답에 두 번 있으면 마지막 값만 쓴다
     dedup = {(r, p): v for r, p, v in rows}
     payload = [{"variable_id": variable_id, "region": r, "period": p, "value": v, "fetched_at": fetched_at} for (r, p), v in dedup.items()]
@@ -182,9 +213,33 @@ def upsert_observations(session: Session, variable_id: str, rows: list[tuple], f
         stmt = stmt.on_conflict_do_update(
             index_elements=["variable_id", "region", "period"],
             set_={"value": stmt.excluded.value, "fetched_at": stmt.excluded.fetched_at},
+            where=IndicatorObservation.value.is_distinct_from(stmt.excluded.value),
         )
         session.execute(stmt)
     return len(payload)
+
+
+def diff_observations(session: Session, variable_id: str, rows: list[tuple]) -> tuple[list[tuple], dict]:
+    """받은 값 중 DB 와 다른 것만 골라낸다. 반환: (저장할 행, {'new': n, 'changed': n, 'unchanged': n})."""
+    dedup = {(r, p): v for r, p, v in rows}
+    if not dedup:
+        return [], {"new": 0, "changed": 0, "unchanged": 0}
+    periods = sorted({p for _, p in dedup})
+    existing = {(r, p): v for r, p, v in session.execute(
+        select(IndicatorObservation.region, IndicatorObservation.period, IndicatorObservation.value)
+        .where(IndicatorObservation.variable_id == variable_id, IndicatorObservation.period >= periods[0],
+               IndicatorObservation.period <= periods[-1]))}
+    write, stats = [], {"new": 0, "changed": 0, "unchanged": 0}
+    for (r, p), v in dedup.items():
+        if (r, p) not in existing:
+            stats["new"] += 1
+            write.append((r, p, v))
+        elif not _same(existing[(r, p)], v):
+            stats["changed"] += 1
+            write.append((r, p, v))
+        else:
+            stats["unchanged"] += 1
+    return write, stats
 
 
 def is_stale(var: IndicatorVariable | None, hours: int | None = None) -> bool:
@@ -216,18 +271,23 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
         if var.last_period and spec.freq == "M" and not force:
             start = max(spec.start, shift_month(var.last_period, -RELOAD_TAIL_MONTHS))
         rows, item = FETCHERS[spec.source](client, spec, start, today_period(spec.freq))
-        count = upsert_observations(session, spec.id, rows, started)
+        to_write, stats = diff_observations(session, spec.id, rows)
+        count = upsert_observations(session, spec.id, to_write, started)
+        from app.services.indicator_panel import apply_outputs
+        panel = apply_outputs(session, spec, rows)
         bounds = session.execute(
             select(func.min(IndicatorObservation.period), func.max(IndicatorObservation.period))
             .where(IndicatorObservation.variable_id == spec.id)).one()
         var.item_name = item or var.item_name
         var.first_period, var.last_period = bounds[0], bounds[1]
         var.last_fetched_at, var.last_status, var.last_error, var.updated_at = started, "ok", None, started
-        entry.status, entry.rows_received, entry.rows_upserted, entry.last_period = "ok", len(rows), count, bounds[1]
+        entry.status, entry.rows_received, entry.rows_upserted, entry.last_period = "ok", len(rows), len(to_write), bounds[1]
         entry.duration_ms = int((time.perf_counter() - t0) * 1000)
         session.add(entry)
         session.commit()
-        return {"id": spec.id, "status": "ok", "rows": count, "last_period": bounds[1], "duration_ms": entry.duration_ms}
+        return {"id": spec.id, "status": "ok", "rows": len(rows), "new": stats["new"], "changed": stats["changed"],
+                "unchanged": stats["unchanged"], "panel_written": panel["written"], "last_period": bounds[1],
+                "duration_ms": entry.duration_ms}
     except Exception as exc:  # 한 변수의 실패가 다른 변수와 기존 자료를 해치지 않는다
         session.rollback()
         var = session.get(IndicatorVariable, spec.id)
@@ -240,12 +300,18 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
 
 
 def refresh_all(session: Session, var_ids: list[str] | None = None, force: bool = False, trigger: str = "cli",
-                clients: dict | None = None) -> dict:
-    """여러 변수를 차례로 갱신. 동시에 두 번 돌지 않도록 잠근다(busy)."""
+                clients: dict | None = None, source: str | None = None) -> dict:
+    """여러 변수를 차례로 갱신. 동시에 두 번 돌지 않도록 잠근다(busy). source 를 주면 그 출처만(R-ONE·ECOS·KOSIS)."""
     if not REFRESH_LOCK.acquire(blocking=False):
         return {"status": "busy", "results": []}
     try:
-        specs = enabled_specs() if not var_ids else [s for s in (get_spec(v) for v in var_ids) if s]
+        if var_ids:
+            specs = []
+            for v in var_ids:  # 변수 ID(V069)를 주면 딸린 수집 단위(V069.1·V069.2)를 모두
+                specs += [get_spec(v)] if get_spec(v) else [s for s in specs_for_var(v) if s.enabled]
+            specs = [s for s in specs if s and (source is None or s.source == source)]
+        else:
+            specs = enabled_specs(source)
         clients = dict(clients or {})
         results = []
         for spec in specs:
@@ -257,7 +323,8 @@ def refresh_all(session: Session, var_ids: list[str] | None = None, force: bool 
                     continue
             results.append(refresh_variable(session, spec, trigger=trigger, force=force, client=clients[spec.source]))
         status = "ok" if all(r["status"] in ("ok", "skipped") for r in results) else "partial"
-        return {"status": status, "checked_at": utc_now(), "results": results}
+        changed = sum(r.get("new", 0) + r.get("changed", 0) for r in results)
+        return {"status": status, "checked_at": utc_now(), "changed": changed, "results": results}
     finally:
         REFRESH_LOCK.release()
 
@@ -284,7 +351,7 @@ def load_metric(session: Session, spec: IndicatorSpec, regions: list[str] | None
         series.setdefault(region, [None] * len(periods))[index[period]] = value
     series = {r: series[r] for r in order if r in series} | {r: v for r, v in series.items() if r not in order}
     return {
-        "var": spec.id, "label": spec.label, "unit": spec.unit, "freq": spec.freq, "scope": spec.scope,
+        "var": spec.var_id, "label": spec.label, "unit": spec.unit, "freq": spec.freq, "scope": spec.scope,
         "periods": periods, "series": series,
         "source": spec.source_ref, "source_name": SOURCES[spec.source]["name"], "source_url": SOURCES[spec.source]["url"],
         "method": spec.note or "원자료 그대로 (Open API)", "release": spec.release, "item": var.item_name if var else None,

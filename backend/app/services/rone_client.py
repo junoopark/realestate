@@ -116,10 +116,10 @@ class RoneClient:
 
 
 def to_period(wrttime, cycle="MM"):
-    """'202608' → '2026-08', '2026' → '2026', '20261'(분기) → '2026-Q1'. (정량 지표 테이블의 시점 표기)"""
+    """'202608' → '2026-08', '2026' → '2026', '20261'(분기) → '2026Q1'. (정량 지표 테이블의 시점 표기)"""
     s = str(wrttime).strip()
     if cycle == "MM" and len(s) >= 6:
         return f"{s[:4]}-{s[4:6]}"
-    if cycle == "QY" and len(s) >= 5:
-        return f"{s[:4]}-Q{s[4]}"
+    if cycle == "QY" and len(s) >= 5:  # 기본 패널과 같은 표기 2026Q1
+        return f"{s[:4]}Q{s[4]}"
     return s[:4]

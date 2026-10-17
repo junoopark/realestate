@@ -21,7 +21,7 @@
 | 기본 패널 | `indicator_series` · `indicator_series_values` | `python scripts/seed_indicators.py` 로 전처리본(DFMBA, `factor_sample.json` 형식)을 한 번 적재 | 51개 변수 전체 (시도·서울 구·서울·전국) |
 | 실제 수집값 | `indicator_observations` | Open API 수집 (매일 Actions · CLI · lazy) | 레지스트리의 Open API 변수 (현재 9개) |
 
-`GET /indicators/bundle?set=all` 은 기본 패널을 읽고, 같은 (변수, 지역 단위) 계열이 실제 수집값에 있으면 그것으로 바꿔서 준다. 그래서 Open API 로 받는 변수는 매일 새 값이, 아직 API 로 옮기지 않은 변수는 전처리본 값이 같은 응답 하나로 나간다. 정적 파일은 DB 에 넣을 원본(시드)으로만 남는다.
+`GET /indicators/bundle?set=all` 은 기본 패널을 읽는다. Open API 로 받는 변수는 수집할 때마다 같은 패널 계열에 바뀐 값만 이어붙이므로(5단계), 매일 새 값과 아직 API 로 옮기지 않은 변수의 전처리본 값이 같은 응답 하나로 나간다. API 로 갱신되는 계열은 응답에 `live: true`, `origin: "db(api)"`, `fetched_at` 이 붙는다. 정적 파일은 DB 에 넣을 원본(시드)으로만 남는다.
 
 핵심 아이디어는 교재 06의 **"있으면 DB 에서, 없으면 API 에서"** 를 월 단위 통계에 맞게 확장한 것이다. 값이 한 달에 한 번 바뀌는 자료를 사용자가 볼 때마다 외부 기관에 묻는 대신, **DB 를 외부 API 의 영속 캐시**로 쓰고 갱신은 하루 한 번 스케줄로 돌린다.
 
@@ -60,8 +60,24 @@
 | V043 | 한국은행 기준금리 | 한국은행 ECOS | `722Y001` / `0101000` | 연% · 월 · 전국 |
 | V045 | 국고채 3년 | 한국은행 ECOS | `721Y001` / `5020000` | 연% · 월 · 전국 |
 | V056 | 주택담보대출 금리(신규) | 한국은행 ECOS | `121Y006` / `BECBLA0302` | 연% · 월 · 전국 |
-| V012 | 인구이동 순이동자수 (2차) | 통계청 KOSIS | `101` / `DT_1B26001_A01` | 명 · 월 · 17개 시도 |
-| V023 | 아파트 준공 (2차) | 통계청 KOSIS | `116` / `DT_MLTM_5373` | 호 · 월 · 17개 시도 |
+| V044 · V046 · V047 · V048 · V049 · V050 · V057 · V059 · V060 · V061~V063 · V064 · V066 · V067 · V069 · V070 · V071 | ECOS 18개 (5단계 1차) | 한국은행 ECOS | `indicator_registry.py` 참고 (DFMBA `collect_ecos.py` 와 같은 표·항목) | 월·분기 · 전국 (V050 만 17개 시도) |
+
+5단계에서 데이터사전 51개 중 47개를 같은 방식으로 붙인다(ECOS 21 → R-ONE 12 → KOSIS 14). 실거래 2개는 예외(호출 한도 안에서 이후분만), 끝난 통계 2개(V034 · V077)는 적재값을 그대로 쓴다. 변수별 표는 계획서의 '변수별 수집 방식' 절.
+
+### 매일 수집 규칙 (5단계)
+
+1. 매일 09:40 GitHub Actions 가 출처별로 `POST /indicators/refresh?source=R-ONE|ECOS|KOSIS` 를 부른다.
+2. 변수마다 최근 12개월을 다시 받는다(새로 공표된 달 + 공표 뒤 수정분). 분기·연 계열은 2016년부터 다시 받는다(행이 적다).
+3. **바뀐 값만 저장한다.** 받은 값을 DB 와 비교해 새로 생긴 것(`new`)·달라진 것(`changed`)만 쓰고, 같은 것(`unchanged`)은 쓰지 않는다. SQL 도 `ON CONFLICT … DO UPDATE … WHERE value IS DISTINCT FROM excluded.value` 라 같은 값은 다시 쓰지 않는다.
+4. 받은 값은 화면용 계열(`indicator_series_values`)에도 이어붙인다. 레지스트리의 `outputs` 가 '어느 패널 계열에, 어느 지역만' 을 정한다. 겹치는 시점은 바뀐 값만 고치고 새 시점은 뒤에 붙이며, 계열 시작 이전과 화면에 없는 지역은 쓰지 않는다(화면에서 쓰는 데이터만).
+5. 바뀐 값이 하나라도 있을 때만 메모리 캐시를 비우고 CDN 을 예열한다. 대부분의 날은 `changed=0` 이라 캐시가 그대로 유지된다.
+
+| 레지스트리 항목 | 뜻 | 예 |
+|---|---|---|
+| `id` / `var` | 수집 단위 / 데이터사전 변수. 한 변수를 여러 번 부르면 `V069.1`·`V069.2` | V069 가계대출 전체·주택관련 |
+| `params.segments` | 기간에 따라 통계표가 바뀌는 계열 | V066 임금: 10차 표(~2025) · 11차 표(2026~) |
+| `params.region_items` | 지역마다 항목 코드가 다른 표 | V050 지역별 주택대출: 서울 A00 … 제주 U00 (17회 호출) |
+| `outputs` | 이어붙일 패널 계열 (`scope`, `match`, `regions`, `rename`) | V061 CSI: ECOS '전국' 값을 '서울 권역' 계열로 |
 
 | 출처 | 명칭 | 제공 기관 | URL | 수집 방식 | 이용 조건 |
 |---|---|---|---|---|---|
@@ -139,8 +155,9 @@ Open API 변수는 실제 수집값, 그 밖의 변수(또는 키가 없을 때)
 | `X-Admin-Token` | 헤더, 필수 | 서버 환경변수 `POLICY_ADMIN_TOKEN` 과 같아야 한다 (정책 수집과 공용) |
 | `vars` | 쿼리, 선택 | 쉼표 구분 변수 ID. 비우면 `enabled` 전체 |
 | `force` | 쿼리, 선택 | `true` 면 신선해도 전체 기간 재수집 |
+| `source` | 쿼리, 선택 | `R-ONE` · `ECOS` · `KOSIS` 중 하나만 수집 (Actions 가 출처별로 나눠 부른다) |
 
-응답 `200`: `{"status": "ok" | "partial", "checked_at": "…", "results": [{"id": "V002", "status": "ok" | "skipped" | "error", "rows": 2176, "last_period": "2026-08", "duration_ms": 1840, "reason": "fresh", "error": null}]}`. 오류: `401` 토큰 불일치, `409` 이미 수집 중, `503` 토큰 미설정 또는 DB 쓰기 실패. GET 요청은 절대 외부 수집·DB 쓰기를 하지 않는다(DB 에 변수가 아예 없을 때의 1회 lazy 수집 제외).
+응답 `200`: `{"status": "ok" | "partial", "checked_at": "…", "changed": 3, "results": [{"id": "V043", "status": "ok" | "skipped" | "error", "rows": 12, "new": 1, "changed": 0, "unchanged": 11, "panel_written": 1, "last_period": "2026-09", "duration_ms": 840, "reason": "fresh", "error": null}]}`. `changed` 는 새로·수정된 값의 합이고 0 이면 캐시를 비우지 않는다. 오류: `401` 토큰 불일치, `409` 이미 수집 중, `503` 토큰 미설정 또는 DB 쓰기 실패. GET 요청은 절대 외부 수집·DB 쓰기를 하지 않는다(DB 에 변수가 아예 없을 때의 1회 lazy 수집 제외).
 
 ## 5. DB 테이블 문서
 

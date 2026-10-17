@@ -52,6 +52,6 @@ def to_period(prd_de: str, prd_se: str = "M") -> str:
     s = str(prd_de).strip()
     if prd_se == "M" and len(s) >= 6:
         return f"{s[:4]}-{s[4:6]}"
-    if prd_se == "Q" and len(s) >= 5:
-        return f"{s[:4]}-Q{s[4]}"
+    if prd_se == "Q" and len(s) >= 5:  # 기본 패널과 같은 표기 2026Q1
+        return f"{s[:4]}Q{s[4]}"
     return s[:4]

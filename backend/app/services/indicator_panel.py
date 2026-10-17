@@ -184,3 +184,76 @@ def panel_status(session: Session) -> dict:
     variables = session.execute(select(func.count(func.distinct(IndicatorSeries.var_id)))).scalar() or 0
     return {"loaded": series > 0, "variables": variables, "series": series, "values": values,
             "generated": meta.get("generated"), "loaded_at": meta.get("loaded_at")}
+
+
+# ── Open API 수집값 → 기본 패널 계열에 이어붙이기 ──
+
+def _targets(session: Session, spec) -> list:
+    """레지스트리 outputs 가 가리키는 패널 계열. 변수·지역 단위(+열 이름 일부)로 하나만 맞아야 쓴다."""
+    out = []
+    for o in getattr(spec, "outputs", ()) or ():
+        rows = session.execute(select(IndicatorSeries).where(IndicatorSeries.var_id == spec.var_id,
+                                                            IndicatorSeries.scope == o.scope)).scalars().all()
+        if o.match:
+            rows = [r for r in rows if o.match in r.column_name]
+        if len(rows) == 1:
+            out.append((o, rows[0]))
+        elif len(rows) > 1:
+            import logging
+            logging.getLogger(__name__).warning("%s: %s 계열이 %d개라 이어붙이지 않습니다. outputs 에 match 를 적으세요.",
+                                                spec.id, o.scope, len(rows))
+    return out
+
+
+def apply_outputs(session: Session, spec, rows: list[tuple]) -> dict:
+    """수집한 (지역, 시점, 값) 을 패널 계열에 반영한다. 겹치는 시점은 바뀐 값만 고치고, 새 시점은 뒤에 붙인다.
+    화면이 쓰는 것만: 패널 계열에 이미 있는 지역(또는 outputs.regions)과 계열 시작 시점 이후만 쓴다."""
+    from app.services.indicator_pipeline import _dialect_insert, _same, month_range
+    written = targets = 0
+    for o, s in _targets(session, spec):
+        targets += 1
+        rename = o.rename_map
+        allowed = set(o.regions) if o.regions else set(session.execute(
+            select(IndicatorSeriesValue.region).where(IndicatorSeriesValue.series_id == s.id).distinct()).scalars())
+        first = (s.periods or [None])[0]
+        vals = {}
+        for region, period, value in rows:
+            r2 = rename.get(region, region)
+            if allowed and r2 not in allowed:
+                continue
+            if first and period < first:
+                continue
+            vals[(r2, period)] = value
+        if not vals:
+            continue
+        ps = sorted({p for _, p in vals})
+        existing = {(r, p): v for r, p, v in session.execute(
+            select(IndicatorSeriesValue.region, IndicatorSeriesValue.period, IndicatorSeriesValue.value)
+            .where(IndicatorSeriesValue.series_id == s.id, IndicatorSeriesValue.period >= ps[0],
+                   IndicatorSeriesValue.period <= ps[-1]))}
+        changed = [{"series_id": s.id, "region": r, "period": p, "value": v}
+                   for (r, p), v in vals.items() if not _same(existing.get((r, p)), v)]
+        insert_ = _dialect_insert(session)
+        for chunk in _chunks(changed, 1000):
+            stmt = insert_(IndicatorSeriesValue).values(chunk)
+            session.execute(stmt.on_conflict_do_update(index_elements=["series_id", "region", "period"],
+                                                       set_={"value": stmt.excluded.value}))
+        written += len(changed)
+        allp = set(s.periods or []) | set(ps)
+        newp = month_range(min(allp), max(allp)) if s.freq == "M" else sorted(allp)
+        if newp != list(s.periods or []):
+            s.periods = newp
+    return {"targets": targets, "written": written}
+
+
+def live_series(session: Session, specs) -> dict:
+    """패널 계열 ID → 그 계열을 채우는 Open API 수집 정보 (한 번이라도 성공한 것만)."""
+    from app.db.models import IndicatorVariable
+    out = {}
+    for spec in specs:
+        var = session.get(IndicatorVariable, spec.id)
+        if var is None or not var.last_fetched_at:
+            continue
+        for _, s in _targets(session, spec):
+            out[s.id] = {"spec": spec.id, "source": spec.source, "source_ref": spec.source_ref, "fetched_at": var.last_fetched_at}
+    return out

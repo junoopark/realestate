@@ -70,12 +70,12 @@ class EcosClient:
 
 
 def to_period(time_value: str, freq: str = "M") -> str:
-    """'202608' → '2026-08', '2026Q1' → '2026-Q1', '2026' → '2026'."""
+    """'202608' → '2026-08', '2026Q1' → '2026Q1', '2026' → '2026'."""
     s = str(time_value).strip()
     if freq == "M" and len(s) >= 6:
         return f"{s[:4]}-{s[4:6]}"
-    if freq == "Q" and len(s) >= 6:
-        return f"{s[:4]}-{s[4:6]}"
+    if freq == "Q" and len(s) >= 6:  # 기본 패널과 같은 표기 2026Q1
+        return f"{s[:4]}{s[4:6]}"
     if freq == "D" and len(s) >= 8:
         return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
     return s[:4]

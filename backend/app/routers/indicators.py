@@ -24,7 +24,7 @@ from app.services import cache
 from app.services.indicator_pipeline import (
     is_stale, load_metric, recent_logs, refresh_all, refresh_hours, refresh_variable, utc_now, variable_status,
 )
-from app.services.indicator_panel import panel_meta, panel_metrics, panel_status, pick_metric
+from app.services.indicator_panel import live_series, panel_meta, panel_metrics, panel_status, pick_metric
 from app.services.indicator_registry import SOURCES, enabled_specs, get_spec
 from app.services.regions import SIDO
 from app.db.models import IndicatorVariable
@@ -71,8 +71,9 @@ def _no_store(response: Response):
 
 def _background_refresh(var_ids: list[str]):
     with Session(get_engine()) as session:
-        refresh_all(session, var_ids, trigger="background")
-    cache.clear("indicator:")
+        result = refresh_all(session, var_ids, trigger="background")
+    if result.get("changed"):
+        cache.clear("indicator:")
 
 
 def _metric_or_fetch(session: Session, spec, regions, start, background: BackgroundTasks | None, allow_fetch: bool = True):
@@ -129,6 +130,8 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
     """여러 변수의 시계열을 한 번에. set=all 이면 화면이 쓰는 factor_sample.json 과 같은 내용 전체를 DB 에서 준다."""
     requested = [v.upper() for v in _parse_list(vars)]
     live_ids = [v for v in requested if (get_spec(v) and get_spec(v).enabled)] if requested else [s.id for s in enabled_specs()]
+    if dataset == "all":  # 패널 계열에 이어붙이는 변수는 패널에서 읽는다. 따로 덮어쓸 것은 outputs 가 없는 변수만
+        live_ids = [v for v in live_ids if not get_spec(v).outputs]
     region_list = _parse_list(regions) or None
     key = f"indicator:bundle:{dataset}:{','.join(requested)}:{','.join(region_list or [])}:{start or ''}"
 
@@ -152,7 +155,13 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
                 live[(metric["var"], metric["scope"])] = metric
             if dataset == "all":
                 missing, used = [], set()
+                api = live_series(session, enabled_specs())
                 for m in panel_metrics(session, requested or None, region_list, start):
+                    info = api.get(f"{m['scope']}:{m['column']}")
+                    if info:  # 이 계열은 Open API 로 매일 갱신된다
+                        src = SOURCES.get(info["source"], {})
+                        m.update(live=True, origin="db(api)", fetched_at=info["fetched_at"], source=info["source_ref"],
+                                 source_name=src.get("name", ""), source_url=src.get("url", ""))
                     k = (m["var"], m["scope"])
                     if k in live:  # 같은 변수·지역 단위는 Open API 실제 수집값으로 바꾼다
                         if k not in used:
@@ -219,6 +228,7 @@ def get_indicator(var: str, request: Request, response: Response, background: Ba
 @router.post("/refresh", response_model=RefreshOut)
 def refresh(response: Response, vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 enabled 전체"),
             force: bool = Query(default=False, description="신선해도 다시 받기"),
+            source: str | None = Query(default=None, pattern="^(R-ONE|ECOS|KOSIS)$", description="이 출처만 수집 (Actions 가 출처별로 나눠 부른다)"),
             x_admin_token: str | None = Header(default=None)):
     """관리자 토큰(X-Admin-Token)으로 외부 API 수집을 실행한다. 정책 수집과 같은 POLICY_ADMIN_TOKEN 을 쓴다."""
     expected = os.getenv("POLICY_ADMIN_TOKEN", "").strip()
@@ -228,11 +238,12 @@ def refresh(response: Response, vars: str | None = Query(default=None, descripti
         raise HTTPException(status_code=401, detail="관리자 인증이 필요합니다.")
     try:
         with Session(get_engine()) as session:
-            result = refresh_all(session, _parse_list(vars) or None, force=force, trigger="admin")
+            result = refresh_all(session, _parse_list(vars) or None, force=force, trigger="admin", source=source)
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"지표 수집 결과를 저장할 수 없습니다: {exc}")
     if result["status"] == "busy":
         raise HTTPException(status_code=409, detail="지표 수집이 이미 진행 중입니다.")
-    cache.clear("indicator:")
+    if result.get("changed"):  # 바뀐 값이 있을 때만 메모리 캐시를 비운다
+        cache.clear("indicator:")
     _no_store(response)
     return result

@@ -61,6 +61,7 @@ def main():
     parser = argparse.ArgumentParser(description="외부 Open API(R-ONE·ECOS·KOSIS)에서 지표를 받아 설정된 DB에 저장합니다.")
     parser.add_argument("--vars", help="쉼표 구분 변수 ID (기본: enabled 전체)")
     parser.add_argument("--force", action="store_true", help="신선해도 다시 받기 (전체 기간 재수집)")
+    parser.add_argument("--source", choices=["R-ONE", "ECOS", "KOSIS"], help="이 출처만 수집")
     parser.add_argument("--probe", metavar="VAR", help="수집하지 않고 실제 항목·지역 이름만 출력")
     parser.add_argument("--status", action="store_true", help="수집하지 않고 DB 상태만 출력")
     parser.add_argument("--export", type=Path, help="선택: DB 내용을 factor_sample.json 과 같은 모양의 JSON 으로 저장")
@@ -73,10 +74,11 @@ def main():
     with Session(get_engine()) as session:
         if not args.status:
             ids = [v.strip() for v in args.vars.split(",")] if args.vars else None
-            result = refresh_all(session, ids, force=args.force, trigger="cli")
+            result = refresh_all(session, ids, force=args.force, trigger="cli", source=args.source)
             for r in result["results"]:
-                print(f"  {r['id']}: {r['status']}  rows={r.get('rows', '')} last={r.get('last_period', '')} {r.get('error', r.get('reason', ''))}")
-            print(f"수집 결과: {result['status']}")
+                counts = f"새로={r.get('new', '')} 수정={r.get('changed', '')} 같음={r.get('unchanged', '')} 화면계열={r.get('panel_written', '')}" if r["status"] == "ok" else ""
+                print(f"  {r['id']}: {r['status']}  {counts} last={r.get('last_period', '')} {r.get('error', r.get('reason', ''))}")
+            print(f"수집 결과: {result['status']} · 바뀐 값 {result.get('changed', 0)}개")
         status = variable_status(session)
         print(f"DB({storage_info()['type']}): 변수 {len(status)}개 · 관측 {sum(s['rows'] for s in status):,}행")
         for s in status:

@@ -75,7 +75,11 @@ class BundleOut(BaseModel):
 class RefreshResultItem(BaseModel):
     id: str
     status: str = Field(description="ok · skipped(아직 신선함) · error")
-    rows: int | None = None
+    rows: int | None = Field(default=None, description="받은 행 수")
+    new: int | None = Field(default=None, description="새로 생긴 값 (새로 공표된 시점 등)")
+    changed: int | None = Field(default=None, description="값이 바뀐 것 (공표 뒤 수정)")
+    unchanged: int | None = Field(default=None, description="DB 와 같아서 쓰지 않은 것")
+    panel_written: int | None = Field(default=None, description="화면용 계열(indicator_series_values)에 쓴 값 수")
     last_period: str | None = None
     duration_ms: int | None = None
     reason: str | None = None
@@ -85,4 +89,5 @@ class RefreshResultItem(BaseModel):
 class RefreshOut(BaseModel):
     status: str = Field(description="ok · partial · busy")
     checked_at: str | None = None
+    changed: int = Field(default=0, description="새로·수정된 값의 합. 0 이면 캐시를 비우지 않는다")
     results: list[RefreshResultItem] = Field(default_factory=list)

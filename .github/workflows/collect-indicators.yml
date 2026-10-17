@@ -1,7 +1,8 @@
 name: Collect quantitative indicators
 
-# 하루 1회(KST 09:40) Render 백엔드의 관리자 수집 API 를 호출한다.
-# 월·분기 단위 통계라 하루 한 번이면 충분하다. 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
+# 하루 1회(KST 09:40) Render 백엔드의 관리자 수집 API 를 출처별(R-ONE → ECOS → KOSIS)로 나눠 호출한다.
+# 변수마다 최근 12개월을 다시 받고, DB 와 비교해 바뀐 값만 저장한다. 바뀐 값이 있을 때만 CDN 을 예열한다.
+# 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
 # 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
 #         SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
 
@@ -70,21 +71,38 @@ jobs:
               except requests.RequestException:
                   pass
               time.sleep(15)
-          try:
-              response = requests.post(base + '/indicators/refresh', params=params, headers={'X-Admin-Token': token}, timeout=300, allow_redirects=False)
+          failed, changed = False, 0
+          sources = ['R-ONE', 'ECOS', 'KOSIS'] if not params.get('vars') else [None]
+          for source in sources:  # 한 요청에 47개를 다 받으면 길어져 출처별로 나눈다
+              query = dict(params, **({'source': source} if source else {}))
+              try:
+                  response = requests.post(base + '/indicators/refresh', params=query, headers={'X-Admin-Token': token}, timeout=300, allow_redirects=False)
+              except requests.RequestException:
+                  print(f'::error::{source or "selected"}: collection request failed.')
+                  failed = True
+                  continue
               if response.status_code == 409:
                   print('::notice::Collection is already running. Existing job will complete it.')
-                  sys.exit(0)
+                  continue
               if response.status_code != 200:
-                  print(f'::error::Indicator API returned HTTP {response.status_code}. Check Render availability and the administrator token.')
-                  sys.exit(1)
-              result = response.json()
+                  print(f'::error::{source or "selected"}: Indicator API returned HTTP {response.status_code}. Check Render availability and the administrator token.')
+                  failed = True
+                  continue
+              try:
+                  result = response.json()
+              except ValueError:
+                  print('::error::Collection returned invalid JSON.')
+                  failed = True
+                  continue
+              print(f"== {source or 'selected'}: changed={result.get('changed', 0)}")
               for item in result.get('results', []):
-                  print(f"{item.get('id')}: {item.get('status')} rows={item.get('rows', '')} last={item.get('last_period', '')} {item.get('error', '')}")
-              failed = result.get('status') != 'ok'
+                  print(f"{item.get('id')}: {item.get('status')} new={item.get('new', '')} changed={item.get('changed', '')} unchanged={item.get('unchanged', '')} last={item.get('last_period', '')} {item.get('error', '')}")
+              failed = failed or result.get('status') != 'ok'
+              changed += result.get('changed', 0) or 0
+          try:
               # CDN 예열: 화면이 부르는 묶음을 한 번씩 불러 Vercel CDN 에 새 응답을 채운다. 실패해도 수집 결과에는 영향 없음
               site = os.environ.get('SITE_BASE_URL', '').strip().rstrip('/')
-              if site.startswith('https://'):
+              if site.startswith('https://') and changed:  # 바뀐 값이 있을 때만
                   for params in ({'set': 'all'}, {}):
                       for attempt in range(2):  # 1회차: 오래된 보관본이면 뒤에서 갱신 시작 · 2회차: 새 응답 확인
                           try:
