@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import IndicatorFetchLog, IndicatorObservation, IndicatorVariable
 from app.services.indicator_registry import REGISTRY, SOURCES, IndicatorSpec, enabled_specs, get_spec, specs_for_var
-from app.services.regions import SIDO, normalize_sido
+from app.services.regions import SEOUL_GU, SIDO, normalize_sido, parse_rone_region
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +68,21 @@ def month_range(start: str, end: str) -> list[str]:
 
 # ── 외부 API 호출 → (region, period, value) 목록 ──
 
-def _rone_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[tuple], str | None]:
+def _rone_region(spec: IndicatorSpec, row: dict) -> str | None:
+    """R-ONE 행의 지역 → 시도 짧은 이름 · '전국' · 서울 구 이름. 화면에 없는 권역·집계 중간행은 None."""
+    if spec.scope == "nation":
+        return "전국" if normalize_sido(row.get("CLS_NM") or row.get("CLS_FULLNM")) == "전국" else None
+    parsed = parse_rone_region(row.get("CLS_FULLNM"))
+    if parsed is None:  # CLS_FULLNM 이 없거나 다른 꼴이면 CLS_NM 으로(예전 방식)
+        n = normalize_sido(row.get("CLS_NM") or row.get("CLS_FULLNM"))
+        return n if n in SIDO else None
+    sido, gu = parsed
+    if gu:
+        return gu if spec.params.get("gu") else None
+    return sido
+
+
+def _rone_rows(client, spec: IndicatorSpec, start: str, end: str, keep_gu=None, **_) -> tuple[list[tuple], str | None]:
     from app.services.rone_client import to_period
     p = spec.params
     cycle = {"M": "MM", "Q": "QY", "A": "YY"}[spec.freq]
@@ -83,17 +97,27 @@ def _rone_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[
         chosen = items[0] if items else None
         if len(items) > 1:
             log.warning("%s: 항목이 여러 개라 첫 항목 '%s' 을 씁니다 (%s). registry 의 item 으로 고정하세요.", spec.id, chosen, items)
-    out = []
+    values: dict[tuple, float] = {}
     for r in raw:
         if chosen is not None and str(r.get("ITM_NM", "")).strip() != chosen:
             continue
-        region = _region_for(spec, r.get("CLS_NM") or r.get("CLS_FULLNM"))
+        region = _rone_region(spec, r)
         if region is None:
             continue
         value = _to_float(r.get("DTA_VAL"))
         if value is None:
             continue
-        out.append((region, to_period(r.get("WRTTIME_IDTFR_ID", ""), cycle), value))
+        values[(region, to_period(r.get("WRTTIME_IDTFR_ID", ""), cycle))] = value
+    if p.get("zero_fill_gu"):
+        # 미분양처럼 0 인 구는 행이 아예 없다. 그 달 서울 25개 구 합계가 서울 값과 같으면 빠진 구는 0 이다 (DFMBA 전처리와 같은 규칙)
+        for period in {pp for _, pp in values}:
+            seoul = values.get(("서울", period))
+            total = sum(values.get((g, period), 0.0) for g in SEOUL_GU)
+            if seoul is not None and abs(total - seoul) < 0.5:
+                for g in SEOUL_GU:
+                    values.setdefault((g, period), 0.0)
+    out = [(region, period, v) for (region, period), v in values.items()
+           if not (keep_gu is not None and region in SEOUL_GU and region not in keep_gu)]  # 화면에 없는 구는 저장하지 않는다
     return out, chosen
 
 
@@ -112,7 +136,7 @@ def _ecos_calls(spec: IndicatorSpec, start: str, end: str) -> list[tuple]:
     return [(p["stat_code"], p["item_code"], start, end, None)]
 
 
-def _ecos_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[tuple], str | None]:
+def _ecos_rows(client, spec: IndicatorSpec, start: str, end: str, **_) -> tuple[list[tuple], str | None]:
     from app.services.ecos_client import to_period
     out, item = [], None
     for stat_code, item_path, s, e, region in _ecos_calls(spec, start, end):
@@ -125,7 +149,7 @@ def _ecos_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[
     return out, item
 
 
-def _kosis_rows(client, spec: IndicatorSpec, start: str, end: str) -> tuple[list[tuple], str | None]:
+def _kosis_rows(client, spec: IndicatorSpec, start: str, end: str, **_) -> tuple[list[tuple], str | None]:
     from app.services.kosis_client import to_period
     p = spec.params
     raw = client.fetch_rows(p["org_id"], p["tbl_id"], p["itm_id"], start, end, prd_se=spec.freq if spec.freq != "A" else "Y",
@@ -270,7 +294,9 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
         start = spec.start
         if var.last_period and spec.freq == "M" and not force:
             start = max(spec.start, shift_month(var.last_period, -RELOAD_TAIL_MONTHS))
-        rows, item = FETCHERS[spec.source](client, spec, start, today_period(spec.freq))
+        from app.services.indicator_panel import panel_meta
+        shown_gu = ((panel_meta(session) or {}).get("regions") or {}).get("gu")  # 화면의 서울 구 보기에 있는 구만 받는다
+        rows, item = FETCHERS[spec.source](client, spec, start, today_period(spec.freq), keep_gu=set(shown_gu) if shown_gu else None)
         to_write, stats = diff_observations(session, spec.id, rows)
         count = upsert_observations(session, spec.id, to_write, started)
         from app.services.indicator_panel import apply_outputs

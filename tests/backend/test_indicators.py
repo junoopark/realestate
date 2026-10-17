@@ -182,7 +182,8 @@ def test_refresh_endpoint_requires_token(db, monkeypatch):
 
 # ── R-ONE 클라이언트: 페이지 넘기기·오류 코드 ──
 
-def test_rone_client_paginates_and_handles_result_codes(monkeypatch):
+def test_rone_client_splits_ranges_instead_of_paging(monkeypatch):
+    """R-ONE 은 페이지를 넘기면 행이 빠질 수 있어, 1,000행 이하가 되도록 기간을 반씩 나눠 받는다."""
     class Resp:
         def __init__(self, payload):
             self.payload, self.encoding = payload, None
@@ -191,22 +192,25 @@ def test_rone_client_paginates_and_handles_result_codes(monkeypatch):
         def json(self):
             return self.payload
 
-    pages = {
-        1: {"SttsApiTblData": [{"head": [{"list_total_count": 3}, {"RESULT": {"CODE": "INFO-000", "MESSAGE": "정상"}}]}, {"row": [{"DTA_VAL": "1"}, {"DTA_VAL": "2"}]}]},
-        2: {"SttsApiTblData": [{"head": [{"list_total_count": 3}, {"RESULT": {"CODE": "INFO-000", "MESSAGE": "정상"}}]}, {"row": [{"DTA_VAL": "3"}]}]},
-    }
+    months = [f"2026{m:02d}" for m in range(1, 13)]
+    per_month = 300  # 한 달 300행 → 12개월 3,600행
     seen = []
 
     class Http:
         def get(self, url, params=None, timeout=None):
-            seen.append(params)
-            return Resp(pages[params["pIndex"]])
+            seen.append((params["START_WRTTIME"], params["END_WRTTIME"], params["pSize"]))
+            span = [m for m in months if params["START_WRTTIME"] <= m <= params["END_WRTTIME"]]
+            total = len(span) * per_month
+            rows = [{"WRTTIME_IDTFR_ID": m, "CLS_ID": i, "ITM_ID": 1, "DTA_VAL": "1"} for m in span for i in range(per_month)]
+            return Resp({"SttsApiTblData": [{"head": [{"list_total_count": total}, {"RESULT": {"CODE": "INFO-000"}}]},
+                                            {"row": rows[:params["pSize"]]}]})
 
     monkeypatch.setattr("app.services.rone_client.time.sleep", lambda s: None)
-    client = RoneClient(api_key="k", session=Http())
-    rows = client.fetch_rows("A_2024_00045", "2016-01", "2026-12")
-    assert [r["DTA_VAL"] for r in rows] == ["1", "2", "3"] and len(seen) == 2
-    assert seen[0]["START_WRTTIME"] == "201601" and seen[0]["END_WRTTIME"] == "202612" and seen[0]["DTACYCLE_CD"] == "MM"
+    rows = RoneClient(api_key="k", session=Http()).fetch_rows("A_2024_00045", "2026-01", "2026-12")
+    assert len(rows) == 12 * per_month and len({(r["WRTTIME_IDTFR_ID"], r["CLS_ID"]) for r in rows}) == 12 * per_month
+    fetched = [s for s in seen if s[2] == 1000]
+    assert all((int(e) - int(b) + 1) * per_month <= 1000 for b, e, _ in fetched), "한 번에 1,000행 넘게 받지 않는다"
+    assert fetched[0][:2] == ("202601", "202603")
 
     class NoData:
         def get(self, url, params=None, timeout=None):

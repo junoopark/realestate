@@ -111,8 +111,8 @@ def test_bundle_all_uses_panel_and_live_override(db, monkeypatch):
         assert res.status_code == 200 and body["set"] == "all" and body["aliases"] == {"V033": "V005"}
         assert body["regions"]["gu"] == ["강남구", "마포구"] and body["panel"]["generated"] == "2026-10-05 | 테스트"
         keys = [(m["var"], m["scope"], m["live"]) for m in body["metrics"]]
-        # V002 시도 계열은 Open API 실제 수집값으로, V002 구 계열·나머지는 기본 패널 그대로
-        assert keys[:2] == [("V002", "sido", True), ("V002", "gu", False)]
+        # V002 시도·구 계열은 Open API 로 갱신되는 계열(live), 나머지는 기본 패널 그대로
+        assert keys[:2] == [("V002", "sido", True), ("V002", "gu", True)]
         assert ("V006", "sido", False) in keys and len([k for k in keys if k[0] == "V006"]) == 2
         live = body["metrics"][0]
         assert live["periods"][-1] == "2026-09" and live["series"]["서울"][-1] == 102.0

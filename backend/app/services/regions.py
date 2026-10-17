@@ -41,3 +41,30 @@ def normalize_sido(name: str | None) -> str | None:
 def is_sido(name: str | None) -> bool:
     n = normalize_sido(name)
     return n is not None and n != "전국"
+
+
+# 서울 25개 자치구 (화면의 서울 구 보기는 이 중 기본 패널에 있는 구만 쓴다)
+SEOUL_GU = ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구",
+            "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"]
+
+
+def parse_rone_region(cls_fullnm: str | None) -> tuple[str, str] | None:
+    """R-ONE 의 CLS_FULLNM 을 (시도, 서울 구) 로 바꾼다. 대상 밖(권역·집계 중간행)이면 None.
+    DFMBA common.parse_rone_region 과 같은 규칙 — 통계표마다 계층 깊이가 달라 마지막 조각으로 판정한다.
+      '경기' → ('경기', '')                         '전남광주>광주' · '전남광주>(구)광주' → ('광주', '')  (2026 광주·전남 통합 뒤 표기)
+      '경기>계' → ('경기', '')  (거래현황·미분양의 시도 합계행)
+      '서울>강남구' · '서울>강남지역>동남권>강남구' → ('서울', '강남구')      '서울>강남지역' → None
+    """
+    if not cls_fullnm:
+        return None
+    parts = [p.strip() for p in str(cls_fullnm).split(">")]
+    last, first = parts[-1], parts[0]
+    if last.startswith("(구)") and last[3:] in SIDO:
+        return last[3:], ""
+    if last in SIDO:
+        return last, ""
+    if last == "계" and first in SIDO and len(parts) == 2:
+        return first, ""
+    if first == "서울" and last.endswith(("구", "군")) and len(parts) >= 2:
+        return "서울", last
+    return None

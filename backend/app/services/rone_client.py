@@ -30,6 +30,28 @@ class RoneKeyError(RoneError, ValueError):
     """인증키 미설정. ValueError 이기도 해서, 다른 출처(ECOS·KOSIS)와 같은 방식으로 '키 없음'을 처리할 수 있다."""
 
 
+def _months(start, end):
+    """'201601', '201603' → ['201601', '201602', '201603']"""
+    y, m = int(start[:4]), int(start[4:6])
+    out = []
+    while f"{y:04d}{m:02d}" <= end:
+        out.append(f"{y:04d}{m:02d}")
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    return out
+
+
+def _dedupe(rows):
+    """같은 (시점, 그룹, 지역, 항목) 이 두 번 오면 하나만 남긴다."""
+    seen, out = set(), []
+    for r in rows:
+        key = (r.get("WRTTIME_IDTFR_ID"), r.get("GRP_ID"), r.get("CLS_ID"), r.get("ITM_ID"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(r)
+    return out
+
+
 def _period_param(period, cycle="MM"):
     """'2016-01' → '201601' (MM) / '2016' (YY) / '2016-Q1' → '20161' (QY)."""
     digits = str(period).replace("-", "").replace("Q", "")
@@ -97,14 +119,55 @@ class RoneClient:
         return self.rows("SttsApiTblData", params)
 
     def fetch_rows(self, statbl_id, start, end, cycle="MM", cls_id=None, itm_id=None):
-        """기간 범위(START_WRTTIME~END_WRTTIME)의 행을 모두 받는다. start·end 는 'YYYY-MM'."""
-        params = {"STATBL_ID": statbl_id, "DTACYCLE_CD": cycle,
-                  "START_WRTTIME": _period_param(start, cycle), "END_WRTTIME": _period_param(end, cycle)}
+        """기간 범위(START_WRTTIME~END_WRTTIME)의 행을 모두 받는다. start·end 는 'YYYY-MM'.
+
+        R-ONE 은 여러 페이지로 나눠 받으면 정렬이 고정되지 않아 같은 행이 두 번 오고 다른 행이 빠지는 일이 있다
+        (DFMBA 실측: 월세수급동향 2017-10 전남 누락). 그래서 월 단위 표는 한 번에 1,000행 이하가 되도록 기간을 반씩
+        쪼개 받고, 받은 고유 행 수가 API 가 알려 준 총건수와 같은지 확인한다(DFMBA collect_rone.py 와 같은 방식).
+        """
+        params = {"STATBL_ID": statbl_id, "DTACYCLE_CD": cycle}
         if cls_id:
             params["CLS_ID"] = cls_id
         if itm_id:
             params["ITM_ID"] = itm_id
-        return self.rows("SttsApiTblData", params)
+        if cycle != "MM":  # 분기·연 표는 행이 적다
+            params.update(START_WRTTIME=_period_param(start, cycle), END_WRTTIME=_period_param(end, cycle))
+            return self.rows("SttsApiTblData", params)
+        return self._fetch_months(params, _months(_period_param(start, cycle), _period_param(end, cycle)))
+
+    def _fetch_months(self, params, months, depth=0):
+        if not months:
+            return []
+        query = {**params, "START_WRTTIME": months[0], "END_WRTTIME": months[-1]}
+        if len(months) > 3:  # 긴 기간은 건수만 먼저 본다(pSize=1) — 1,000행 넘으면 행을 받지 않고 바로 나눈다
+            total, _ = self.page("SttsApiTblData", query, 1, 1)
+            if total > PAGE_SIZE:
+                mid = len(months) // 2
+                time.sleep(PAGE_PAUSE)
+                left = self._fetch_months(params, months[:mid])
+                time.sleep(PAGE_PAUSE)
+                return left + self._fetch_months(params, months[mid:])
+        total, rows = self.page("SttsApiTblData", query, 1, PAGE_SIZE)
+        if total <= PAGE_SIZE:
+            unique = _dedupe(rows)
+            if len(unique) < total and depth < 2:  # 드물게 빠진 행 — 한 번 더 받는다
+                time.sleep(PAGE_PAUSE)
+                return self._fetch_months(params, months, depth + 1)
+            return unique
+        if len(months) > 1:  # 1,000행이 넘으면 기간을 반으로 나눈다
+            mid = len(months) // 2
+            time.sleep(PAGE_PAUSE)
+            left = self._fetch_months(params, months[:mid])
+            time.sleep(PAGE_PAUSE)
+            return left + self._fetch_months(params, months[mid:])
+        # 한 달치가 1,000행을 넘는 표: 페이지를 넘기되 고유 행 수가 총건수와 맞을 때까지 (최대 3회)
+        got = []
+        for _ in range(3):
+            got = _dedupe(self.rows("SttsApiTblData", query))
+            if len(got) >= total:
+                break
+            time.sleep(PAGE_PAUSE)
+        return got
 
     def latest_periods(self, statbl_id, cycle="MM", months=2):
         """항목·지역 이름 확인용(--probe): 최근 몇 달치만 받는다."""

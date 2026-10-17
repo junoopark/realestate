@@ -103,35 +103,60 @@ class IndicatorSpec:
 
 
 SIDO_AND_SEOUL = (Output("sido"), Output("seoul", regions=("서울",)))  # 시도 계열 + 서울 단독 계열(같은 값)
+SIDO_AND_GU = (Output("sido"), Output("gu"))  # 시도 계열 + 서울 구 계열(화면에 있는 구만)
 
 # 공표 시기 문구 (DFMBA variables.py 의 공표 시차 표를 옮김: 한국은행 통계메타·KOSIS 통계설명서 등 공식 근거)
 REL_REB = "조사기준 월 익월 15일 전후 공표 (전국주택가격동향조사)"
 REL_MARKET = "시장 관측치(월평균·월말값). 해당 월 말 확정"
 REL_RATE = "기준월 익월 말 공표 (금융기관 가중평균금리)"
 REL_HHLOAN = "기준월 익익월 14일 이내 공표 (예금취급기관 가계대출)"
+REL_DEAL = "기준월 익월 말일경 공표 (부동산거래현황)"
 
 REGISTRY: list[IndicatorSpec] = [
-    # ── 한국부동산원 R-ONE (전국주택가격동향조사·월세수급·소비심리) — 17개 시도 월별 ──
+    # ── 한국부동산원 R-ONE — 17개 시도 + 서울 구(gu=True). 표 코드는 DFMBA collect_rone.py 와 같다 ──
     IndicatorSpec("V002", "아파트 매매가격지수", "finance", "R-ONE", release=REL_REB,
-                  params={"statbl_id": "A_2024_00045", "item": "지수"}, note="원자료 그대로 (2021.06=100)",
-                  outputs=(Output("sido"),)),
+                  params={"statbl_id": "A_2024_00045", "item": "지수", "gu": True}, note="원자료 그대로",
+                  outputs=SIDO_AND_GU),
     IndicatorSpec("V026", "아파트 전세가격지수", "finance", "R-ONE", release=REL_REB,
-                  params={"statbl_id": "A_2024_00050", "item": "지수"}, note="원자료 그대로 (2021.06=100)",
-                  outputs=(Output("sido"),)),
+                  params={"statbl_id": "A_2024_00050", "item": "지수", "gu": True}, note="원자료 그대로",
+                  outputs=SIDO_AND_GU),
     IndicatorSpec("V001", "월세통합가격지수", "rental", "R-ONE", release=REL_REB,
                   params={"statbl_id": "A_2024_00054", "item": "지수"},
-                  note="API 는 현행 계열(2015.06~). 그 이전 구지수 연결 구간은 기본 패널 값을 유지",
+                  note="API 는 현행 계열(2015.06~). 그 이전 구지수 연결 구간과 서울 구 학습용 역산 계열은 기본 패널 값을 유지",
                   outputs=(Output("sido"),)),
     IndicatorSpec("V003", "아파트 전세가율", "finance", "R-ONE", unit="%", release=REL_REB,
-                  params={"statbl_id": "A_2024_00072", "item": "매매가격 대비 전세가격"}, note="원자료 그대로",
-                  outputs=(Output("sido"),)),
+                  params={"statbl_id": "A_2024_00072", "item": "매매가격 대비 전세가격", "gu": True},
+                  note="첫 공표 이전 역산 구간은 기본 패널 값을 유지", outputs=SIDO_AND_GU),
+    IndicatorSpec("V004", "아파트 전월세전환율", "finance", "R-ONE", unit="%",
+                  release="기준월 익익월 15일 전후 공표 (가격지수보다 1개월 늦음)",
+                  params={"statbl_id": "A_2024_00156", "item": "전월세 전환율", "gu": True}, outputs=SIDO_AND_GU),
     IndicatorSpec("V005", "아파트 월세수급동향", "rental", "R-ONE", release=REL_REB,
                   params={"statbl_id": "A_2024_00078", "item": "지수"}, note="100 보다 크면 공급 부족, 작으면 공급 충분",
                   outputs=SIDO_AND_SEOUL),
+    IndicatorSpec("V031", "아파트 매매수급동향", "finance", "R-ONE", release=REL_REB,
+                  params={"statbl_id": "A_2024_00076", "item": "지수"}, outputs=SIDO_AND_SEOUL),
+    IndicatorSpec("V032", "아파트 전세수급동향", "rental", "R-ONE", release=REL_REB,
+                  params={"statbl_id": "A_2024_00077", "item": "지수"}, outputs=SIDO_AND_SEOUL),
+    IndicatorSpec("V035.1", "아파트 거래현황(동·호수)", "rental", "R-ONE", unit="호", release=REL_DEAL, var="V035",
+                  params={"statbl_id": "A_2024_00549", "itm_id": "100001", "item": "동(호)수", "gu": True},
+                  note="매매·증여 등 전체 거래", outputs=(Output("sido", match="_동호수_"), Output("gu", match="_동호수_"))),
+    IndicatorSpec("V035.2", "아파트 거래현황(면적)", "rental", "R-ONE", unit="천㎡", release=REL_DEAL, var="V035",
+                  params={"statbl_id": "A_2024_00549", "itm_id": "100002", "item": "면적", "gu": True},
+                  note="매매·증여 등 전체 거래", outputs=(Output("sido", match="_면적_"), Output("gu", match="_면적_"))),
+    IndicatorSpec("V036.1", "아파트 매매거래현황(동·호수)", "finance", "R-ONE", unit="호", release=REL_DEAL, var="V036",
+                  params={"statbl_id": "A_2024_00554", "itm_id": "100001", "item": "동(호)수", "gu": True},
+                  outputs=(Output("sido", match="_동호수_"), Output("gu", match="_동호수_"))),
+    IndicatorSpec("V036.2", "아파트 매매거래현황(면적)", "finance", "R-ONE", unit="천㎡", release=REL_DEAL, var="V036",
+                  params={"statbl_id": "A_2024_00554", "itm_id": "100002", "item": "면적", "gu": True},
+                  outputs=(Output("sido", match="_면적_"), Output("gu", match="_면적_"))),
     IndicatorSpec("V037", "주택시장 소비심리지수", "trigger", "R-ONE",
                   release="익월 중순 공표 (국토연구원 부동산시장 소비자심리조사, R-ONE 게시는 더 늦을 수 있음)",
                   params={"statbl_id": "T232543129897499", "item": "지수"}, note="원자료 그대로",
                   outputs=SIDO_AND_SEOUL),
+    IndicatorSpec("V038", "미분양주택현황", "supply", "R-ONE", unit="호", release="기준월 익월 말 공표 (미분양주택현황보고)",
+                  params={"statbl_id": "T237973129847263", "item": "미분양", "gu": True, "zero_fill_gu": True},
+                  note="미분양이 0 인 구는 행이 없다 — 서울 25개 구 합계가 서울 값과 같은 달은 빠진 구를 0 으로",
+                  outputs=SIDO_AND_GU),
     # ── 한국은행 ECOS — 전국 (V050 만 시도별). 표·항목 코드는 DFMBA collect_ecos.py 와 같다 ──
     IndicatorSpec("V043", "한국은행 기준금리", "macro", "ECOS", scope="nation", unit="연%",
                   release="금통위 결정 즉시 반영. 월말값", params={"stat_code": "722Y001", "item_code": "0101000"},

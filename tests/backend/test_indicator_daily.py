@@ -123,3 +123,46 @@ def test_bundle_marks_api_series_and_refresh_by_source(db, monkeypatch):
         assert v043["source"].startswith("ECOS 722Y001") and v043["fetched_at"]
         again = client.post("/indicators/refresh", params={"source": "ECOS", "force": "true"}, headers={"X-Admin-Token": "t"}).json()
         assert again["changed"] == 0  # 다음 날 같은 자료면 아무것도 쓰지 않는다
+
+
+# ── R-ONE 묶음: 지역 계층 파싱 · 서울 구 · 미분양 0 채움 ──
+
+def test_parse_rone_region_matches_dfmba_rules():
+    from app.services.regions import parse_rone_region
+    assert parse_rone_region("경기") == ("경기", "")
+    assert parse_rone_region("전남광주>광주") == ("광주", "") and parse_rone_region("전남광주>(구)광주") == ("광주", "")
+    assert parse_rone_region("경기>계") == ("경기", "")
+    assert parse_rone_region("서울>강남지역>동남권>강남구") == ("서울", "강남구") and parse_rone_region("서울>마포구") == ("서울", "마포구")
+    assert parse_rone_region("서울>강남지역") is None and parse_rone_region("부산>해운대구") is None
+    assert parse_rone_region("전남광주") is None and parse_rone_region("수도권") is None
+
+
+class FakeRoneTree:
+    """R-ONE 실제 CLS_FULLNM 꼴(시도 · 권역 · 4단 계층 구 · '계' 합계행)."""
+    def __init__(self, rows):
+        self.rows = rows
+
+    def fetch_rows(self, statbl_id, start, end, cycle="MM", cls_id=None, itm_id=None):
+        return [{"WRTTIME_IDTFR_ID": p.replace("-", ""), "ITM_ID": "100001", "ITM_NM": item, "CLS_NM": full.split(">")[-1],
+                 "CLS_FULLNM": full, "DTA_VAL": str(v)} for full, p, v, item in self.rows if start <= p <= end]
+
+
+def test_rone_rows_keep_sido_and_shown_gu_only(db):
+    fake = FakeRoneTree([("서울", "2026-09", 103.0, "지수"), ("전남광주>광주", "2026-09", 99.0, "지수"), ("수도권", "2026-09", 101.0, "지수"),
+                         ("서울>강남지역", "2026-09", 104.0, "지수"), ("서울>강남지역>동남권>강남구", "2026-09", 105.0, "지수"),
+                         ("서울>강북지역>도심권>종로구", "2026-09", 98.0, "지수")])
+    rows, item = pipeline._rone_rows(fake, get_spec("V002"), "2026-09", "2026-09", keep_gu={"강남구", "마포구"})
+    assert sorted(rows) == [("강남구", "2026-09", 105.0), ("광주", "2026-09", 99.0), ("서울", "2026-09", 103.0)]
+    rows, _ = pipeline._rone_rows(fake, get_spec("V001"), "2026-09", "2026-09")  # V001 은 서울 구를 받지 않는다
+    assert {r for r, _, _ in rows} == {"서울", "광주"}
+
+
+def test_unsold_zero_fill_when_gu_total_matches(db):
+    from app.services.regions import SEOUL_GU
+    base = [("서울>계", "2026-08", 30.0, "미분양현황"), ("서울>강남구", "2026-08", 10.0, "미분양현황"), ("서울>송파구", "2026-08", 20.0, "미분양현황"),
+            ("서울>계", "2026-09", 50.0, "미분양현황"), ("서울>강남구", "2026-09", 10.0, "미분양현황")]  # 9월은 합계가 안 맞음
+    rows, _ = pipeline._rone_rows(FakeRoneTree(base), get_spec("V038"), "2026-08", "2026-09", keep_gu={"강남구", "마포구"})
+    got = {(r, p): v for r, p, v in rows}
+    assert got[("마포구", "2026-08")] == 0.0 and got[("강남구", "2026-08")] == 10.0
+    assert ("마포구", "2026-09") not in got  # 구 합계 ≠ 서울 값이면 채우지 않는다
+    assert not any(r == "송파구" for r, _ in got) and len(SEOUL_GU) == 25
