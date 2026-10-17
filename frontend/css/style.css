@@ -267,6 +267,91 @@ a:hover { color: var(--brand-hover); }
 .controls .lbl { display: none; }
 .controls .ico { display: inline-flex; }
 .controls .ico svg { width: 14px; height: 14px; }
+.controls { align-items: center; }
+
+/* Google 로그인 (auth.js 가 #auth-slot 을 채운다). .controls button 의 원형 아이콘 규칙을 덮어쓴다 */
+.auth-slot { position: relative; display: flex; align-items: center; }
+.auth-slot .auth-login {
+  width: auto;
+  height: 28px;
+  gap: 6px;
+  padding: 0 11px 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: var(--masthead-btn);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 1;
+}
+.auth-slot .auth-login:hover { border-color: rgba(255, 255, 255, 0.6); filter: brightness(1.08); }
+.auth-slot .auth-login:disabled { cursor: progress; opacity: 0.7; }
+.auth-slot .auth-login svg { width: 14px; height: 14px; padding: 2px; border-radius: 50%; background: #fff; box-sizing: content-box; }
+.auth-slot .auth-avatar {
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: var(--masthead-btn);
+  color: #fff;
+  opacity: 1;
+}
+.auth-slot .auth-avatar:hover,
+.auth-slot .auth-avatar[aria-expanded="true"] { border-color: #fff; }
+.auth-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.auth-initial { font-size: 13px; font-weight: 700; }
+.auth-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 2px;
+  min-width: 220px;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 12px 32px -12px var(--shadow-strong);
+}
+.auth-menu[hidden] { display: none; }
+.auth-name { font-size: 14px; color: var(--title-ink); }
+.auth-email { font-size: 12px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.auth-slot .auth-logout {
+  justify-self: start;
+  width: auto;
+  height: auto;
+  margin-top: 10px;
+  padding: 5px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 1;
+}
+.auth-slot .auth-logout:hover { border-color: var(--brand); color: var(--brand); }
+.auth-notice {
+  position: fixed;
+  left: 50%;
+  top: 84px;
+  z-index: 30;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--masthead);
+  color: var(--masthead-ink);
+  font-size: 13px;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.45);
+}
+.auth-notice[hidden] { display: none; }
+@media (max-width: 720px) {
+  .auth-slot .auth-login { padding: 0 8px; }
+  .auth-login-lbl { display: none; }   /* 좁은 화면에서는 G 아이콘만 */
+}
 
 /* 키보드 이동 시 포커스 표시 */
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
@@ -527,6 +612,61 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* 리서치 차트 틀: 가운데 제목·부제, 플롯 안쪽 범례, 아래 자료 줄 */
 .fig { margin: 0; }
+.fig.fig-has-dl { position: relative; }
+.fig-has-dl .fig-title { padding: 0 36px; }        /* 가운데 제목이 오른쪽 아이콘과 겹치지 않게 */
+
+/* 데이터 내려받기 아이콘과 메뉴 (export.js) */
+.fig-dl-wrap { position: absolute; top: 0; right: 0; z-index: 3; }
+.fig-dl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s, border-color 0.15s, background-color 0.15s;
+}
+.fig-dl svg { width: 20px; height: 20px; }
+.fig-dl:hover,
+.fig-dl[aria-expanded="true"] { opacity: 1; border-color: var(--line-strong); background: var(--brand-soft); }
+.fig-dl:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.fig-dl-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  gap: 4px;
+  min-width: 176px;
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: 0 12px 28px -12px var(--shadow-strong);
+}
+.fig-dl-pop[hidden] { display: none; }
+.fig-dl-opt,
+.fig-dl-login {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.fig-dl-opt:hover,
+.fig-dl-opt:focus-visible { background: var(--brand-soft); color: var(--brand); outline: none; }
+.fig-dl-opt:disabled { cursor: progress; opacity: 0.6; }
+.fig-dl-msg { margin: 2px 4px 4px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.fig-dl-login { background: var(--masthead-btn); color: #fff; font-weight: 700; text-align: center; }
+.fig-dl-login:hover { filter: brightness(1.08); }
 .fig-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2px; line-height: 1.35; }
 .fig-title strong { font-size: 14px; font-weight: 600; color: var(--title-ink); }
 .fig-title span { font-size: 12px; color: var(--ink-soft); }
@@ -877,3 +1017,7 @@ code {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* Home 지도 캡션 오른쪽 끝 내려받기 아이콘 */
+.map-caption.has-dl { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.map-caption .fig-dl-wrap { position: relative; top: auto; right: auto; flex: none; }

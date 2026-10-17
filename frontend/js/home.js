@@ -90,12 +90,14 @@ function mapValues(varId, change) {
   }
   if (i < lag) return null;
   const values = {};
+  const levels = {}; // 내려받기용: 기준 시점·비교 시점의 지수 값
   for (const r of regions) {
     const now = m.series[r][i];
     const prev = m.series[r][i - lag];
     values[r] = mode === "pct" ? (now / prev - 1) * 100 : now - prev;
+    levels[r] = { now, prev };
   }
-  return { m, period: m.periods[i], values, mode };
+  return { m, period: m.periods[i], prevPeriod: m.periods[i - lag], values, levels, mode };
 }
 
 function renderMap() {
@@ -110,7 +112,7 @@ function renderMap() {
     box.append(el("p", "chart-empty", "이 지표는 시도별 자료가 없습니다"));
     return;
   }
-  const { m, period, values, mode } = res;
+  const { m, period, prevPeriod, values, levels, mode } = res;
   const changeLabel = homeState.mapChange === "mom" ? "전월 대비" : changeName(m);
   const unit = mode === "pct" ? "%" : "%p";
   const fmt = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toFixed(2)}${unit}`;
@@ -130,7 +132,9 @@ function renderMap() {
   const layout = el("div", "map-layout");
   const mapCol = el("div", "map-col");
   const caption = el("p", "map-caption");
-  caption.append(el("strong", null, `아파트 ${metaName}지수 ${changeLabel} 상승률`), el("span", null, ` · ${periodLabel(period, true)} 기준`));
+  const captionText = el("span", "map-caption-text");
+  captionText.append(el("strong", null, `아파트 ${metaName}지수 ${changeLabel} 상승률`), el("span", null, ` · ${periodLabel(period, true)} 기준`));
+  caption.append(captionText);
   mapCol.append(caption);
 
   const svgNS = "http://www.w3.org/2000/svg";
@@ -188,6 +192,10 @@ function renderMap() {
   rankCol.append(el("p", "map-caption", "시도 순위"));
   const list = el("ol", "rank-list");
   const sorted = Object.entries(values).sort((a, b) => b[1] - a[1]);
+  if (window.KHMI_EXPORT) {
+    caption.classList.add("has-dl");
+    caption.append(window.KHMI_EXPORT.button(mapDownload(m, { period, prevPeriod, sorted, levels, mode, unit, changeLabel, metaName })));
+  }
   const rows = {};
   for (const [r, v] of sorted) {
     const li = el("li", "rank-row");
@@ -245,6 +253,33 @@ function renderMap() {
     li.addEventListener("focus", () => highlight(r, true));
     li.addEventListener("blur", () => highlight(r, false));
   }
+}
+
+// 지도 내려받기: 순위 순서의 17개 시도 표 (export.js 표 형식)
+function mapDownload(m, { period, prevPeriod, sorted, levels, mode, unit, changeLabel, metaName }) {
+  const round = (v) => (v == null ? null : Math.round(v * 1e6) / 1e6);
+  const changeHead = mode === "pct" ? `${changeLabel} 상승률(%)` : `${changeLabel} 변화(${unit})`;
+  const table = [
+    ["순위", "시도", changeHead, `지수 (${period})`, `지수 (${prevPeriod})`],
+    ...sorted.map(([r, v], k) => [k + 1, r, round(v), round(levels[r].now), round(levels[r].prev)]),
+  ];
+  return {
+    varId: m.var,
+    scope: "sido-map",
+    view: homeState.mapChange,
+    viewLabel: changeLabel,
+    range: period,
+    title: `아파트 ${metaName}지수 ${changeLabel} 상승률`,
+    subtitle: `${changeHead.replace(/\(.*\)/, "").trim()} · 17개 시도 · ${periodLabel(period, true)} 기준 (비교 ${periodLabel(prevPeriod, true)})`,
+    source: "자료: 한국부동산원 R-ONE, DFMBA 전처리본(1차_결측보완)",
+    sourceTable: m.source,
+    method: `${m.method || ""} · 상승률 = 기준 시점 ÷ 비교 시점 − 1 (모든 시도에 값이 있는 마지막 확정 기간)`,
+    release: m.release,
+    table,
+    regionNames: sorted.map(([r]) => r),
+    fileRegion: "17개시도",
+    periodText: `${period} (비교 ${prevPeriod})`,
+  };
 }
 
 function mapTools() {
