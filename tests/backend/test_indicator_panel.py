@@ -171,3 +171,30 @@ def test_real_sample_round_trips_through_db(db):
         assert got["periods"] == want["periods"]
         for region, values in want["series"].items():
             assert got["series"].get(region, [None] * len(values)) == [None if v is None else float(v) for v in values], (want["column"], region)
+
+
+def test_cache_headers_for_browser_cdn_and_monitor(db):
+    """① 브라우저 5분 · ② CDN(Vercel) 1시간 + 보관본 갱신·장애 대비 · 모니터는 캐시 금지."""
+    from app.main import app
+    with Session(get_engine()) as s:
+        seed_panel(s, small_panel())
+    with TestClient(app) as client:
+        res = client.get("/indicators/bundle", params={"set": "all"})
+        assert res.headers["cache-control"] == "public, max-age=300"
+        cdn = res.headers["cdn-cache-control"]
+        assert "max-age=3600" in cdn and "stale-while-revalidate=86400" in cdn and "stale-if-error=604800" in cdn
+        assert res.headers["vercel-cache-tag"] == "indicators"
+        again = client.get("/indicators/bundle", params={"set": "all"}, headers={"If-None-Match": res.headers["etag"]})
+        assert again.status_code == 304 and again.headers["cdn-cache-control"] == cdn
+        status = client.get("/indicators/status")
+        assert status.headers["cache-control"] == "no-store" and status.headers["cdn-cache-control"] == "no-store"
+        assert "cdn-cache-control" not in client.get("/indicators/V999").headers  # 오류 응답은 캐시하지 않는다
+
+
+def test_vercel_rewrite_points_api_to_backend():
+    """vercel.json: /api/* → Render, 오래된 Vercel 프로젝트에서도 rewrite 캐시를 켠다."""
+    conf = json.loads((SAMPLE.parents[1] / "vercel.json").read_text(encoding="utf-8"))
+    rw = conf["rewrites"][0]
+    assert rw["source"] == "/api/:path*" and rw["destination"].startswith("https://") and rw["destination"].endswith("/:path*")
+    hdrs = {h["key"]: h["value"] for h in conf["headers"][0]["headers"]}
+    assert conf["headers"][0]["source"] == "/api/:path*" and hdrs["x-vercel-enable-rewrite-caching"] == "1"

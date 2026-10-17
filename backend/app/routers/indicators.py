@@ -31,8 +31,13 @@ from app.db.models import IndicatorVariable
 
 router = APIRouter(prefix="/indicators", tags=["indicators"])
 
-MEMORY_TTL_SECONDS = 10 * 60      # 메모리 캐시: DB 조회 결과를 10분간 재사용
-BROWSER_MAX_AGE_SECONDS = 60 * 60  # 브라우저·CDN: 1시간 (월 단위 자료라 충분하다)
+MEMORY_TTL_SECONDS = 10 * 60      # ③ 메모리 캐시: DB 조회 결과를 10분간 재사용
+# ① 브라우저: 5분. 같은 사용자가 화면을 오가도 요청이 나가지 않는다
+BROWSER_CACHE = "public, max-age=300"
+# ② CDN(Vercel, vercel.json 의 /api rewrite): 1시간 신선 → 이후 1일은 보관본을 먼저 주고 뒤에서 갱신(Render 가 잠들어 있어도
+#    사용자는 기다리지 않는다) → Render 오류·장애 때는 7일까지 보관본으로 응답. 월 단위 통계라 충분하다.
+CDN_CACHE = "public, max-age=3600, stale-while-revalidate=86400, stale-if-error=604800"
+CACHE_TAG = "indicators"           # Vercel 에서 태그 단위로 캐시를 비울 때 쓴다
 
 KEY_ENV = {"R-ONE": "RONE_API_KEY", "ECOS": "ECOS_API_KEY", "KOSIS": "KOSIS_API_KEY"}
 
@@ -51,11 +56,17 @@ def _etag(payload: dict) -> str:
 
 def _cache_headers(response: Response, payload: dict, request: Request | None = None):
     tag = _etag(payload)
-    response.headers["ETag"] = tag
-    response.headers["Cache-Control"] = f"public, max-age={BROWSER_MAX_AGE_SECONDS}"
+    headers = {"ETag": tag, "Cache-Control": BROWSER_CACHE, "CDN-Cache-Control": CDN_CACHE, "Vercel-Cache-Tag": CACHE_TAG}
+    response.headers.update(headers)
     if request is not None and request.headers.get("if-none-match") == tag:
-        return Response(status_code=304, headers={"ETag": tag, "Cache-Control": response.headers["Cache-Control"]})
+        return Response(status_code=304, headers=headers)
     return None
+
+
+def _no_store(response: Response):
+    """수집 모니터·관리자 수집 응답은 어느 층에도 캐시하지 않는다(항상 지금 상태)."""
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["CDN-Cache-Control"] = "no-store"
 
 
 def _background_refresh(var_ids: list[str]):
@@ -100,8 +111,9 @@ def list_indicators():
 
 
 @router.get("/status")
-def status(limit: int = Query(default=50, ge=1, le=300)):
+def status(response: Response, limit: int = Query(default=50, ge=1, le=300)):
     """변수별 마지막 수집 시각·시점·오류와 최근 수집 로그. 발표용 '캐시 효과' 근거(duration_ms)도 여기 있다."""
+    _no_store(response)
     with Session(get_engine()) as session:
         return {"variables": variable_status(session), "panel": panel_status(session), "logs": recent_logs(session, limit), "storage": storage_info(),
                 "refresh_hours": refresh_hours(), "keys": {s: _has_key(s) for s in SOURCES}, "checked_at": utc_now()}
@@ -205,7 +217,7 @@ def get_indicator(var: str, request: Request, response: Response, background: Ba
 
 
 @router.post("/refresh", response_model=RefreshOut)
-def refresh(vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 enabled 전체"),
+def refresh(response: Response, vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 enabled 전체"),
             force: bool = Query(default=False, description="신선해도 다시 받기"),
             x_admin_token: str | None = Header(default=None)):
     """관리자 토큰(X-Admin-Token)으로 외부 API 수집을 실행한다. 정책 수집과 같은 POLICY_ADMIN_TOKEN 을 쓴다."""
@@ -222,4 +234,5 @@ def refresh(vars: str | None = Query(default=None, description="쉼표 구분 �
     if result["status"] == "busy":
         raise HTTPException(status_code=409, detail="지표 수집이 이미 진행 중입니다.")
     cache.clear("indicator:")
+    _no_store(response)
     return result

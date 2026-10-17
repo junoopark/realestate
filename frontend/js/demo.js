@@ -4,7 +4,7 @@
 const $ = (selector) => document.querySelector(selector);
 
 $("#api-base").textContent = API_BASE_URL;
-$("#docs-link").href = `${API_BASE_URL}/docs`;
+$("#docs-link").href = typeof API_DOCS_URL !== "undefined" ? API_DOCS_URL : `${API_BASE_URL}/docs`;
 
 // ── 상태 표시 ─────────────────────────────────────────
 // 문구를 "함수"로 보관해 두면, 언어를 바꿀 때 같은 상태를 새 언어로 다시 그릴 수 있다.

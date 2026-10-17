@@ -25,13 +25,23 @@
 
 핵심 아이디어는 교재 06의 **"있으면 DB 에서, 없으면 API 에서"** 를 월 단위 통계에 맞게 확장한 것이다. 값이 한 달에 한 번 바뀌는 자료를 사용자가 볼 때마다 외부 기관에 묻는 대신, **DB 를 외부 API 의 영속 캐시**로 쓰고 갱신은 하루 한 번 스케줄로 돌린다.
 
-## 2. 캐시 3단 구조
+## 2. 캐시 4계층 (3단계, 2026-10-17)
+
+화면은 같은 주소의 `/api/…` 를 부르고, Vercel 이 `frontend/vercel.json` 의 rewrite 로 Render 에 전달하면서 응답을 CDN 에 보관한다. 화면과 API 가 같은 주소라 CORS 설정이 필요 없다.
 
 | 층 | 위치 | 수명 | 역할 |
 |---|---|---|---|
-| ① 브라우저·CDN | `Cache-Control: public, max-age=3600` + `ETag` | 1시간 | 같은 사용자가 화면을 오가도 요청 자체가 안 나간다. 바뀐 게 없으면 `304 Not Modified` |
-| ② 메모리 TTL | `backend/app/services/cache.py` | 10분 | 같은 응답 JSON 을 DB 에서 다시 만들지 않는다. 수집이 끝나면 비운다 |
-| ③ DB (영속 캐시) | `indicator_observations`(실제 수집값) · `indicator_series_values`(기본 패널) | 갱신 전까지 | 외부 API 응답을 정규화해 저장. **모든 조회는 여기서만** |
+| ① 브라우저 | `Cache-Control: public, max-age=300` + `ETag` | 5분 | 같은 사용자가 화면을 오가도 요청 자체가 안 나간다. 바뀐 게 없으면 `304 Not Modified` |
+| ② Vercel CDN | `CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400, stale-if-error=604800` | 1시간 + 1일 + 7일 | 1시간은 CDN 이 바로 응답. 그 뒤 1일은 보관본을 먼저 주고 뒤에서 갱신 → **Render 무료 플랜이 잠들어 있어도 사용자는 기다리지 않는다**. Render 오류·장애 때는 7일까지 보관본으로 응답. `Vercel-Cache-Tag: indicators` 로 태그 단위 비우기 가능 |
+| ③ 메모리 TTL | `backend/app/services/cache.py` | 10분 | 같은 응답 JSON 을 DB 에서 다시 만들지 않는다. 수집이 끝나면 비운다 |
+| ④ DB (영속 캐시) | `indicator_observations`(실제 수집값) · `indicator_series_values`(기본 패널) | 갱신 전까지 | 외부 API 응답을 정규화해 저장. **모든 조회는 여기서만** |
+
+수집 모니터(`/indicators/status`)와 관리자 수집 응답은 `no-store` 로 어느 층에도 보관하지 않는다. 오류 응답(404·5xx)에는 캐시 헤더가 없어 CDN 이 보관하지 않고, 대신 `stale-if-error` 로 직전 정상 응답을 준다. 매일 수집 뒤 GitHub Actions 가 화면 주소(`SITE_BASE_URL`)의 `/api/indicators/bundle` 을 두 번씩 불러 CDN 을 새 응답으로 채운다(예열).
+
+| `vercel.json` | 내용 |
+|---|---|
+| `rewrites` | `/api/:path*` → `https://<Render 주소>/:path*` (쿼리 문자열은 그대로 전달) |
+| `headers` | `/api/:path*` 에 `x-vercel-enable-rewrite-caching: 1` — 2026-04-06 이전에 만든 Vercel 프로젝트에서도 rewrite 응답 캐시를 켠다 |
 
 갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24) 로 한다. 신선하면 `skipped`, 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
 

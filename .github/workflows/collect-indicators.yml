@@ -3,6 +3,7 @@ name: Collect quantitative indicators
 # 하루 1회(KST 09:40) Render 백엔드의 관리자 수집 API 를 호출한다.
 # 월·분기 단위 통계라 하루 한 번이면 충분하다. 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
 # 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
+#         SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
 
 on:
   workflow_dispatch:
@@ -38,6 +39,7 @@ jobs:
         env:
           POLICY_API_BASE_URL: ${{ secrets.POLICY_API_BASE_URL }}
           POLICY_ADMIN_TOKEN: ${{ secrets.POLICY_ADMIN_TOKEN }}
+          SITE_BASE_URL: ${{ secrets.SITE_BASE_URL }}
           INPUT_VARS: ${{ github.event.inputs.vars }}
           INPUT_FORCE: ${{ github.event.inputs.force }}
         run: |
@@ -79,7 +81,19 @@ jobs:
               result = response.json()
               for item in result.get('results', []):
                   print(f"{item.get('id')}: {item.get('status')} rows={item.get('rows', '')} last={item.get('last_period', '')} {item.get('error', '')}")
-              if result.get('status') != 'ok':
+              failed = result.get('status') != 'ok'
+              # CDN 예열: 화면이 부르는 묶음을 한 번씩 불러 Vercel CDN 에 새 응답을 채운다. 실패해도 수집 결과에는 영향 없음
+              site = os.environ.get('SITE_BASE_URL', '').strip().rstrip('/')
+              if site.startswith('https://'):
+                  for params in ({'set': 'all'}, {}):
+                      for attempt in range(2):  # 1회차: 오래된 보관본이면 뒤에서 갱신 시작 · 2회차: 새 응답 확인
+                          try:
+                              r = requests.get(site + '/api/indicators/bundle', params=params, timeout=120)
+                              print(f"warm {params or 'set=live'} #{attempt + 1}: HTTP {r.status_code} cache={r.headers.get('x-vercel-cache')}")
+                          except requests.RequestException:
+                              print('::notice::CDN warm-up request failed; the next visitor will refill the cache.')
+                          time.sleep(3)
+              if failed:
                   print('::error::Some indicators failed. Prior data was preserved; inspect /indicators/status.')
                   sys.exit(1)
               print('Indicator collection completed.')

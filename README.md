@@ -130,7 +130,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 
 ## 개발 테스트 배포 (`feat/quant-indicators`)
 
-정량 지표 파이프라인을 개인 계정(Vercel · Render · Supabase)에서 먼저 확인하는 테스트 배포입니다. 위 서비스(www.khmi.kr)와는 별개이며, main에 합칠 때 이 절은 빼고 `frontend/js/config.js`를 팀 Render 주소로 바꿉니다.
+정량 지표 파이프라인을 개인 계정(Vercel · Render · Supabase)에서 먼저 확인하는 테스트 배포입니다. 위 서비스(www.khmi.kr)와는 별개이며, main에 합칠 때 이 절은 빼고 `frontend/vercel.json`의 rewrite 목적지와 `frontend/js/config.js`의 `API_DOCS_URL`을 팀 Render 주소로 바꿉니다.
 
 | 항목 | 주소 |
 |---|---|
@@ -138,6 +138,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | API 연동 실습 페이지 | https://realestateroh-frontend.vercel.app/demo.html |
 | Swagger UI | https://realestate-roh-api.onrender.com/docs |
 | 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
+| CDN 경유 API (화면이 부르는 주소) | https://realestateroh-frontend.vercel.app/api/indicators/bundle?set=all |
 
 ---
 
