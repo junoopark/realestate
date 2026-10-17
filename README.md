@@ -1,159 +1,151 @@
 # KHMI — Korea Housing Market Intelligence
 
-주요 부동산 지표를 한 화면에 모아 보는 대시보드입니다.
-[mypage](https://github.com/junoopark/mypage) 프로젝트의 뼈대(프론트엔드 틀 · FastAPI 백엔드 · 배포 구성)를 가져와 시작했습니다.
+**공공 통계로 읽는 한국 주택 임대시장**
 
-## 프로젝트 소개
+[www.khmi.kr](https://www.khmi.kr)
 
-- **Home** (`index.html#home`, 첫 화면, `js/home.js`): ① KHMI Dashboard — 주택시장 가격 동향(월세가격지수 코멘터리·차트) · 이달의 차트(기준금리·국고채 3년·주택담보대출 금리) · 주요 정책 동향(`data/policies.json` 최근 발표 4건)을 한 줄 3단으로 ② 시도별 가격 상승률 지도 — 17개 시도 히트맵(매매·전세·월세 가격지수, 전년동월·전월 대비, 상승 파랑·하락 빨강)과 순위 막대.
-- **해설 문장**: 차트 제목·불릿·설명은 `js/notes.js`가 데이터에서 계산해 만듭니다(최신값, 전년동기 대비, 최근 3개월 방향, 최근 3년 범위 위치). 원인·전망은 쓰지 않고, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.
-- **부동산 대시보드** (`index.html#overview`, `#demand` … `#macro`, `js/factors.js`): Overview(6개 동인 대표 지표의 코멘터리+차트)와 6개 동인 화면. 동인 화면은 차트가 먼저 나오고 개요·핵심 포인트·지역별 최신값 표·차트별 해설은 접어 둡니다.
-  - 보기 설정: 지역(17개 시도 중 최대 3곳을 가로 스크롤 토글로 선택, 또는 서울 구) · 기간(3년/5년/전체) · 값(수준/전년동기 대비)
-  - 변수별 시계열 차트(마우스·키보드로 값 읽기), 접힌 해설·출처·전처리 방법
-  - 설명은 [`frontend/data/drivers.json`](frontend/data/drivers.json), 값은 [`frontend/data/factor_sample.json`](frontend/data/factor_sample.json)에서 읽습니다.
-- **상단 메뉴 4개**: Home · 부동산 대시보드(하위 메뉴: Overview, 6개 동인) · 부동산 정책 · About(하위 메뉴: 사이트 소개, 데이터·방법, 부동산 기초). 다섯 페이지(`index`·`learn`·`policies`·`about`·`demo`)에 같은 메뉴가 들어 있으니 바꿀 때는 함께 고칩니다.
-- **About**: `about.html` — 사이트 구성, 데이터사전·전처리·해설 규칙, 부동산 기초·프로젝트 안내.
-- **부동산 기초**: `learn.html` — 용어 검색, 매매·전세·월세 절차, 기관 개발과 투자 심사 가이드. 공식 출처를 함께 제공합니다.
-- **정책 모니터**: `policies.html` — 검토한 정책 요약, 공식 발표 자동 수집 후보, 적용 조건·리스크와 수집 상태를 제공합니다. **정책 히스토리** 탭은 최근 10년의 주요 전환점 27건을 5개 시기와 연도별 타임라인으로 보여줍니다.
-- **API 연동 실습 페이지**: `demo.html` — 배포된 화면이 FastAPI 백엔드를 호출해 서버 상태, 지표 목록, 지표 데이터를 보여줍니다. (헤더 메뉴에서는 뺐고 주소로 직접 엽니다)
-- **다크모드**: 헤더 버튼으로 전환합니다. 처음에는 OS 설정을 따르고, 직접 고르면 그 선택을 기억합니다.
-- **언어**: 한국어로 고정했습니다. (English 문구 사전은 `js/i18n.js`에 남아 있습니다)
+KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 통계를 한곳에 모아, 차트와 짧은 해설로 보여주는 주택시장 정보 서비스입니다. 서울 자치구 아파트 월세 리스크를 중심으로, 임대시장에 영향을 주는 지표를 **6개 동인(driver)** 으로 나누어 보여줍니다.
 
-## 주요 구성
+---
 
-| 구분 | 기술 | 배포처 | 폴더 |
+## 주요 기능
+
+### Home
+한 화면에서 시장 흐름을 봅니다.
+- **주택시장 가격 동향** — 월세가격지수 시장 코멘터리와 차트 (수준 · 전년동월 대비 · 전월 대비)
+- **이달의 차트** — 기준금리 · 국고채 3년 · 주택담보대출 금리
+- **주요 정책 동향** — 최근 발표된 주택 정책
+- **시도별 가격 상승률 지도** — 17개 시도의 매매 · 전세 · 월세 가격지수 변화를 지도와 순위로 비교
+
+### 부동산 대시보드
+- **Overview** — 6개 동인의 대표 지표와 코멘터리
+- **동인별 화면** — 동인에 속한 모든 지표의 시계열 차트, 지역별 최신값 표, 해설과 출처
+- **보기 설정** — 17개 시도 중 최대 3곳 비교 또는 서울 자치구 · 기간(3년 / 5년 / 전체) · 값(수준 / 전년동기 대비)
+
+### 부동산 정책
+- **주요 정책 정리** — 공식 원문을 확인한 정책 요약, 적용 대상 · 조건 · 시행일
+- **새 발표 모니터링** — 국토교통부 등 공식 발표를 자동 수집한 후보 목록
+- **정책 히스토리** — 최근 10년 주요 정책 전환점을 시기별 · 연도별 타임라인으로 정리
+
+### About · 부동산 기초
+- 사이트 구성, 데이터와 방법, 해설 규칙
+- 부동산 기초 학습 자료 — 용어, 매매 · 전세 · 월세 계약 절차, 부동산 개발과 투자 심사
+
+---
+
+## 6개 동인
+
+| # | 동인 | 무엇을 보는가 | 주요 지표 |
 |---|---|---|---|
-| 프론트엔드 | HTML · CSS · JavaScript (빌드 없음) | Vercel | [`frontend/`](frontend) |
-| 백엔드 | Python · FastAPI · SQLAlchemy · Pydantic | Render | [`backend/`](backend) |
-| 데이터베이스 | PostgreSQL(Supabase) · 로컬은 SQLite | Supabase | [`database/`](database) |
+| ① | 임차수요 압력 | 집을 빌리려는 사람의 증가 | 인구 · 세대 · 청년층 · 인구이동 · 고용 · 소득 |
+| ② | 주택공급 · 재고 | 늘어난 수요를 흡수할 공급 여력 | 인허가 · 착공 · 준공 · 미분양 · 임대주택 |
+| ③ | 매매 · 전세 시장 | 인접 시장 가격의 영향 | 매매 · 전세 가격지수, 전세가율, 전월세전환율 |
+| ④ | 임대시장 수급 | 임대 수요와 공급의 균형 | 월세 · 전세 수급동향, 실거래량 |
+| ⑤ | 시장심리 | 가격 상승 기대 (단기 신호) | 주택시장 소비심리, 주택가격전망 CSI |
+| ⑥ | 금리 · 대출 · 거시경제 | 전국 공통의 금융 · 경기 환경 | 기준 · 대출금리, 가계대출, 물가 · 경기 |
+
+①~④는 지역마다 다른 구조, ⑤는 단기 신호, ⑥은 전국 공통 환경으로 구분합니다. 동인 분류는 선행연구에서 반복해 쓰인 변수를 기준으로 한 데이터사전(52개 변수)을 따릅니다.
+
+---
+
+## 데이터
+
+| 구분 | 내용 |
+|---|---|
+| 출처 | 한국부동산원 R-ONE, 한국은행 ECOS, 통계청 KOSIS, 국토교통부(실거래가 공개시스템 · 공공데이터포털), 행정안전부, 국토연구원 |
+| 지역 범위 | 전국 · 17개 시도 · 서울 25개 자치구 (지표별로 제공 범위가 다름) |
+| 기간 | 2011년 이후 월 · 분기 · 연 단위 (지표별 공표 주기를 따름) |
+| 갱신 | 각 기관의 공표 일정에 맞춰 갱신 |
+
+**표시 원칙**
+- 화면의 값은 각 기관이 공표한 기준기간 값입니다. 빈 기간만 정해진 규칙으로 보완하며, 보완 방법은 차트마다 표시합니다.
+- 지수 기준시점이 바뀐 계열은 공식 기준시점에 맞춰 연결하고, 연결 방법을 함께 밝힙니다.
+- 신고기한 때문에 바뀔 수 있는 최근 값(예: 실거래 신고건수 최근 3개월)은 잠정값으로 구분해 점선으로 표시합니다.
+
+**해설 원칙**
+- 차트의 헤드라인과 설명은 데이터에서 계산한 사실(최신값, 전년동기 대비, 최근 3개월 방향, 최근 3년 범위 내 위치)로만 만듭니다.
+- 원인 분석이나 가격 전망은 쓰지 않습니다. 방향 해석은 데이터사전에 정한 예상 부호만 근거로 합니다.
+
+---
+
+## 서비스 구성
 
 ```
-realestate/
-├─ frontend/              # Vercel (Root Directory)
-│   ├─ index.html         # 대시보드 (Overview 차트 타일 + 동인 탭 6개)
-│   ├─ about.html         # 사이트 소개 · 데이터·방법
-│   ├─ demo.html          # API 연동 실습
-│   ├─ learn.html         # 용어·거래·개발·기관 투자 기초
-│   ├─ policies.html      # 정책 요약·자동 수집 후보·출처
-│   ├─ css/style.css      # 라이트/다크 색상 토큰 포함
-│   ├─ data/drivers.json  # 6개 동인·변수 목록 (데이터사전 엑셀에서 추출)
-│   ├─ data/factor_sample.json # 대시보드 값 샘플 (DFMBA 전처리본, 17개 시도)
-│   ├─ data/korea_sido.json    # Home 지도용 17개 시도 경계 (통계청 SGIS 2018, 공공누리 제1유형)
-│   └─ js/
-│       ├─ config.js      # API 주소 (로컬/배포 자동 선택)
-│       ├─ theme-init.js  # 다크모드 초기값 (깜빡임 방지)
-│       ├─ i18n.js        # 한국어/English 문구 사전
-│       ├─ main.js        # 테마 전환 버튼
-│       ├─ notes.js       # 차트 해설 문장 (데이터에서 계산)
-│       ├─ charts.js      # 숫자 표시 규칙 · SVG 선 차트
-│       ├─ factors.js     # 화면 전환(#home, #overview, #demand …) · 대시보드 Overview · 동인 화면
-│       ├─ home.js        # Home: 가격 동향 · 이달의 차트 · 정책 동향 · 시도 지도 히트맵
-│       └─ demo.js        # API 호출·결과 표시
-├─ backend/               # Render (Root Directory)
-│   ├─ requirements.txt
-│   └─ app/
-│       ├─ main.py        # 앱 생성 + CORS + 라우터 조립
-│       ├─ schemas.py     # Pydantic 모델
-│       ├─ routers/       # indicators.py · qualitative.py
-│       ├─ services/      # indicator_registry(지표 등록) · indicator_pipeline(수집→DB→조회) · rone/ecos/kosis 클라이언트 · 캐시
-│       ├─ db/            # DB 연결·모델 (indicator_* · content_* · policy_*)
-│       └─ crud/          # 확장용 자리
-├─ database/              # PostgreSQL 스키마·연결 및 테이블 설명
-├─ scripts/               # 데이터 가공 스크립트
-└─ docs/                  # indicator-pipeline.md · qualitative-guide.md · 작업설계서.md
+ www.khmi.kr ──▶  웹 화면 (Vercel)
+                    │
+                    ▼
+                 API 서버 (FastAPI · Render) ──▶ 데이터베이스 (PostgreSQL · Supabase)
+                                                      ▲
+ 공공 통계 API (R-ONE · ECOS · KOSIS · 국토부) ──▶ 수집 · 전처리 파이프라인
 ```
 
-## 배포 주소
-
-| 항목 | 주소 |
+| 구성 | 기술 |
 |---|---|
-| 대시보드 (Vercel) | https://realestate-junoo1.vercel.app |
-| API 연동 실습 페이지 (Vercel) | https://realestate-junoo1.vercel.app/demo.html |
-| 백엔드 Swagger UI (Render) | https://realestate-qr7h.onrender.com/docs |
-| GitHub 저장소 | https://github.com/junoopark/realestate |
+| 웹 화면 | HTML · CSS · JavaScript (빌드 없음), 자체 SVG 차트, 라이트 / 다크 모드 |
+| API 서버 | Python · FastAPI · SQLAlchemy · Pydantic |
+| 데이터베이스 | PostgreSQL (Supabase), 행 수준 보안(RLS) 적용 |
+| 데이터 수집 | R-ONE · ECOS · KOSIS Open API 수집기(지표 레지스트리), R-ONE 월세지수 적재, 정책 발표 수집기, [DFMBA](https://github.com/ksroh1913/DFMBA) 전처리 파이프라인 |
 
-> Render 무료 플랜은 일정 시간 요청이 없으면 서버가 잠듭니다. 첫 요청은 30~60초 걸릴 수 있습니다.
+### 공개 API
 
-### 정량 지표 테스트 배포 (노경수 · `feat/quant-indicators` 브랜치)
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/health` | 서버 상태 |
+| GET | `/indicators` | 제공 지표 목록 · 수집 상태 · 출처 |
+| GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에 (`vars` · `regions` · `start`) |
+| GET | `/indicators/{var}` | 지표 시계열 (DB에 캐시, 없으면 외부 API 1회 수집) |
+| GET | `/indicators/status` | 지표별 수집 상태 · 최근 수집 기록 |
+| GET | `/knowledge` | 부동산 기초 학습 자료 |
+| GET | `/policies` | 주요 정책 요약 |
+| GET | `/policies/monitor` | 정책 발표 수집 현황 |
+| GET | `/policies/history` | 최근 10년 정책 연혁 |
 
-이 브랜치의 정량 지표 파이프라인(외부 Open API → Supabase → `/indicators`)을 실제로 확인할 수 있는 테스트 배포입니다. 위 팀 배포와 별개로 개인 계정(Vercel·Render·Supabase)에서 운영합니다.
+API 명세는 서버의 `/docs`(Swagger UI)에서 볼 수 있습니다.
 
-| 항목 | 주소 |
-|---|---|
-| 대시보드 (Vercel) | https://realestateroh-frontend.vercel.app |
-| API 연동 실습 페이지 (Vercel) | https://realestateroh-frontend.vercel.app/demo.html |
-| 백엔드 Swagger UI (Render) | https://realestate-roh-api.onrender.com/docs |
-| 지표 수집 상태 (Render) | https://realestate-roh-api.onrender.com/indicators/status |
-| 브랜치 | https://github.com/junoopark/realestate/tree/feat/quant-indicators |
+---
 
-- 이 브랜치의 `frontend/js/config.js`는 위 테스트용 Render 주소를 가리킵니다. main에 합칠 때 팀 Render 주소로 바꿉니다.
-- 테스트 배포의 DB는 개인 Supabase 프로젝트이며, 매일 09:40(KST) GitHub Actions가 지표를 자동 수집합니다.
-- Swagger에서 `GET /indicators/V002`를 실행하면 응답의 `origin`이 `db(cache)`(DB에서 응답)로 나옵니다.
+## 개발 환경
 
-## API 목록
+Python 3.11 이상이 필요합니다.
 
-| 메서드 | 경로 | 설명 | 응답 |
-|---|---|---|---|
-| GET | `/` | 환영 메시지 | 200 |
-| GET | `/health` | 서버 생존 확인 | 200 |
-| GET | `/indicators` | 등록된 지표 목록·수집 상태·출처 | 200 |
-| GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에 (Home·Overview 용, `vars`·`regions`·`start`) | 200 |
-| GET | `/indicators/{var}` | 지표 시계열 (DB 캐시, 없으면 외부 API 1회 수집) | 200 · 304 · 404 · 502 · 503 |
-| GET | `/indicators/status` | 변수별 수집 상태·최근 수집 로그·저장소 | 200 |
-| POST | `/indicators/refresh` | 관리자 토큰으로 R-ONE·ECOS 수집 | 200 · 401 · 409 · 503 |
-| GET | `/knowledge` | 출처가 있는 부동산 기초 학습 콘텐츠 | 200 · 503 |
-| GET | `/policies` | 검토한 정책 요약 및 저장소 상태 | 200 · 503 |
-| GET | `/policies/monitor` | 수집 후보와 기관별 성공·실패 기록 | 200 · 422 |
-| GET | `/policies/history` | 최근 10년의 검토한 정책 연혁·시기별 흐름·출처 | 200 · 503 |
-| POST | `/policies/refresh` | 관리자 토큰으로 공식 발표 수집 | 200 · 401 · 409 · 503 |
-
-- 정량 지표는 한국부동산원 R-ONE·한국은행 ECOS Open API 에서 받아 DB(`indicator_*` 테이블)에 캐시합니다. 구조·출처·API/DB 문서는 [`docs/indicator-pipeline.md`](docs/indicator-pipeline.md), 지표 추가는 [`backend/app/services/indicator_registry.py`](backend/app/services/indicator_registry.py) 맨 위 주석을 참고합니다.
-- 허용할 프론트엔드 주소는 환경변수 `ALLOWED_ORIGINS`로 지정합니다(쉼표로 구분, 끝에 `/` 없이).
-
-## 로컬 실행 방법
-
-Python 3.11 이상과 Git이 필요합니다. (아래는 Windows PowerShell 기준)
-
-**백엔드** — `http://127.0.0.1:8000/docs`
-
-```powershell
+```bash
+# API 서버 — http://127.0.0.1:8000/docs
 cd backend
-python -m venv .venv
-.venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env
+cp .env.example .env        # API 키와 DATABASE_URL 입력
 fastapi dev app/main.py
-```
 
-`.env`는 커밋되지 않으므로 PC마다 새로 만들고, `RONE_API_KEY`·`ECOS_API_KEY` 값을 채웁니다(발급처는 `.env.example` 주석). 그다음 `python scripts/collect_indicators.py`로 지표를 한 번 받아 두면 `/indicators/V002`가 DB에서 응답합니다.
-
-**프론트엔드** — `http://127.0.0.1:5500`
-
-```powershell
-# 저장소 루트에서 (VS Code Live Server 확장을 써도 됩니다)
+# 웹 화면 — http://127.0.0.1:5500 (저장소 루트에서)
 python -m http.server 5500 -d frontend --bind 127.0.0.1
 ```
 
-`frontend/js/config.js`가 접속 주소를 보고 API 주소를 자동으로 고릅니다. `localhost`/`127.0.0.1`이면 로컬 백엔드(`:8000`)를, 그 밖에는 Render 주소를 호출합니다.
-
-## 배포 설정
-
-| 플랫폼 | 설정 |
+| 문서 | 내용 |
 |---|---|
-| Render | Root Directory `backend` · Build `pip install -r requirements.txt` · Start `uvicorn app.main:app --host 0.0.0.0 --port $PORT` · 환경변수 `ALLOWED_ORIGINS` = Vercel 주소, `DATABASE_URL`(Supabase Session pooler), `RONE_API_KEY`, `ECOS_API_KEY`, `POLICY_ADMIN_TOKEN` |
-| GitHub Actions | Secrets `POLICY_API_BASE_URL`(Render 주소)·`POLICY_ADMIN_TOKEN` → `collect-indicators.yml`(매일 09:40 KST 지표 수집)·`collect-policies.yml`(6시간마다 정책 수집) |
-| Vercel | Root Directory `frontend` · Framework Preset `Other` · 빌드 없음 |
+| [데이터베이스](database/README.md) | 테이블 구조, Supabase 연결, R-ONE 수집 · 지역 매핑 |
+| [정량 지표 파이프라인](docs/indicator-pipeline.md) | 지표 레지스트리, Open API 수집 → DB 캐시 → `/indicators`, 매일 자동 수집 |
+| [정성 자료 가이드](docs/qualitative-guide.md) | 부동산 기초 · 정책 자료의 출처와 수집 운영 |
+| [작업 설계서](docs/작업설계서.md) | 설계 결정과 진행 단계 |
 
-`main` 브랜치에 push하면 Vercel과 Render가 자동으로 다시 배포합니다.
+---
 
-## 정성 자료 기능과 팀 인수인계
+## 개발 테스트 배포 (`feat/quant-indicators`)
 
-**부동산 기초·정책 모니터·정책 히스토리 담당: 박민영**
+정량 지표 파이프라인을 개인 계정(Vercel · Render · Supabase)에서 먼저 확인하는 테스트 배포입니다. 위 서비스(www.khmi.kr)와는 별개이며, main에 합칠 때 이 절은 빼고 `frontend/js/config.js`를 팀 Render 주소로 바꿉니다.
 
-구현 내용·출처·API 응답·수집 운영은 [정성 자료 가이드](docs/qualitative-guide.md), Supabase 연결과 테이블은 [DB 설명](database/README.md)을 참고하세요.
+| 항목 | 주소 |
+|---|---|
+| 대시보드 | https://realestateroh-frontend.vercel.app |
+| API 연동 실습 페이지 | https://realestateroh-frontend.vercel.app/demo.html |
+| Swagger UI | https://realestate-roh-api.onrender.com/docs |
+| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
 
-- **정량 지표 수집 담당: 노경수** — 외부 Open API → DB 캐시 → `/indicators` 구조는 [정량 지표 파이프라인](docs/indicator-pipeline.md) 참고. 화면은 `factor_sample.json`을 먼저 그린 뒤 `/indicators/bundle` 응답으로 같은 변수를 덮어씁니다(서버가 잠들어 있으면 기본본 유지).
-- 동인 탭 기본본(`frontend/data/factor_sample.json`)은 [DFMBA](https://github.com/ksroh1913/DFMBA) 파이프라인의 `데이터취합_전처리_YYYYMMDD.xlsx`(1차_결측보완 시트)에서 뽑은 **샘플**입니다(17개 시도, 서울 구 강남·마포·노원, 2016년~). 새 전처리본이 나오면 `python scripts/build_factor_sample.py <엑셀 경로>`로 다시 만듭니다. Home 지도 경계는 `python scripts/build_korea_map.py <skorea-provinces-2018-geo.json>`([southkorea-maps](https://github.com/southkorea/southkorea-maps)의 통계청 2018 경계)로 만듭니다. 국토부 실거래 신고건수(V006·V007)의 최근 3개월은 신고기한 때문에 잠정값으로 표시합니다.
-- 기초/정책/연혁 원본은 `frontend/data/knowledge.json`, `frontend/data/policies.json`, `frontend/data/policy-history.json`입니다. 연혁 수정 후 `python scripts/check_history_data.py`로 형식을 검사하고, `python scripts/sync_qualitative_data.py`로 Render 배포용 `backend/data/` 사본도 갱신합니다.
-- 실제 발표 수집: 저장소 루트에서 `python scripts/collect_policies.py --export frontend/data/monitor.json`. 수집은 DB에 기록하고, 옵션의 JSON은 프론트 서버 연결 실패 시 표시할 실제 수집 스냅샷입니다.
-- Supabase 연결 전에는 SQLite를 사용합니다. Render의 임시 디스크는 재배포 시 수집 이력이 사라질 수 있으므로, 누적 모니터링 운영 전 `DATABASE_URL`을 연결합니다.
+---
+
+## 만든 사람들
+
+KHMI는 KAIST 디지털금융 MBA 졸업생들이 함께 시작한 서비스입니다.
+
+## 알림
+
+- KHMI가 제공하는 정보는 공공 통계를 정리한 참고 자료이며, 투자 권유나 가격 예측이 아닙니다.
+- 각 통계의 저작권은 원 작성기관에 있습니다. 시도 경계 지도는 통계청 SGIS(2018) 자료를 공공누리 제1유형에 따라 사용했습니다.
