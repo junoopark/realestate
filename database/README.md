@@ -111,3 +111,26 @@ python -m pytest tests/backend -q -p no:cacheprovider
 ~~~
 
 파싱·한국시간·키워드 오탐, 빈 본문, 외부 도메인·XML 엔터티 차단, 재시작 후 중복 방지, 수정 버전, 실패 시 자료 보존, 토큰 보호, GET의 수집 비실행, DB 장애 시 비밀 없는 응답을 확인합니다. 테스트 입력은 테스트 전용이며 배포 자료에 들어가지 않습니다. 실제 Supabase 계정 연결은 팀원이 설정한 뒤 확인해야 합니다.
+
+## R-ONE 아파트 월세지수 (Supabase)
+
+`database/migrations/001_rone_rent_index.sql`을 Supabase SQL Editor에서 DB 소유자 권한으로 실행합니다. 여러 번 실행해도 안전합니다. 정성 콘텐츠 테이블과 같이 RLS만 켜고 공개 정책은 만들지 않습니다. 읽기는 FastAPI가 맡습니다.
+
+| 통계표 | 이름 | 기간 | 용도 |
+|---|---|---|---|
+| A_2024_00055 | (월) 월세가격지수_아파트 | 2015.06~ | 정기 수집 |
+| A_2024_00054 | (월) 월세통합가격지수_아파트 | 2015.06~ | 정기 수집, 화면 V001 원계열 |
+| A_2024_00164 | 주택유형별 월세가격지수(구)_아파트 | 2010.06~2015 | 한 번만 적재, V001 구지수 연결용 |
+
+| 테이블 | 내용 |
+|---|---|
+| rone_stat_tables | 통계표 메타(기준시점, 구계열 여부, 수집 대상 여부) |
+| regions | 화면·분석용 공통 지역 키(예: 서울>강남구) |
+| rone_regions | 통계표별 CLS_ID → 공통 지역. 구지수와 현행은 CLS_ID 체계가 달라 표마다 따로 둔다 |
+| rone_observations | R-ONE 원값. PK(statbl_id, cls_id, itm_id, period)로 upsert |
+| rone_observation_revisions | 공표 뒤 값이 바뀌면 트리거가 이전 값을 남긴다 |
+| rone_collect_runs | 표별 수집 실행 결과 |
+| derived_series / derived_observations | 구지수 연결·권역 역산 같은 가공 계열 |
+| v_rone_observations | 원값 + 통계표·지역 이름 조회 뷰 |
+
+R-ONE 키는 `backend/.env` 또는 서버·GitHub Actions secret의 `RONE_API_KEY`에만 둡니다.
