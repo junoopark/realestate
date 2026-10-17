@@ -33,7 +33,7 @@ rone_regions = Table(
     "rone_regions", meta,
     Column("statbl_id", String, primary_key=True), Column("cls_id", BigInteger, primary_key=True),
     Column("cls_nm", String), Column("cls_fullnm", Text), Column("rone_level", Integer),
-    Column("first_seen", Date), Column("last_seen", Date),
+    Column("region_key", String), Column("first_seen", Date), Column("last_seen", Date),
 )
 observations = Table(
     "rone_observations", meta,
