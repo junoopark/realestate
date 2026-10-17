@@ -755,7 +755,9 @@ code {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  font-family: var(--serif);   /* 제목 서체는 Home 과 같게 (.method 배지는 고정폭 유지) */
   font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.01em;
   margin-bottom: 14px;
 }
