@@ -8,6 +8,7 @@ load_dotenv()  # 로컬 개발용. backend/.env 가 있으면 읽어온다 (배�
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from app.routers import indicators, qualitative
 from app.services.content_store import initialize_storage
@@ -45,6 +46,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 응답 압축: /indicators/bundle?set=all(약 0.7MB JSON)을 전송할 때 크기를 크게 줄인다
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(indicators.router)
 app.include_router(qualitative.router)

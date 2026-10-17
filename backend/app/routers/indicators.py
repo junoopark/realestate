@@ -2,11 +2,12 @@
 
   GET  /indicators                 등록된 변수와 수집 상태·출처
   GET  /indicators/status          변수별 상태 + 최근 수집 기록 + 저장소 정보 (모니터)
-  GET  /indicators/bundle          여러 변수를 한 번에 (Home·Overview 가 한 요청으로 받는다)
-  GET  /indicators/{var}           변수 하나의 시계열 (factor_sample.json 과 같은 모양)
+  GET  /indicators/bundle          여러 변수를 한 번에. set=live(기본): Open API 수집 변수만 · set=all: 기본 패널 51개 변수 전체 + 실제 수집값
+  GET  /indicators/{var}           변수 하나의 시계열 (factor_sample.json 과 같은 모양). Open API 변수가 아니면 기본 패널에서
   POST /indicators/refresh         관리자 토큰으로 외부 API 수집 (GitHub Actions cron 이 하루 1회 호출)
 
-응답 origin 값: 'db(cache)' = DB 에서 바로, 'api(R-ONE)' = DB 에 없어 방금 받아와 저장한 뒤 응답.
+응답 origin 값: 'db(cache)' = Open API 수집값을 DB 에서, 'db(panel)' = 기본 패널(전처리본 적재분)을 DB 에서,
+'api(R-ONE)' = DB 에 없어 방금 받아와 저장한 뒤 응답.
 """
 
 import hashlib
@@ -23,6 +24,7 @@ from app.services import cache
 from app.services.indicator_pipeline import (
     is_stale, load_metric, recent_logs, refresh_all, refresh_hours, refresh_variable, utc_now, variable_status,
 )
+from app.services.indicator_panel import panel_meta, panel_metrics, panel_status, pick_metric
 from app.services.indicator_registry import SOURCES, enabled_specs, get_spec
 from app.services.regions import SIDO
 from app.db.models import IndicatorVariable
@@ -62,14 +64,19 @@ def _background_refresh(var_ids: list[str]):
     cache.clear("indicator:")
 
 
-def _metric_or_fetch(session: Session, spec, regions, start, background: BackgroundTasks | None):
-    """DB 에서 읽고, 없으면 지금 받아온다(lazy). 오래됐으면 DB 값을 주고 뒤에서 갱신한다."""
+def _metric_or_fetch(session: Session, spec, regions, start, background: BackgroundTasks | None, allow_fetch: bool = True):
+    """DB 에서 읽고, 없으면 지금 받아온다(lazy). 오래됐으면 DB 값을 주고 뒤에서 갱신한다.
+    allow_fetch=False 면 기다리지 않고 뒤에서만 받는다(기본 패널로 대신 응답할 수 있을 때)."""
     var = session.get(IndicatorVariable, spec.id)
     metric = load_metric(session, spec, regions, start)
     origin = "db(cache)"
     if metric is None and (var is None or var.last_period is None):  # DB 에 아예 없을 때만 외부 API 를 부른다
         if not _has_key(spec.source):
             return None, "missing"
+        if not allow_fetch:
+            if background is not None:
+                background.add_task(_background_refresh, [spec.id])
+            return None, "pending"
         result = refresh_variable(session, spec, trigger="lazy", force=True)
         if result["status"] != "ok":
             raise HTTPException(status_code=502, detail=f"{spec.id} 자료를 가져오지 못했습니다: {result.get('error', '')}")
@@ -96,39 +103,66 @@ def list_indicators():
 def status(limit: int = Query(default=50, ge=1, le=300)):
     """변수별 마지막 수집 시각·시점·오류와 최근 수집 로그. 발표용 '캐시 효과' 근거(duration_ms)도 여기 있다."""
     with Session(get_engine()) as session:
-        return {"variables": variable_status(session), "logs": recent_logs(session, limit), "storage": storage_info(),
+        return {"variables": variable_status(session), "panel": panel_status(session), "logs": recent_logs(session, limit), "storage": storage_info(),
                 "refresh_hours": refresh_hours(), "keys": {s: _has_key(s) for s in SOURCES}, "checked_at": utc_now()}
 
 
 @router.get("/bundle", response_model=BundleOut)
 def bundle(request: Request, response: Response, background: BackgroundTasks,
-           vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 enabled 전체"),
+           vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 전체"),
            regions: str | None = Query(default=None, description="쉼표 구분 지역 (예: 서울,경기). 비우면 전체"),
-           start: str | None = Query(default=None, description="시작 시점 'YYYY-MM' (예: 2021-01)")):
-    """여러 변수의 시계열을 한 번에. Home·Overview 화면이 이 응답을 factor_sample.json 위에 덮어쓴다."""
-    ids = _parse_list(vars) or [s.id for s in enabled_specs()]
+           start: str | None = Query(default=None, description="시작 시점 'YYYY-MM' (예: 2021-01)"),
+           dataset: str = Query(default="live", alias="set", pattern="^(live|all)$",
+                                description="live: Open API 로 수집하는 변수만 · all: 기본 패널(51개 변수) 전체 + 수집 변수는 실제 수집값으로")):
+    """여러 변수의 시계열을 한 번에. set=all 이면 화면이 쓰는 factor_sample.json 과 같은 내용 전체를 DB 에서 준다."""
+    requested = [v.upper() for v in _parse_list(vars)]
+    live_ids = [v for v in requested if (get_spec(v) and get_spec(v).enabled)] if requested else [s.id for s in enabled_specs()]
     region_list = _parse_list(regions) or None
-    key = f"indicator:bundle:{','.join(ids)}:{','.join(region_list or [])}:{start or ''}"
+    key = f"indicator:bundle:{dataset}:{','.join(requested)}:{','.join(region_list or [])}:{start or ''}"
 
     def build():
         metrics, missing, fetched = [], [], False
+        live: dict[tuple, dict] = {}
         with Session(get_engine()) as session:
-            for vid in ids:
+            for vid in (live_ids if dataset == "all" else (requested or live_ids)):
                 spec = get_spec(vid)
                 if spec is None or not spec.enabled:
                     missing.append(vid)
                     continue
                 try:
-                    metric, origin = _metric_or_fetch(session, spec, region_list, start, background)
+                    metric, origin = _metric_or_fetch(session, spec, region_list, start, background, allow_fetch=dataset != "all")
                 except HTTPException:  # 한 변수의 수집 실패가 묶음 전체를 막지 않는다
-                    metric = None
+                    metric, origin = None, "error"
                 if metric is None:
                     missing.append(vid)
                     continue
                 fetched = fetched or origin.startswith("api")
-                metrics.append(metric)
-        return {"generated": utc_now(), "origin": "db(cache)+api" if fetched else "db(cache)",
-                "regions": {"sido": SIDO, "nation": ["전국"]}, "metrics": metrics, "missing": missing}
+                live[(metric["var"], metric["scope"])] = metric
+            if dataset == "all":
+                missing, used = [], set()
+                for m in panel_metrics(session, requested or None, region_list, start):
+                    k = (m["var"], m["scope"])
+                    if k in live:  # 같은 변수·지역 단위는 Open API 실제 수집값으로 바꾼다
+                        if k not in used:
+                            metrics.append(live[k])
+                            used.add(k)
+                        continue
+                    metrics.append(m)
+                metrics += [m for k, m in live.items() if k not in used]
+                have = {m["var"] for m in metrics}
+                missing = [v for v in requested if v not in have]
+                meta = panel_meta(session) or {}
+            else:
+                metrics, meta = list(live.values()), {}
+        regions_out = {"sido": SIDO, "nation": ["전국"]}
+        if meta.get("regions"):
+            regions_out = {**meta["regions"], "nation": ["전국"]}
+        origin = "db(cache)+api" if fetched else "db(cache)"
+        if dataset == "all":
+            origin = "db(panel+cache)" + ("+api" if fetched else "")
+        panel = {k: meta.get(k) for k in ("generated", "loaded_at", "source_note")} if meta else None
+        return {"generated": utc_now(), "set": dataset, "origin": origin, "regions": regions_out,
+                "aliases": meta.get("aliases") or {}, "panel": panel, "metrics": metrics, "missing": missing}
 
     payload = cache.get_or_set(key, MEMORY_TTL_SECONDS, build)
     return _cache_headers(response, payload, request) or payload
@@ -137,22 +171,34 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
 @router.get("/{var}", response_model=MetricOut)
 def get_indicator(var: str, request: Request, response: Response, background: BackgroundTasks,
                   regions: str | None = Query(default=None, description="쉼표 구분 지역. 비우면 전체"),
-                  start: str | None = Query(default=None, description="시작 시점 'YYYY-MM'")):
-    """변수 하나의 시계열. DB 에 없으면 외부 API 를 불러 채운 뒤 응답한다(origin='api(…)')."""
-    spec = get_spec(var)
-    if spec is None:
-        raise HTTPException(status_code=404, detail=f"등록되지 않은 지표입니다: {var}")
-    if not spec.enabled:
-        raise HTTPException(status_code=404, detail=f"아직 연동하지 않은 지표입니다: {var} (registry enabled=False)")
+                  start: str | None = Query(default=None, description="시작 시점 'YYYY-MM'"),
+                  scope: str | None = Query(default=None, description="지역 단위 sido·gu·seoul·nation. 비우면 sido 우선")):
+    """변수 하나의 시계열. Open API 수집 변수는 DB 의 실제 수집값(없으면 API 1회 수집), 나머지는 기본 패널에서 준다."""
+    vid = var.upper()
+    spec = get_spec(vid)
     region_list = _parse_list(regions) or None
-    key = f"indicator:var:{spec.id}:{','.join(region_list or [])}:{start or ''}"
+    key = f"indicator:var:{vid}:{scope or ''}:{','.join(region_list or [])}:{start or ''}"
 
     def build():
         with Session(get_engine()) as session:
-            metric, _ = _metric_or_fetch(session, spec, region_list, start, background)
-        if metric is None:
-            raise HTTPException(status_code=503, detail=f"{spec.id} 자료가 아직 없고 {KEY_ENV[spec.source]} 도 설정되지 않았습니다. 수집 후 다시 시도하세요.")
-        return metric
+            error = None
+            if spec is not None and spec.enabled and (not scope or scope == spec.scope):
+                try:
+                    metric, _ = _metric_or_fetch(session, spec, region_list, start, background)
+                except HTTPException as exc:  # 수집 실패 — 기본 패널이 있으면 그것으로 응답
+                    metric, error = None, exc
+                if metric is not None:
+                    return metric
+            metric = pick_metric(panel_metrics(session, [vid], region_list, start, scope), scope)
+        if metric is not None:
+            return metric
+        if error is not None:
+            raise error
+        if spec is None:
+            raise HTTPException(status_code=404, detail=f"등록되지 않은 지표입니다: {var}")
+        if not spec.enabled:
+            raise HTTPException(status_code=404, detail=f"아직 연동하지 않은 지표입니다: {var} (registry enabled=False, 기본 패널에도 없음)")
+        raise HTTPException(status_code=503, detail=f"{spec.id} 자료가 아직 없고 {KEY_ENV[spec.source]} 도 설정되지 않았습니다. 수집 후 다시 시도하세요.")
 
     payload = cache.get_or_set(key, MEMORY_TTL_SECONDS, build)
     return _cache_headers(response, payload, request) or payload

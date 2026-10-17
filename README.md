@@ -92,7 +92,7 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 |---|---|---|
 | GET | `/health` | 서버 상태 |
 | GET | `/indicators` | 제공 지표 목록 · 수집 상태 · 출처 |
-| GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에 (`vars` · `regions` · `start`) |
+| GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에. `set=all`이면 51개 변수 전체(DB 기본 패널 + Open API 실제 수집값) |
 | GET | `/indicators/{var}` | 지표 시계열 (DB에 캐시, 없으면 외부 API 1회 수집) |
 | GET | `/indicators/status` | 지표별 수집 상태 · 최근 수집 기록 |
 | GET | `/knowledge` | 부동산 기초 학습 자료 |

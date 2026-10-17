@@ -44,6 +44,34 @@ CREATE TABLE IF NOT EXISTS indicator_fetch_logs (       -- 수집 1회 = 1행 (�
 );
 CREATE INDEX IF NOT EXISTS ix_indicator_fetch_logs_variable_id ON indicator_fetch_logs(variable_id);
 
+-- ── 지표 기본 패널: 전처리본(51개 변수·106개 계열) 적재 — python scripts/seed_indicators.py ──
+CREATE TABLE IF NOT EXISTS indicator_series (           -- 계열 1개 = 1행 (변수 × 지역 단위 × 세부 항목)
+    id VARCHAR(80) PRIMARY KEY,                          -- '{scope}:{원자료 열}'
+    var_id VARCHAR(10) NOT NULL,                         -- 데이터사전 변수 ID (V001 …)
+    scope VARCHAR(10) NOT NULL,                          -- sido · gu · seoul · nation
+    column_name TEXT NOT NULL,
+    label TEXT NOT NULL,
+    unit VARCHAR(30) NOT NULL DEFAULT '',
+    freq VARCHAR(2) NOT NULL,                            -- M · Q · H · A
+    periods JSON NOT NULL,                               -- 시점 목록 (값 배열 순서)
+    source TEXT NOT NULL DEFAULT '',
+    method TEXT NOT NULL DEFAULT '',
+    release TEXT NOT NULL DEFAULT '',
+    filled INTEGER,
+    provisional_from VARCHAR(10),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    dataset TEXT NOT NULL DEFAULT '',
+    loaded_at VARCHAR(40) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_indicator_series_var_id ON indicator_series(var_id);
+CREATE TABLE IF NOT EXISTS indicator_series_values (    -- 값 1개 = 1행. 빈칸은 저장하지 않는다
+    series_id VARCHAR(80) NOT NULL REFERENCES indicator_series(id) ON DELETE CASCADE,
+    region VARCHAR(30) NOT NULL,
+    period VARCHAR(10) NOT NULL,
+    value DOUBLE PRECISION NOT NULL,
+    PRIMARY KEY (series_id, region, period)
+);
+
 -- ── 정성 자료: 검토한 JSON 스냅샷과 정책 수집 ──
 CREATE TABLE IF NOT EXISTS content_snapshots (
     key VARCHAR(40) PRIMARY KEY,
@@ -94,3 +122,5 @@ ALTER TABLE policy_document_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_variables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_observations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_fetch_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE indicator_series ENABLE ROW LEVEL SECURITY;
+ALTER TABLE indicator_series_values ENABLE ROW LEVEL SECURITY;

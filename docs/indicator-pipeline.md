@@ -14,6 +14,15 @@
         └────────── 사용자 요청 경로에서는 외부 API 를 부르지 않는다 ─┘ (DB 에 아예 없을 때 1회 예외)
 ```
 
+**두 계층 (2단계, 2026-10-17)** — 화면이 쓰는 51개 변수·106개 계열은 모두 DB 에서 나온다.
+
+| 계층 | 테이블 | 채우는 방법 | 범위 |
+|---|---|---|---|
+| 기본 패널 | `indicator_series` · `indicator_series_values` | `python scripts/seed_indicators.py` 로 전처리본(DFMBA, `factor_sample.json` 형식)을 한 번 적재 | 51개 변수 전체 (시도·서울 구·서울·전국) |
+| 실제 수집값 | `indicator_observations` | Open API 수집 (매일 Actions · CLI · lazy) | 레지스트리의 Open API 변수 (현재 9개) |
+
+`GET /indicators/bundle?set=all` 은 기본 패널을 읽고, 같은 (변수, 지역 단위) 계열이 실제 수집값에 있으면 그것으로 바꿔서 준다. 그래서 Open API 로 받는 변수는 매일 새 값이, 아직 API 로 옮기지 않은 변수는 전처리본 값이 같은 응답 하나로 나간다. 정적 파일은 DB 에 넣을 원본(시드)으로만 남는다.
+
 핵심 아이디어는 교재 06의 **"있으면 DB 에서, 없으면 API 에서"** 를 월 단위 통계에 맞게 확장한 것이다. 값이 한 달에 한 번 바뀌는 자료를 사용자가 볼 때마다 외부 기관에 묻는 대신, **DB 를 외부 API 의 영속 캐시**로 쓰고 갱신은 하루 한 번 스케줄로 돌린다.
 
 ## 2. 캐시 3단 구조
@@ -22,11 +31,11 @@
 |---|---|---|---|
 | ① 브라우저·CDN | `Cache-Control: public, max-age=3600` + `ETag` | 1시간 | 같은 사용자가 화면을 오가도 요청 자체가 안 나간다. 바뀐 게 없으면 `304 Not Modified` |
 | ② 메모리 TTL | `backend/app/services/cache.py` | 10분 | 같은 응답 JSON 을 DB 에서 다시 만들지 않는다. 수집이 끝나면 비운다 |
-| ③ DB (영속 캐시) | `indicator_observations` | 갱신 전까지 | 외부 API 응답을 정규화해 저장. **모든 조회는 여기서만** |
+| ③ DB (영속 캐시) | `indicator_observations`(실제 수집값) · `indicator_series_values`(기본 패널) | 갱신 전까지 | 외부 API 응답을 정규화해 저장. **모든 조회는 여기서만** |
 
 갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24) 로 한다. 신선하면 `skipped`, 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
 
-응답의 `origin` 필드가 어느 층에서 왔는지 말해 준다 — `db(cache)` 는 DB, `api(R-ONE)` 은 DB 에 없어 방금 받아 저장한 뒤 응답한 경우다. 발표 때 Swagger 에서 같은 변수를 두 번 호출해 `origin` 과 `duration_ms`(`/indicators/status` 의 수집 로그) 를 비교하면 캐시 효과를 바로 보여 줄 수 있다.
+응답의 `origin` 필드가 어느 층에서 왔는지 말해 준다 — `db(cache)` 는 DB 의 실제 수집값, `db(panel)` 은 DB 의 기본 패널, `api(R-ONE)` 은 DB 에 없어 방금 받아 저장한 뒤 응답한 경우다. 발표 때 Swagger 에서 같은 변수를 두 번 호출해 `origin` 과 `duration_ms`(`/indicators/status` 의 수집 로그) 를 비교하면 캐시 효과를 바로 보여 줄 수 있다.
 
 ## 3. 사용 데이터 및 출처
 
@@ -82,6 +91,9 @@
 | `var` | 경로 | 변수 ID (`V002`). 대소문자 무관 |
 | `regions` | 쿼리, 선택 | 쉼표 구분 지역 (`서울,경기`). 전국 계열(`scope=nation`)은 무시 |
 | `start` | 쿼리, 선택 | 시작 시점 `YYYY-MM` |
+| `scope` | 쿼리, 선택 | 지역 단위 `sido`·`gu`·`seoul`·`nation`. 비우면 sido → seoul → nation → gu 순 |
+
+Open API 변수는 실제 수집값, 그 밖의 변수(또는 키가 없을 때)는 기본 패널에서 준다(`origin: "db(panel)"`, `live: false`, 원자료 열 `column`·보완 칸 수 `filled`·잠정 시작 `provisional_from` 포함).
 
 응답 `200` — `frontend/data/factor_sample.json` 의 `metrics[]` 한 항목과 같은 모양이라 화면 코드가 그대로 쓴다:
 
@@ -100,14 +112,15 @@
 
 | 입력 | 설명 |
 |---|---|
-| `vars` | 쉼표 구분 변수 ID. 비우면 `enabled` 전체 (Home·Overview 가 이걸 쓴다) |
+| `set` | `live`(기본): Open API 수집 변수만 · `all`: 기본 패널 51개 변수 전체 + 수집 변수는 실제 수집값으로 (화면 전체용) |
+| `vars` | 쉼표 구분 변수 ID. 비우면 전체 |
 | `regions`, `start` | 위와 같음 |
 
-응답 `200`: `{"generated": "…", "origin": "db(cache)" | "db(cache)+api", "regions": {"sido": [17개], "nation": ["전국"]}, "metrics": [MetricOut…], "missing": ["V012"]}`. 한 변수가 실패해도 나머지는 준다(`missing` 에 표시).
+응답 `200`: `{"generated": "…", "set": "all", "origin": "db(panel+cache)", "regions": {"sido": [17개], "gu": ["강남구", "마포구", "노원구"], "nation": ["전국"]}, "aliases": {"V033": "V005"}, "panel": {"generated": "…", "loaded_at": "…"}, "metrics": [MetricOut…], "missing": []}`. `set=all` 은 `factor_sample.json` 과 같은 내용(약 0.76MB, gzip 압축 전송)이다. 한 변수가 실패해도 나머지는 준다(`missing` 에 표시). `set=all` 에서 아직 한 번도 수집하지 않은 Open API 변수는 기다리지 않고 기본 패널로 응답한 뒤 뒤에서 수집한다.
 
 ### GET `/indicators/status` — 수집 모니터
 
-입력 `limit`(기본 50, ≤300). 응답: `variables`(위와 같음) + `logs`(최근 수집 기록: `variable_id`, `started_at`, `duration_ms`, `status`, `trigger`(cli·admin·lazy·background), `rows_received`, `rows_upserted`, `last_period`, `error`) + `storage`(sqlite/postgresql, 영속 여부) + `keys`(출처별 인증키 설정 여부) + `refresh_hours`.
+입력 `limit`(기본 50, ≤300). 응답: `variables`(위와 같음) + `panel`(기본 패널 변수·계열·값 수, 전처리본 생성 정보, 적재 시각) + `logs`(최근 수집 기록: `variable_id`, `started_at`, `duration_ms`, `status`, `trigger`(cli·admin·lazy·background), `rows_received`, `rows_upserted`, `last_period`, `error`) + `storage`(sqlite/postgresql, 영속 여부) + `keys`(출처별 인증키 설정 여부) + `refresh_hours`.
 
 ### POST `/indicators/refresh` — 외부 API 수집 (관리자)
 
@@ -124,8 +137,9 @@
 ORM `backend/app/db/models.py`, SQL `database/schema.sql`. 앱 시작 시 없는 테이블만 만들고 레지스트리를 `indicator_variables` 에 동기화한다. 외부 수집은 시작 시 하지 않는다.
 
 ```
-indicator_variables (1) ──< indicator_observations (N)      PK (variable_id, region, period)
+indicator_variables (1) ──< indicator_observations (N)      PK (variable_id, region, period)   ← Open API 실제 수집값
                     (1) ──< indicator_fetch_logs (N)        FK variable_id
+indicator_series    (1) ──< indicator_series_values (N)     PK (series_id, region, period)     ← 기본 패널(전처리본)
 ```
 
 **indicator_variables** — 변수(지표) 1개 = 1행. 코드 레지스트리의 사본 + 수집 상태.
@@ -162,6 +176,19 @@ indicator_variables (1) ──< indicator_observations (N)      PK (variable_id,
 | `status`, `trigger` | ok·error / cli·admin·lazy·background |
 | `rows_received`, `rows_upserted`, `last_period`, `error` | 받은 행·저장 행·최신 시점·오류 |
 
+**indicator_series** — 기본 패널의 계열 1개 = 1행 (106행). 한 변수가 지역 단위·세부 항목별로 여러 계열을 가진다(예: V006 실거래 신고건수 매매·전세·월세).
+
+| 컬럼 | 설명 |
+|---|---|
+| `id` VARCHAR(80) **PK** | `{scope}:{원자료 열}` 예: `sido:Y_V001_월세통합가격지수(구지수연결)` |
+| `var_id`, `scope`, `column_name` | 변수 ID, 지역 단위(sido·gu·seoul·nation), 전처리본 원자료 열 |
+| `label`, `unit`, `freq`, `periods` | 이름, 단위, 주기(M·Q·H·A), 시점 목록(JSON, 값 배열 순서) |
+| `source`, `method`, `release` | 출처 코드, 보완·연결 방법, 공표 시기 |
+| `filled`, `provisional_from` | 보완한 칸 수, 잠정값 시작 시점 |
+| `sort_order`, `dataset`, `loaded_at` | 원본 순서, 전처리본 생성 정보, 적재 시각 |
+
+**indicator_series_values** — 값 1개 = 1행 (약 8만 행). PK (`series_id` FK, `region`, `period`), `value`. 빈칸은 저장하지 않는다. 다시 적재하면 계열별로 지우고 다시 넣고, 파일에서 빠진 계열은 지운다. 지역 목록·변수 별칭은 `content_snapshots['indicator-panel']` 에 둔다.
+
 정성 자료 테이블(`content_snapshots`, `policy_*`)은 `database/README.md` 참고. 모든 테이블은 RLS 를 켜고 브라우저는 FastAPI 를 통해서만 읽는다.
 
 ## 6. 운영 절차
@@ -173,10 +200,13 @@ python scripts/collect_indicators.py --probe V002
 # 3) 수집 → DB (없으면 backend/local.db)
 python scripts/collect_indicators.py
 python scripts/collect_indicators.py --vars V043,V045,V056 --force
-# 4) 확인
+# 4) 기본 패널 적재 (처음 한 번, 새 전처리본이 나오면 다시)
+python scripts/seed_indicators.py            # frontend/data/factor_sample.json → indicator_series·indicator_series_values
+python scripts/seed_indicators.py --status
+# 5) 확인
 python scripts/collect_indicators.py --status
 fastapi dev backend/app/main.py      # http://127.0.0.1:8000/docs → /indicators/V002 두 번 호출해 origin 비교
-# 5) 서버 없이 볼 정적 스냅샷 (선택)
+# 6) 서버 없이 볼 정적 스냅샷 (선택)
 python scripts/collect_indicators.py --export frontend/data/factor_live.json
 ```
 
@@ -187,4 +217,4 @@ Supabase 연결은 `DATABASE_URL`(Session pooler) 만 바꾸면 된다(`database
 - R-ONE 통계표의 항목명(`ITM_NM`)·지역명(`CLS_NM`)은 표마다 다르다. 레지스트리의 `item` 은 '지수' 부분 일치로 잡아 두었고, `--probe` 로 실제 이름을 보고 다르면 고친다. 응답 `Type=json` 의 한글 인코딩 선언이 빠진 사례가 보고돼 `resp.encoding = "utf-8"` 로 고정했다.
 - 일일 호출 한도(R-ONE `ERROR-337`)를 넘기지 않도록 사용자 요청 경로에서는 외부 API 를 부르지 않고, 수집도 변수당 하루 1회·증분(최근 12개월)으로 제한했다.
 - 2차: KOSIS 변수(V012·V023)는 `itm_id`·`objL1` 코드 확인 후 `enabled=True`. 서울 자치구(`scope=gu`) 계열은 R-ONE `CLS_FULLNM` 의 '서울 > 구' 경로를 쓰면 같은 구조로 붙일 수 있다.
-- 기본본(`factor_sample.json`)은 서버가 잠들었거나 실패했을 때의 폴백으로 유지한다. 화면은 기본본을 먼저 그리고 API 응답이 오면 같은 변수를 덮어쓴다.
+- 2단계에서 51개 변수 전체가 DB(기본 패널)에 들어갔다. 화면을 `set=all` 한 번으로 그리게 바꾸고 `factor_sample.json` 을 화면에서 빼는 일은 팀 프론트엔드 수정본을 반영할 때 함께 한다. 그 전까지 화면은 기본본을 먼저 그리고 Open API 변수만 덮어쓴다.
