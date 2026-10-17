@@ -150,3 +150,12 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
   .method-steps { grid-template-columns: repeat(2,1fr); }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* 제목 서체를 Home·대시보드·About 과 같게: 세리프(Noto Serif KR) 700, 자간은 Home 의 .sec-title 기준.
+   고딕용으로 좁혀 둔 자간·750 굵기를 덮어쓰도록 .qual-page 로 한 단계 구체적으로 지정한다.
+   정책 히스토리의 연도 제목은 고정폭(--mono)을 유지한다. */
+.qual-page .qual-main :is(h2, h3, h4, h5):not(.history-year-heading) {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
