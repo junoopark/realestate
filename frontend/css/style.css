@@ -1017,3 +1017,7 @@ code {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* Home 지도 캡션 오른쪽 끝 내려받기 아이콘 */
+.map-caption.has-dl { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.map-caption .fig-dl-wrap { position: relative; top: auto; right: auto; flex: none; }

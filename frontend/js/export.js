@@ -3,6 +3,7 @@
 // - 로그인한 사용자만 내려받는다. 로그인 전에는 안내와 로그인 버튼을 보여 준다.
 // - 내려받으면 Supabase activity_logs('download')와 Vercel 이벤트를 남긴다.
 // charts.js 의 figure() 가 KHMI_EXPORT.button(payload) 를 부른다. payload 는 factors.js drawMetric() 이 만든다.
+// 시계열이 아닌 표(Home 시도 지도 등)는 payload.table([머리글, ...행])과 regionNames·periodText 를 직접 넘긴다.
 // 설계: docs/설계서_로그인_데이터다운로드.md 5.2장
 
 (function () {
@@ -24,6 +25,7 @@
 
   // ── 표 만들기 ─────────────────────────────────────────
   function rowsOf(p) {
+    if (p.table) return p.table;
     const provisional = p.provisionalAt != null && p.provisionalAt >= 0 && p.provisionalAt < p.periods.length;
     const head = ["기간", ...p.series.map((s) => s.name)];
     if (provisional) head.push("잠정");
@@ -42,14 +44,19 @@
     return d.toISOString().replace("T", " ").slice(0, 16) + " (KST)";
   }
 
+  function regionNames(p) {
+    return p.regionNames || p.series.map((s) => s.name);
+  }
+
   function infoRows(p, table) {
     const periods = table.slice(1).map((r) => r[0]);
+    const periodText = p.periodText || (periods.length ? `${periods[0]} ~ ${periods[periods.length - 1]}` : "");
     return [
       ["항목", "내용"],
       ["제목", p.title],
       ["단위 · 주기", p.subtitle],
-      ["지역", p.series.map((s) => s.name).join(", ")],
-      ["기간", periods.length ? `${periods[0]} ~ ${periods[periods.length - 1]}` : ""],
+      ["지역", regionNames(p).join(", ")],
+      ["기간", periodText],
       ["보기", p.viewLabel || VIEW_NAME[p.view] || p.view],
       ["출처", p.source || ""],
       ["원 통계표", p.sourceTable || ""],
@@ -65,8 +72,10 @@
 
   function fileName(p, ext) {
     const ymd = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10).replace(/-/g, "");
-    const regions = p.series.map((s) => s.name).join("-");
-    const parts = ["KHMI", p.varId, p.title, regions, p.view !== "level" ? p.viewLabel || VIEW_NAME[p.view] : null, ymd];
+    const regions = p.fileRegion || regionNames(p).join("-");
+    const viewText = p.view !== "level" ? p.viewLabel || VIEW_NAME[p.view] : null;
+    // 제목에 이미 보기(전년동월 대비 등)가 들어 있으면 다시 붙이지 않는다
+    const parts = ["KHMI", p.varId, p.title, regions, viewText && !p.title.includes(viewText) ? viewText : null, ymd];
     return (
       parts
         .filter(Boolean)
@@ -143,7 +152,7 @@
 
     const t = window.KHMI_TELEMETRY;
     if (t) {
-      const regions = p.series.map((s) => s.name);
+      const regions = regionNames(p);
       t.log("download", {
         target: `${p.varId}:${p.scope}`.slice(0, 80),
         detail: { format, rows: table.length - 1, regions, range: String(p.range), view: p.view },
