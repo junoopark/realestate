@@ -74,6 +74,22 @@ realestate/
 
 > Render 무료 플랜은 일정 시간 요청이 없으면 서버가 잠듭니다. 첫 요청은 30~60초 걸릴 수 있습니다.
 
+### 정량 지표 테스트 배포 (노경수 · `feat/quant-indicators` 브랜치)
+
+이 브랜치의 정량 지표 파이프라인(외부 Open API → Supabase → `/indicators`)을 실제로 확인할 수 있는 테스트 배포입니다. 위 팀 배포와 별개로 개인 계정(Vercel·Render·Supabase)에서 운영합니다.
+
+| 항목 | 주소 |
+|---|---|
+| 대시보드 (Vercel) | https://realestateroh-frontend.vercel.app |
+| API 연동 실습 페이지 (Vercel) | https://realestateroh-frontend.vercel.app/demo.html |
+| 백엔드 Swagger UI (Render) | https://realestate-roh-api.onrender.com/docs |
+| 지표 수집 상태 (Render) | https://realestate-roh-api.onrender.com/indicators/status |
+| 브랜치 | https://github.com/junoopark/realestate/tree/feat/quant-indicators |
+
+- 이 브랜치의 `frontend/js/config.js`는 위 테스트용 Render 주소를 가리킵니다. main에 합칠 때 팀 Render 주소로 바꿉니다.
+- 테스트 배포의 DB는 개인 Supabase 프로젝트이며, 매일 09:40(KST) GitHub Actions가 지표를 자동 수집합니다.
+- Swagger에서 `GET /indicators/V002`를 실행하면 응답의 `origin`이 `db(cache)`(DB에서 응답)로 나옵니다.
+
 ## API 목록
 
 | 메서드 | 경로 | 설명 | 응답 |
