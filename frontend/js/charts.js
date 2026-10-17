@@ -320,7 +320,7 @@ function lineChart(container, opts) {
 }
 
 // ── 리서치 차트 틀: 가운데 제목·부제 + 차트 + 안쪽 범례 + 자료 줄 ─────────
-// opts: lineChart 옵션 + { title, subtitle, source }
+// opts: lineChart 옵션 + { title, subtitle, source, download? }  download 이 있으면 내려받기 아이콘을 단다
 function figure(container, opts) {
   container.replaceChildren();
   const fig = document.createElement("figure");
@@ -338,6 +338,19 @@ function figure(container, opts) {
   const box = document.createElement("div");
   box.className = "fig-plot";
   fig.append(cap, box);
+  // 오른쪽 위 데이터 내려받기 아이콘 (export.js). 화면에 그린 값 그대로 넘긴다
+  if (opts.download && window.KHMI_EXPORT) {
+    fig.classList.add("fig-has-dl");
+    fig.append(window.KHMI_EXPORT.button({
+      ...opts.download,
+      title: opts.title || "",
+      subtitle: opts.subtitle || "",
+      source: opts.source || "",
+      periods: opts.periods,
+      provisionalAt: opts.provisionalAt,
+      series: opts.series.map((s) => ({ name: s.name, values: s.values })),
+    }));
+  }
   container.append(fig);
   const drawn = lineChart(box, { ...opts, frame: true });
   // 계열이 2개 이상이면 플롯 안 왼쪽 위에 선 모양 범례

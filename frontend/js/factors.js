@@ -304,6 +304,17 @@ function drawMetric(box, m, regions, opts = {}) {
     zeroLine: !!opts.change,
     height: opts.height ?? 240,
     label: `${m.label} ${regions.map((x) => x.r).join("·")} 추이`,
+    // 내려받기 파일의 '정보' 시트와 사용 기록에 쓰는 메타
+    download: {
+      varId: m.var,
+      scope: m.scope,
+      view: opts.change || "level",
+      viewLabel: opts.change ? (opts.change === "mom" ? "전월 대비" : changeName(m)) : "수준",
+      range: state.range,
+      sourceTable: m.source,
+      method: m.method,
+      release: m.release,
+    },
   });
 }
 
