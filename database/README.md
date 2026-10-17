@@ -114,7 +114,7 @@ python -m pytest tests/backend -q -p no:cacheprovider
 
 ## R-ONE 아파트 월세지수 (Supabase)
 
-`database/migrations/001_rone_rent_index.sql`을 Supabase SQL Editor에서 DB 소유자 권한으로 실행합니다. 여러 번 실행해도 안전합니다. 정성 콘텐츠 테이블과 같이 RLS만 켜고 공개 정책은 만들지 않습니다. 읽기는 FastAPI가 맡습니다.
+`database/migrations/001_rone_rent_index.sql`과 `002_regions_mapping.sql`을 순서대로 Supabase SQL Editor에서 DB 소유자 권한으로 실행합니다. 여러 번 실행해도 안전합니다. 정성 콘텐츠 테이블과 같이 RLS만 켜고 공개 정책은 만들지 않습니다. 읽기는 FastAPI가 맡습니다.
 
 | 통계표 | 이름 | 기간 | 용도 |
 |---|---|---|---|
@@ -125,7 +125,7 @@ python -m pytest tests/backend -q -p no:cacheprovider
 | 테이블 | 내용 |
 |---|---|
 | rone_stat_tables | 통계표 메타(기준시점, 구계열 여부, 수집 대상 여부) |
-| regions | 화면·분석용 공통 지역 키(예: 서울>강남구) |
+| regions | 화면·분석용 공통 지역 키(예: 서울>강남구). parent_key=행정 상위, area_key=소속 R-ONE 권역, first/last_period=R-ONE 관측 기간 |
 | rone_regions | 통계표별 CLS_ID → 공통 지역. 구지수와 현행은 CLS_ID 체계가 달라 표마다 따로 둔다 |
 | rone_observations | R-ONE 원값. PK(statbl_id, cls_id, itm_id, period)로 upsert |
 | rone_observation_revisions | 공표 뒤 값이 바뀌면 트리거가 이전 값을 남긴다 |
@@ -134,3 +134,18 @@ python -m pytest tests/backend -q -p no:cacheprovider
 | v_rone_observations | 원값 + 통계표·지역 이름 조회 뷰 |
 
 R-ONE 키는 `backend/.env` 또는 서버·GitHub Actions secret의 `RONE_API_KEY`에만 둡니다.
+
+### 공통 지역 키(regions)
+
+`backend/app/services/region_mapper.py`가 R-ONE 경로(`CLS_FULLNM`)에서 키를 만들고 `rone_regions.region_key`를 채웁니다. 수집할 때마다 자동으로 다시 맞추며, 수집 없이 매핑만 하려면 `python scripts/collect_rone.py --map-only`를 실행합니다.
+
+| 단계(level) | 키 예 | 비고 |
+|---|---|---|
+| nation · zone | `전국`, `수도권`, `5대광역시` | |
+| sido | `서울`, `광주`, `전남`, `전남광주` | 화면의 17개 시도 이름 그대로. 2026 통합 단위 `전남광주`는 광주·전남의 상위 |
+| area | `서울>강북지역>도심권`, `경기>경부1권` | R-ONE 권역. 시군구 키에서는 빼고 `area_key`로 연결 |
+| sigungu · gu | `서울>종로구`, `경기>안양시>만안구` | |
+
+- 구지수(00164)와 현행 표는 CLS_ID가 달라도 같은 키(예: `서울>강북지역`)로 이어집니다.
+- R-ONE이 이름 없이 주는 CLS_ID 510020·510021·510027은 `인천>중구`·`동구`·`서구`로 연결하고 `note`에 추정이라고 남깁니다(2026.07 개편 전 지역, `last_period`=2026-07).
+

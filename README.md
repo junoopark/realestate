@@ -138,7 +138,7 @@ Home·부동산 대시보드의 월세지수를 GitHub에 올린 JSON 대신 Sup
 | A_2024_00054 | (월) 월세통합가격지수_아파트 (화면 V001 원계열) | 2015.06~ | 정기 |
 | A_2024_00164 | 주택유형별 월세가격지수(구)_아파트 | 2010.06~2015.06 | 한 번만 (구지수 연결용) |
 
-1. Supabase SQL Editor에서 [`database/migrations/001_rone_rent_index.sql`](database/migrations/001_rone_rent_index.sql)을 실행합니다(다시 실행해도 안전). RLS만 켜고 공개 정책은 없으며, 읽기는 FastAPI가 맡습니다.
+1. Supabase SQL Editor에서 [`001_rone_rent_index.sql`](database/migrations/001_rone_rent_index.sql), [`002_regions_mapping.sql`](database/migrations/002_regions_mapping.sql)을 순서대로 실행합니다(다시 실행해도 안전). RLS만 켜고 공개 정책은 없으며, 읽기는 FastAPI가 맡습니다.
 2. `backend/.env`에 `DATABASE_URL`(Session pooler, `postgresql+psycopg://…`, 공백·대괄호 없이)과 `RONE_API_KEY`를 넣습니다.
 3. 저장소 루트에서 첫 적재와 정기 수집을 실행합니다.
 
@@ -149,7 +149,8 @@ python scripts/collect_rone.py                           # 매월: 최근 12개�
 
 - 같은 키(통계표·지역·항목·기준월)는 덮어쓰고, 값이 바뀐 행만 갱신합니다. 이전 값은 `rone_observation_revisions`에, 실행 결과는 `rone_collect_runs`에 남습니다.
 - R-ONE이 이름 없이 주는 지역(2026.07 개편 전 인천 일부 코드)은 `(이름 없음)`으로 저장합니다.
-- 남은 작업: 공통 지역 키(`regions`) 매핑 → 구지수 연결 계열(`derived_observations`) 계산 → FastAPI 조회 API → 프론트 전환 → 정기 수집 자동화.
+- 지역은 공통 키(`regions`, 예: `서울>강남구`, `경기>안양시>만안구`)로 조회합니다. 수집 뒤 자동으로 매핑하며, `--map-only`로 매핑만 다시 할 수 있습니다.
+- 남은 작업: 구지수 연결 계열(`derived_observations`) 계산 → FastAPI 조회 API → 프론트 전환 → 정기 수집 자동화.
 
 테이블 설명은 [DB 설명](database/README.md)에 있습니다.
 
