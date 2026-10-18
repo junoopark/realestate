@@ -225,3 +225,26 @@ def test_bundle_live_keeps_multi_series_vars_apart(db):
     got = {m["column"]: m["series"]["서울"] for m in body["metrics"]}
     assert got == {"V011_주민등록인구_20-29세_명": [1.0, 100.0], "V011_주민등록인구_20-39세비중_%": [3.0, 15.0]}
     assert all(m["live"] and m["origin"] == "db(api)" for m in body["metrics"])
+
+
+def test_bundle_reads_db_in_few_round_trips(db, monkeypatch):
+    """묶음 응답은 변수 수와 상관없이 DB 를 몇 번만 읽는다(Render ↔ Supabase 왕복 1회 ≈ 70ms 라 변수마다 물으면 20초를 넘는다)."""
+    from sqlalchemy import event
+    from app.main import app
+    monkeypatch.setenv("RONE_API_KEY", "test")
+    with Session(get_engine()) as s:
+        seed_panel(s, small_panel())
+        pipeline.refresh_variable(s, pipeline.get_spec("V002"), force=True, client=FakeRone())
+    monkeypatch.delenv("RONE_API_KEY")
+    seen = []
+    listener = lambda *args, **kwargs: seen.append(1)  # noqa: E731
+    event.listen(get_engine(), "before_cursor_execute", listener)
+    try:
+        with TestClient(app) as client:
+            for params in ({"set": "all"}, {"vars": "V002"}):
+                cache.clear()
+                seen.clear()
+                assert client.get("/indicators/bundle", params=params).status_code == 200
+                assert len(seen) <= 8, (params, len(seen))
+    finally:
+        event.remove(get_engine(), "before_cursor_execute", listener)

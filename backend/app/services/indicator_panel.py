@@ -188,12 +188,16 @@ def panel_status(session: Session) -> dict:
 
 # ── Open API 수집값 → 기본 패널 계열에 이어붙이기 ──
 
-def _targets(session: Session, spec) -> list:
-    """레지스트리 outputs 가 가리키는 패널 계열. 변수·지역 단위(+열 이름 일부)로 하나만 맞아야 쓴다."""
+def _targets(session: Session, spec, all_series: list | None = None) -> list:
+    """레지스트리 outputs 가 가리키는 패널 계열. 변수·지역 단위(+열 이름 일부)로 하나만 맞아야 쓴다.
+    all_series(전체 계열 목록)를 주면 DB 를 다시 읽지 않는다 — 여러 변수를 한 번에 볼 때(묶음 응답) 왕복을 줄인다."""
     out = []
     for o in getattr(spec, "outputs", ()) or ():
-        rows = session.execute(select(IndicatorSeries).where(IndicatorSeries.var_id == spec.var_id,
-                                                            IndicatorSeries.scope == o.scope)).scalars().all()
+        if all_series is not None:
+            rows = [r for r in all_series if r.var_id == spec.var_id and r.scope == o.scope]
+        else:
+            rows = session.execute(select(IndicatorSeries).where(IndicatorSeries.var_id == spec.var_id,
+                                                                IndicatorSeries.scope == o.scope)).scalars().all()
         if o.match:
             rows = [r for r in rows if o.match in r.column_name]
         if len(rows) == 1:
@@ -250,10 +254,14 @@ def live_series(session: Session, specs) -> dict:
     """패널 계열 ID → 그 계열을 채우는 Open API 수집 정보 (한 번이라도 성공한 것만)."""
     from app.db.models import IndicatorVariable
     out = {}
+    specs = list(specs)
+    ids = [spec.id for spec in specs]
+    fetched = {v.id: v for v in session.execute(select(IndicatorVariable).where(IndicatorVariable.id.in_(ids))).scalars()}
+    all_series = session.execute(select(IndicatorSeries)).scalars().all()  # 계열 100여 개 — 한 번에 읽어 변수마다 다시 묻지 않는다
     for spec in specs:
-        var = session.get(IndicatorVariable, spec.id)
+        var = fetched.get(spec.id)
         if var is None or not var.last_fetched_at:
             continue
-        for _, s in _targets(session, spec):
+        for _, s in _targets(session, spec, all_series):
             out[s.id] = {"spec": spec.id, "source": spec.source, "source_ref": spec.source_ref, "fetched_at": var.last_fetched_at}
     return out

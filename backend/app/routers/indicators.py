@@ -16,6 +16,7 @@ import json
 import os
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query, Request, Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_engine, storage_info
@@ -140,10 +141,18 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
         live: dict[tuple, dict] = {}
         fed = []
         with Session(get_engine()) as session:
+            known = {v.id: v for v in session.execute(select(IndicatorVariable)).scalars()}  # 한 번에 읽어 둔다(이후 session.get 은 DB 를 다시 묻지 않음)
             for vid in (live_ids if dataset == "all" else (requested or live_ids)):
                 spec = get_spec(vid)
                 if spec is None or not spec.enabled:
                     missing.append(vid)
+                    continue
+                var = known.get(spec.id)
+                if dataset == "live" and spec.outputs and var is not None and var.last_period:
+                    # 이미 수집한 변수는 화면 계열을 패널에서 바로 준다(아래). 오래됐으면 뒤에서만 갱신
+                    if is_stale(var) and _has_key(spec.source):
+                        background.add_task(_background_refresh, [spec.id])
+                    fed.append((spec, None))
                     continue
                 try:
                     metric, origin = _metric_or_fetch(session, spec, region_list, start, background, allow_fetch=dataset != "all")
@@ -171,7 +180,10 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
                 covered = {i["spec"] for i in api.values()}
                 for spec, metric in fed:
                     if spec.id not in covered:  # 이어붙일 패널 계열이 없으면(패널 미적재) 수집값 그대로
-                        live[(metric["var"], metric["scope"], spec.id)] = metric
+                        metric = metric or load_metric(session, spec, region_list, start)
+                        if metric is not None:
+                            metric["origin"], metric["stale"] = "db(cache)", is_stale(known.get(spec.id))
+                            live[(metric["var"], metric["scope"], spec.id)] = metric
                 live = {**{(m["var"], m["scope"], m["column"]): m for m in panel_live}, **live}
             if dataset == "all":
                 missing, used = [], set()
