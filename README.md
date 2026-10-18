@@ -140,8 +140,8 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
 
 - 웹 화면은 팀 Vercel 이 이 저장소 main 을 배포합니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버(Render `realestate-roh-api`)로 넘기고 응답을 CDN 에 캐시합니다.
-- API 서버와 지표 DB(Supabase)는 지표 담당 계정에서 운영하며, 매일 수집(GitHub Actions)도 그 계정의 포크([ksroh1913/realestate_roh](https://github.com/ksroh1913/realestate_roh))에서 돕니다. 백엔드 변경은 그 포크의 `feat/indicator-api` 에 반영되면 배포됩니다.
-- Google 로그인과 이용 기록(`activity_logs`)은 화면이 팀 Supabase 에 직접 기록합니다.
+- API 서버와 DB(Supabase)는 운영 계정에서 돌며, 매일 수집(GitHub Actions)도 그 계정의 포크([ksroh1913/realestate_roh](https://github.com/ksroh1913/realestate_roh))에서 돕니다. 백엔드 변경은 그 포크의 `feat/indicator-api` 에 반영되면 배포됩니다.
+- Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase 를 씁니다. 화면이 supabase-js 공개 키로 직접 기록하고(RLS: 본인 기록 추가만), API 서버가 `/usage` 로 집계합니다.
 
 ---|---|
 | 대시보드 | https://realestateroh-frontend.vercel.app |

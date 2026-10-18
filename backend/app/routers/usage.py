@@ -1,8 +1,8 @@
-"""이용 통계 — 팀 Supabase 의 activity_logs(로그인·로그아웃·데이터 내려받기, main #15)를 숫자로만 보여 준다.
+"""이용 통계 — Supabase 의 activity_logs(로그인·로그아웃·데이터 내려받기, main #15)를 숫자로만 보여 준다.
 
 기록은 화면이 supabase-js 로 직접 넣는다(database/migrations/003_activity_logs.sql). 이 API 는 DB 소유자 연결로
 관리자 집계 뷰(v_activity_daily · v_download_by_target)와 사용자 수만 읽는다. 사용자 ID·이메일은 내보내지 않는다.
-테이블이 없는 DB(로컬 SQLite, 지표용 Supabase)에서는 available=false 로 응답한다.
+테이블이 없는 DB(로컬 SQLite, 003 을 실행하지 않은 Supabase)에서는 available=false 로 응답한다.
 """
 
 from datetime import datetime, timezone
@@ -34,7 +34,7 @@ def usage_summary(days: int = 30, top: int = 10) -> dict:
         with get_engine().connect() as conn:
             if not _available(conn):
                 return {**base, "available": False,
-                        "reason": "이 API 서버의 DB 에는 이용 기록(activity_logs)이 없습니다. 로그인·내려받기 기록은 팀 Supabase 에 쌓이며 Supabase 대시보드에서 볼 수 있습니다."}
+                        "reason": "이 DB 에 이용 기록 테이블(activity_logs)이 없습니다. Supabase SQL Editor 에서 database/migrations/003_activity_logs.sql 을 실행하면 생깁니다."}
             daily = [dict(r._mapping) for r in conn.execute(text(
                 "SELECT day_kst, event, events, users FROM v_activity_daily "
                 "WHERE day_kst >= (now() AT TIME ZONE 'Asia/Seoul')::date - :days ORDER BY day_kst, event"), {"days": days})]
