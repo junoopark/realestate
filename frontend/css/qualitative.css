@@ -149,6 +149,9 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
   .process-step { padding: 16px; }
   .method-steps { grid-template-columns: repeat(2,1fr); }
 }
+@media (max-width: 380px) {
+  .qual-page .header-right { flex-wrap: wrap; }   /* style.css 와 같이: 메뉴만으로 한 줄이 차면 로그인·테마 버튼은 다음 줄로 */
+}
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 
 /* 제목 서체를 Home·대시보드·About 과 같게: 세리프(Noto Serif KR) 700, 자간은 Home 의 .sec-title 기준.
