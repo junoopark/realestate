@@ -21,7 +21,7 @@ on:
         required: false
         default: ''
       force:
-        description: '신선해도 다시 받기'
+        description: '최근에 받은 변수도 전부 다시 받기 (보통은 22시간 안에 받은 변수는 건너뜀 · 체크하면 2016년부터 전체, 15~20분)'
         type: boolean
         default: false
   schedule:

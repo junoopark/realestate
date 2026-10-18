@@ -43,7 +43,7 @@
 | `rewrites` | `/api/:path*` → `https://<Render 주소>/:path*` (쿼리 문자열은 그대로 전달) |
 | `headers` | `/api/:path*` 에 `x-vercel-enable-rewrite-caching: 1` — 2026-04-06 이전에 만든 Vercel 프로젝트에서도 rewrite 응답 캐시를 켠다 |
 
-갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24, 매일 수집 시각이 흔들려도 건너뛰지 않게 2시간 여유) 로 한다. 신선하면 `skipped`, 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
+갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24, 매일 수집 시각이 흔들려도 건너뛰지 않게 2시간 여유) 로 한다. 22시간 안에 받았으면 `skipped`(건너뜀), 그보다 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
 
 응답의 `origin` 필드가 어느 층에서 왔는지 말해 준다 — `db(cache)` 는 DB 의 실제 수집값, `db(panel)` 은 DB 의 기본 패널, `api(R-ONE)` 은 DB 에 없어 방금 받아 저장한 뒤 응답한 경우다. 발표 때 Swagger 에서 같은 변수를 두 번 호출해 `origin` 과 `duration_ms`(`/indicators/status` 의 수집 로그) 를 비교하면 캐시 효과를 바로 보여 줄 수 있다.
 
@@ -162,7 +162,7 @@ Open API 변수는 실제 수집값, 그 밖의 변수(또는 키가 없을 때)
 |---|---|---|
 | `X-Admin-Token` | 헤더, 필수 | 서버 환경변수 `POLICY_ADMIN_TOKEN` 과 같아야 한다 (정책 수집과 공용) |
 | `vars` | 쿼리, 선택 | 쉼표 구분 변수 ID. 비우면 `enabled` 전체 |
-| `force` | 쿼리, 선택 | `true` 면 신선해도 전체 기간 재수집 |
+| `force` | 쿼리, 선택 | `true` 면 최근(22시간 안)에 받은 변수도 건너뛰지 않고 전체 기간 재수집 |
 | `source` | 쿼리, 선택 | `R-ONE` · `ECOS` · `KOSIS` 중 하나만 수집 (Actions 가 출처별로 나눠 부른다) |
 
 응답 `200`: `{"status": "ok" | "partial", "checked_at": "…", "changed": 3, "results": [{"id": "V043", "status": "ok" | "skipped" | "error", "rows": 12, "new": 1, "changed": 0, "unchanged": 11, "panel_written": 1, "last_period": "2026-09", "duration_ms": 840, "reason": "fresh", "error": null}]}`. `changed` 는 새로·수정된 값의 합이고 0 이면 캐시를 비우지 않는다. 오류: `401` 토큰 불일치, `409` 이미 수집 중, `503` 토큰 미설정 또는 DB 쓰기 실패. GET 요청은 절대 외부 수집·DB 쓰기를 하지 않는다(DB 에 변수가 아예 없을 때의 1회 lazy 수집 제외).

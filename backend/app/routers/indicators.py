@@ -263,7 +263,7 @@ def get_indicator(var: str, request: Request, response: Response, background: Ba
 
 @router.post("/refresh", response_model=RefreshOut)
 def refresh(response: Response, vars: str | None = Query(default=None, description="쉼표 구분 변수 ID. 비우면 enabled 전체"),
-            force: bool = Query(default=False, description="신선해도 다시 받기"),
+            force: bool = Query(default=False, description="최근(22시간 안)에 받은 변수도 건너뛰지 않고 2016년부터 전체 기간을 다시 받기"),
             source: str | None = Query(default=None, pattern="^(R-ONE|ECOS|KOSIS|MOLIT)$", description="이 출처만 수집 (Actions 가 출처별로 나눠 부른다)"),
             x_admin_token: str | None = Header(default=None)):
     """관리자 토큰(X-Admin-Token)으로 외부 API 수집을 실행한다. 정책 수집과 같은 POLICY_ADMIN_TOKEN 을 쓴다."""

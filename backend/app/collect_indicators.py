@@ -70,7 +70,7 @@ def show_progress(r: dict, done: int, total: int) -> None:
 def main():
     parser = argparse.ArgumentParser(description="외부 Open API(R-ONE·ECOS·KOSIS)에서 지표를 받아 설정된 DB에 저장합니다.")
     parser.add_argument("--vars", help="쉼표 구분 변수 ID (기본: enabled 전체)")
-    parser.add_argument("--force", action="store_true", help="신선해도 다시 받기 (전체 기간 재수집)")
+    parser.add_argument("--force", action="store_true", help="최근에 받은 변수도 건너뛰지 않고 전체 기간을 다시 받기")
     parser.add_argument("--source", choices=["R-ONE", "ECOS", "KOSIS", "MOLIT"], help="이 출처만 수집")
     parser.add_argument("--probe", metavar="VAR", help="수집하지 않고 실제 항목·지역 이름만 출력")
     parser.add_argument("--status", action="store_true", help="수집하지 않고 DB 상태만 출력")
