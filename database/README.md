@@ -55,7 +55,7 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 
 ## 정량 지표 테이블 (indicator_*)
 
-외부 Open API(한국부동산원 R-ONE·한국은행 ECOS·통계청 KOSIS)에서 받은 시계열의 영속 캐시(indicator_variables·observations·fetch_logs)와, 전처리본 51개 변수를 적재한 기본 패널(indicator_series·series_values)입니다. 화면 값은 모두 이 테이블에서 나갑니다. 구조·컬럼·운영은 [docs/indicator-pipeline.md](../docs/indicator-pipeline.md) 5장에 있습니다.
+외부 Open API(한국부동산원 R-ONE·한국은행 ECOS·통계청 KOSIS·국토교통부 실거래)에서 받은 시계열의 영속 캐시(indicator_variables·observations·fetch_logs)와, 전처리본 51개 변수를 적재한 기본 패널(indicator_series·series_values)입니다. 화면 값은 모두 이 테이블에서 나갑니다. 구조·컬럼·운영은 [docs/indicator-pipeline.md](../docs/indicator-pipeline.md) 5장에 있습니다.
 
 | 테이블 | 저장 내용 | 갱신 |
 |---|---|---|
@@ -63,7 +63,8 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 | indicator_observations | (변수, 지역, 시점) 별 값. 기본키가 세 열이라 재수집은 UPSERT | CLI·관리자 API·GitHub Actions 수집 |
 | indicator_fetch_logs | 수집 1회의 소요 시간·행 수·오류 | 수집마다 1행 |
 | indicator_series | 기본 패널 계열(51개 변수·106개 계열)의 이름·단위·주기·시점 목록·출처·보완 방법 | `python scripts/seed_indicators.py` 적재 시 |
-| indicator_series_values | (계열, 지역, 시점) 별 값. 빈칸은 저장하지 않음 | 적재 시 계열별로 지우고 다시 넣음 |
+| indicator_series_values | (계열, 지역, 시점) 별 값. 빈칸은 저장하지 않음 | 적재 시 계열별로 지우고 다시 넣음. Open API 수집값은 바뀐 칸만 고치고 새 시점은 이어붙임 |
+| rtms_progress | 국토부 실거래(V006·V007) 시군구·월별 건수와 마지막 조회 시각. 건별 원자료는 저장하지 않음 | `python scripts/collect_rtms.py` (GitHub Actions 매일, 호출 한도 안에서 최근 6개월) |
 
 ## 테이블과 콘텐츠 관리
 

@@ -71,7 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description="외부 Open API(R-ONE·ECOS·KOSIS)에서 지표를 받아 설정된 DB에 저장합니다.")
     parser.add_argument("--vars", help="쉼표 구분 변수 ID (기본: enabled 전체)")
     parser.add_argument("--force", action="store_true", help="신선해도 다시 받기 (전체 기간 재수집)")
-    parser.add_argument("--source", choices=["R-ONE", "ECOS", "KOSIS"], help="이 출처만 수집")
+    parser.add_argument("--source", choices=["R-ONE", "ECOS", "KOSIS", "MOLIT"], help="이 출처만 수집")
     parser.add_argument("--probe", metavar="VAR", help="수집하지 않고 실제 항목·지역 이름만 출력")
     parser.add_argument("--status", action="store_true", help="수집하지 않고 DB 상태만 출력")
     parser.add_argument("--export", type=Path, help="선택: DB 내용을 factor_sample.json 과 같은 모양의 JSON 으로 저장")

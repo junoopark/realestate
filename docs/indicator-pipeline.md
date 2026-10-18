@@ -43,7 +43,7 @@
 | `rewrites` | `/api/:path*` → `https://<Render 주소>/:path*` (쿼리 문자열은 그대로 전달) |
 | `headers` | `/api/:path*` 에 `x-vercel-enable-rewrite-caching: 1` — 2026-04-06 이전에 만든 Vercel 프로젝트에서도 rewrite 응답 캐시를 켠다 |
 
-갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24) 로 한다. 신선하면 `skipped`, 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
+갱신 판단은 변수마다 `last_fetched_at` 과 `INDICATOR_REFRESH_HOURS`(기본 24, 매일 수집 시각이 흔들려도 건너뛰지 않게 2시간 여유) 로 한다. 신선하면 `skipped`, 오래됐으면 **최근 12개월만 다시 받아** 잠정치 수정분을 반영한다(증분 수집). 요청이 왔는데 오래됐으면 DB 값을 먼저 돌려주고 뒤에서 갱신한다(stale-while-revalidate, FastAPI `BackgroundTasks`).
 
 응답의 `origin` 필드가 어느 층에서 왔는지 말해 준다 — `db(cache)` 는 DB 의 실제 수집값, `db(panel)` 은 DB 의 기본 패널, `api(R-ONE)` 은 DB 에 없어 방금 받아 저장한 뒤 응답한 경우다. 발표 때 Swagger 에서 같은 변수를 두 번 호출해 `origin` 과 `duration_ms`(`/indicators/status` 의 수집 로그) 를 비교하면 캐시 효과를 바로 보여 줄 수 있다.
 
@@ -65,6 +65,8 @@
 | V009 · V010 · V011 · V012 · V013 · V015 · V017 · V021 · V022 · V023 · V024 · V072 · V074 · V076 | KOSIS 14개 (5단계 3차, 수집 단위 31개 → 화면 계열 43개) | 통계청 KOSIS (국토부·서울시 표 포함) | `indicator_registry.py` · `kosis_readers.py` 참고 (DFMBA `collect_kosis.py`·`prep_kosis_*.py` 와 같은 표·가공) | 월·반기·분기·연 · 17개 시도 + 서울 구 |
 
 **KOSIS 표별 가공 (5단계 3차)** — 표마다 지역 코드 체계가 달라 `kosis_readers.py` 의 읽는 방식(reader)으로 나눴다. 주민등록 표(V009~V012)는 행정표준코드로 시도·서울 구를 고르고, 2026-07 광주·전남 통합 뒤에는 통합코드 아래 광주 5개 구로 광주 = 5개 구 합계, 전남 = 통합 - 광주 를 복원한다. V011 은 1세별 인구를 더해 20–29세·30–39세·20–39세와 비중(%)을 만들고, V021 인허가는 월별 누계라 전월 누계를 뺀다. V015·V017 전국대비는 같은 해 전국 값으로 나누고, V024·V076 천 세대당은 그해 12월 주민등록세대수로 나눈다. V074 는 구계열이 2019Q4 에 끝나 2020Q1 부터 신계열(DT_1L9V121) x 0.9417(2019년 4개 분기 평균 비율)로 잇는다. 같은 표를 여러 수집 단위가 쓰면(예: V011 4개 계열) 클라이언트가 한 번만 부른다. DFMBA 원자료로 대조한 결과 43개 계열 약 3만 값이 기본 패널과 같았고, 다른 곳은 V012 광주·전남 2026-07~08 4칸뿐이었다(기본 패널은 통합 뒤 0 으로 오는 옛 코드를 그대로 썼고, 수집기는 복원값을 쓴다). V021~V023 의 2024년까지 빈 달 보완값과 V074 구계열 구간은 원자료에 없어 기본 패널 값을 그대로 둔다(2025년부터는 0 도 공표된다).
+
+**국토부 실거래 이후분 (6단계)** — 실거래(V006 전월세 · V007 매매)는 건별 원자료라 매번 전 기간을 받을 수 없다(시군구 256개 x 월 x 페이지, 데이터포털 일일 호출 한도). 그래서 DFMBA 가 2026-10 초까지 받아 만든 월별 건수는 기본 패널 값을 그대로 쓰고, 최근 6개월만 다시 받는다. `scripts/collect_rtms.py`(`services/rtms.py`) 가 GitHub Actions 러너에서 매일 시군구-월을 급한 순(한 번도 안 받은 것 → 최근 달 → 오래 묵은 것)으로 부르되 유형마다 하루 `RTMS_BUDGET`(기본 1,000회)을 넘지 않는다. 계약 0~1개월 전 달은 하루마다, 2~3개월 전은 3일마다, 4~5개월 전은 7일마다 다시 받는다(신고기한 30일, 매매 해제 5개월 안에 98.9%). 받은 건수는 `rtms_progress` 에 시군구·월 단위로만 저장하고(원자료 행은 저장하지 않음), 레지스트리의 MOLIT 수집 단위 4개(V006 전체·월세·전세, V007)가 이를 시도(소속 시군구를 모두 받은 달만)·서울 구로 합쳐 다른 지표처럼 바뀐 값만 화면 계열에 반영한다. 이번 달은 막 시작해 건수가 거의 없으므로 화면에는 내지 않고, 마지막 3개월은 잠정으로 표시한다. DFMBA 원자료로 시군구 건수를 만들어 넣어 본 결과 2026-04~09 의 시도·서울 구 값 520여 개가 기본 패널과 모두 같았다. 한도에 걸리면 받은 데까지 저장하고 멈추며 다음 날 이어받는다.
 
 5단계에서 데이터사전 51개 중 47개를 같은 방식으로 붙인다(ECOS 21 → R-ONE 12 → KOSIS 14). 실거래 2개는 예외(호출 한도 안에서 이후분만), 끝난 통계 2개(V034 · V077)는 적재값을 그대로 쓴다. 변수별 표는 계획서의 '변수별 수집 방식' 절.
 
@@ -227,7 +229,7 @@ indicator_series    (1) ──< indicator_series_values (N)     PK (series_id, r
 ## 6. 운영 절차
 
 ```powershell
-# 1) 키 설정: backend/.env 에 RONE_API_KEY, ECOS_API_KEY, KOSIS_API_KEY
+# 1) 키 설정: backend/.env 에 RONE_API_KEY, ECOS_API_KEY, KOSIS_API_KEY, DATA_GO_KR_API_KEY(실거래)
 # 2) 실제 항목·지역 이름 확인 (처음 한 번, 변수별)
 python scripts/collect_indicators.py --probe V002
 # 3) 수집 → DB (없으면 backend/local.db)
@@ -239,6 +241,9 @@ python scripts/seed_indicators.py --status
 # 5) 확인
 python scripts/collect_indicators.py --status
 fastapi dev backend/app/main.py      # http://127.0.0.1:8000/docs → /indicators/V002 두 번 호출해 origin 비교
+# 실거래(V006·V007) 이후분: 호출 한도 안에서 최근 6개월 → 시도·서울 구 합계 반영
+python scripts/collect_rtms.py --budget 1000
+python scripts/collect_rtms.py --status
 # 6) 서버 없이 볼 정적 스냅샷 (선택)
 python scripts/collect_indicators.py --export frontend/data/factor_live.json
 ```

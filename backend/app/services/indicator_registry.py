@@ -38,6 +38,13 @@ SOURCES = {
         "license": "공공누리 제1유형(출처표시)",
         "method": "Open API (statisticsParameterData, JSON)",
     },
+    "MOLIT": {
+        "name": "국토교통부 실거래가 공개시스템 Open API (공공데이터포털)",
+        "organization": "국토교통부",
+        "url": "https://www.data.go.kr/data/15126468/openapi.do",
+        "license": "공공데이터포털 이용허락범위 제한 없음(출처표시)",
+        "method": "Open API (RTMSDataSvcAptRent · RTMSDataSvcAptTradeDev, XML) → 시군구·월별 건수(rtms_progress) → 시도·서울 구 합계",
+    },
 }
 
 
@@ -93,6 +100,8 @@ class IndicatorSpec:
             return f"ECOS {p.get('stat_code', '')}/{p.get('item_code', '')}"
         if self.source == "KOSIS":
             return f"KOSIS {p.get('org_id', '')}/{p.get('tbl_id', '')}"
+        if self.source == "MOLIT":
+            return "국토부 RTMS " + ("RTMSDataSvcAptRent" if p.get("kind") == "apt_rent" else "RTMSDataSvcAptTradeDev")
         return self.source
 
     def to_dict(self) -> dict:
@@ -114,6 +123,8 @@ REL_DEAL = "기준월 익월 말일경 공표 (부동산거래현황)"
 REL_RESIDENT = "기준월 익월 초 공표 (주민등록인구현황)"
 REL_SUPPLY = "기준월 익월 말 잠정치 공표, 익년 9월 확정 (주택건설실적통계)"
 REL_RENTAL = "작성기준 연도 익년 12월 공표 (임대주택통계)"
+REL_RENT = "계약 후 30일 이내 신고(부동산거래신고법 제6조의2) — 기준월 자료는 익월 말에 대부분 채워진다"
+REL_TRADE = "계약 후 30일 이내 신고(같은 법 제3조). 해제는 계약 후 최대 11개월까지 반영(5개월 내 98.9%)"
 
 # V074 가계동향 소득: 구계열 2019년 4개 분기 평균 ÷ 신계열(DT_1L9V121) 같은 기간 평균 (DFMBA build_preprocessed 와 같은 값)
 V074_LINK_K = 0.9416781445361877
@@ -323,6 +334,19 @@ REGISTRY: list[IndicatorSpec] = [
           ("공공+민간총계", ("임대주택 총계 (공공+민간)", "총계", "총계"), True),
           ("공공임대", ("공공임대주택", "계", "계"), True),
           ("민간임대", ("민간임대주택", "계", "계"), True)), start=3)],
+    # ── 국토교통부 실거래 — 건별 원자료는 저장하지 않고 시군구·월별 건수만(rtms_progress). 최근 6개월만 호출 한도 안에서 다시 받는다 ──
+    #    API 호출은 scripts/collect_rtms.py(services/rtms.py) 가 맡고, 이 수집 단위들은 그 건수를 시도·서울 구로 합쳐 화면 계열에 이어붙인다.
+    *[IndicatorSpec(sid, label, driver, "MOLIT", unit="건", var=var, release=release,
+                    params={"kind": kind, "field": field, "provisional_months": 3},
+                    note=note + " 최근 3개월은 신고·해제가 계속 반영되는 잠정치. 시도는 소속 시군구를 모두 받은 달만 합계.",
+                    outputs=(Output("sido", match=match), Output("gu", match=match)))
+      for sid, label, driver, var, kind, field, match, release, note in (
+          ("V006.1", "아파트 전월세 실거래 신고건수(전체)", "rental", "V006", "apt_rent", "count_all", "_전체_", REL_RENT, "신고 원본 행 수."),
+          ("V006.2", "아파트 전월세 실거래 신고건수(월세, 보증부 포함)", "rental", "V006", "apt_rent", "count_monthly", "_월세(", REL_RENT,
+           "월세액이 0 보다 크면 월세."),
+          ("V006.3", "아파트 전월세 실거래 신고건수(전세)", "rental", "V006", "apt_rent", "count_jeonse", "_전세_", REL_RENT, "월세액 0 이면 전세."),
+          ("V007", "아파트 매매 실거래 신고건수(해제 제외)", "finance", "V007", "apt_trade", "count_all", None, REL_TRADE,
+           "해제 건(cdealType='O')은 뺀다."))],
 ]
 
 BY_ID: dict[str, IndicatorSpec] = {s.id: s for s in REGISTRY}

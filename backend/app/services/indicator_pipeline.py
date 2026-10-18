@@ -155,6 +155,15 @@ def _kosis_rows(client, spec: IndicatorSpec, start: str, end: str, keep_gu=None,
     return read(client, spec, start, end, keep_gu=keep_gu)
 
 
+def _molit_rows(client, spec: IndicatorSpec, start: str, end: str, keep_gu=None, session=None, **_) -> tuple[list[tuple], str | None]:
+    """국토부 실거래: API 는 scripts/collect_rtms.py 가 부르고, 여기서는 그 건수(rtms_progress)를 시도·서울 구로 합친다.
+    이번 달은 막 시작한 달이라 건수가 거의 없어 화면에는 내지 않는다(받아 두기만 하고 다음 달부터 잠정치로 보인다)."""
+    from app.services.rtms import aggregate
+    end = min(end, shift_month(today_period("M"), -1))
+    vals = aggregate(session, spec.params["kind"], spec.params["field"], start.replace("-", ""), end.replace("-", ""), keep_gu)
+    return [(region, period, v) for (region, period), v in vals.items()], spec.label
+
+
 def _to_float(v):
     try:
         f = float(str(v).replace(",", ""))
@@ -163,7 +172,7 @@ def _to_float(v):
     return None if f != f else f  # NaN 제외
 
 
-FETCHERS = {"R-ONE": _rone_rows, "ECOS": _ecos_rows, "KOSIS": _kosis_rows}
+FETCHERS = {"R-ONE": _rone_rows, "ECOS": _ecos_rows, "KOSIS": _kosis_rows, "MOLIT": _molit_rows}
 
 
 def make_client(source: str):
@@ -177,6 +186,8 @@ def make_client(source: str):
     if source == "KOSIS":
         from app.services.kosis_client import KosisClient
         return KosisClient()
+    if source == "MOLIT":  # DB(rtms_progress) 만 읽는다 — 키가 필요 없다
+        return "rtms_progress"
     raise ValueError(f"지원하지 않는 출처: {source}")
 
 
@@ -254,7 +265,9 @@ def is_stale(var: IndicatorVariable | None, hours: int | None = None) -> bool:
         last = datetime.fromisoformat(var.last_fetched_at)
     except ValueError:
         return True
-    return datetime.now(timezone.utc) - last > timedelta(hours=hours or refresh_hours())
+    # 매일 같은 시각에 도는 수집(Actions cron)은 실행 시각이 몇 분씩 앞뒤로 흔들린다. 24시간 기준이면 어제보다 몇 분 일찍
+    # 돈 날 '아직 신선함' 으로 건너뛰므로, 2시간 여유를 둔다(24 → 22시간이 지나면 다시 받는다).
+    return datetime.now(timezone.utc) - last > timedelta(hours=max(1, (hours or refresh_hours()) - 2))
 
 
 def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli", force: bool = False,
@@ -277,7 +290,8 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
             start = max(spec.start, shift_month(var.last_period, -RELOAD_TAIL_MONTHS))
         from app.services.indicator_panel import panel_meta
         shown_gu = ((panel_meta(session) or {}).get("regions") or {}).get("gu")  # 화면의 서울 구 보기에 있는 구만 받는다
-        rows, item = FETCHERS[spec.source](client, spec, start, today_period(spec.freq), keep_gu=set(shown_gu) if shown_gu else None)
+        rows, item = FETCHERS[spec.source](client, spec, start, today_period(spec.freq), keep_gu=set(shown_gu) if shown_gu else None,
+                                           session=session)
         to_write, stats = diff_observations(session, spec.id, rows)
         count = upsert_observations(session, spec.id, to_write, started)
         from app.services.indicator_panel import apply_outputs

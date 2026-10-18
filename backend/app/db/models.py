@@ -89,6 +89,24 @@ class IndicatorSeriesValue(Base):
     value: Mapped[float] = mapped_column(Float)
 
 
+class RtmsProgress(Base):
+    """국토부 실거래(V006 전월세·V007 매매) 수집 진행 기록 겸 시군구·월별 건수. (유형, 시군구, 계약월) 이 기본키.
+
+    거래 건별 원자료(1GB 이상)는 저장하지 않고 건수만 둔다. 최근 몇 달만 다시 받으므로 행은 수천 개 수준이다.
+    시도 값 = 그 시도 시군구를 모두 받은 달만 합계(services/rtms.py). 이 표는 수집기만 쓰고 화면은 패널 계열을 읽는다."""
+    __tablename__ = "rtms_progress"
+    kind: Mapped[str] = mapped_column(String(12), primary_key=True)        # apt_rent · apt_trade
+    lawd_cd: Mapped[str] = mapped_column(String(5), primary_key=True)      # 시군구 코드 (sgg_codes.py)
+    deal_ym: Mapped[str] = mapped_column(String(6), primary_key=True)      # 계약년월 YYYYMM
+    count_all: Mapped[int] = mapped_column(Integer, default=0)             # 전월세 전체 · 매매(해제 제외)
+    count_monthly: Mapped[int] = mapped_column(Integer, default=0)         # 전월세 중 월세(보증부 포함, 월세액 > 0)
+    count_jeonse: Mapped[int] = mapped_column(Integer, default=0)          # 전월세 중 전세(월세액 0)
+    count_canceled: Mapped[int] = mapped_column(Integer, default=0)        # 매매 중 해제(cdealType='O') — 참고용
+    calls: Mapped[int] = mapped_column(Integer, default=1)                 # 이번 조회에 쓴 호출 수(페이지 수)
+    first_fetched_at: Mapped[str] = mapped_column(String(40))
+    fetched_at: Mapped[str] = mapped_column(String(40))                    # 마지막 조회 시각(UTC)
+
+
 # ── 정성 자료: 검토한 JSON 스냅샷과 정책 수집 ──
 
 

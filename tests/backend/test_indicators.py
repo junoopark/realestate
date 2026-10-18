@@ -162,7 +162,7 @@ def test_bundle_and_status(db):
         assert {v["id"] for v in listing["variables"]} >= {"V001", "V002", "V043", "V012"}
         assert listing["sources"]["R-ONE"]["organization"] == "한국부동산원"
         status = client.get("/indicators/status").json()
-        assert status["keys"] == {"R-ONE": True, "ECOS": True, "KOSIS": False}
+        assert status["keys"] == {"R-ONE": True, "ECOS": True, "KOSIS": False, "MOLIT": True}  # 실거래 화면 집계는 DB 만 읽는다
         assert status["logs"][0]["trigger"] == "lazy" and status["storage"]["type"] == "sqlite"
 
 

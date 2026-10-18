@@ -71,6 +71,19 @@ CREATE TABLE IF NOT EXISTS indicator_series_values (    -- 값 1개 = 1행. 빈�
     value DOUBLE PRECISION NOT NULL,
     PRIMARY KEY (series_id, region, period)
 );
+CREATE TABLE IF NOT EXISTS rtms_progress (               -- 국토부 실거래 시군구·월별 건수 겸 수집 진행 기록 (원자료 행은 저장하지 않음)
+    kind VARCHAR(12) NOT NULL,                           -- apt_rent(V006 전월세) · apt_trade(V007 매매)
+    lawd_cd VARCHAR(5) NOT NULL,                         -- 시군구 코드 (backend/app/services/sgg_codes.py)
+    deal_ym VARCHAR(6) NOT NULL,                         -- 계약년월 YYYYMM
+    count_all INTEGER NOT NULL DEFAULT 0,                -- 전월세 전체 · 매매(해제 제외)
+    count_monthly INTEGER NOT NULL DEFAULT 0,            -- 월세(보증부 포함)
+    count_jeonse INTEGER NOT NULL DEFAULT 0,             -- 전세
+    count_canceled INTEGER NOT NULL DEFAULT 0,           -- 매매 해제(참고)
+    calls INTEGER NOT NULL DEFAULT 1,
+    first_fetched_at VARCHAR(40) NOT NULL,
+    fetched_at VARCHAR(40) NOT NULL,
+    PRIMARY KEY (kind, lawd_cd, deal_ym)
+);
 
 -- ── 정성 자료: 검토한 JSON 스냅샷과 정책 수집 ──
 CREATE TABLE IF NOT EXISTS content_snapshots (
@@ -124,3 +137,4 @@ ALTER TABLE indicator_observations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_fetch_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE indicator_series_values ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rtms_progress ENABLE ROW LEVEL SECURITY;

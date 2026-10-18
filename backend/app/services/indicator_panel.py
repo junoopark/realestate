@@ -247,6 +247,9 @@ def apply_outputs(session: Session, spec, rows: list[tuple]) -> dict:
         newp = month_range(min(allp), max(allp)) if s.freq == "M" else sorted(allp)
         if newp != list(s.periods or []):
             s.periods = newp
+        n = (getattr(spec, "params", None) or {}).get("provisional_months")
+        if n and len(newp) >= n and s.provisional_from != newp[-n]:  # 마지막 n개월은 잠정(화면에서 옅게)
+            s.provisional_from = newp[-n]
     return {"targets": targets, "written": written}
 
 
