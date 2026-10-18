@@ -55,12 +55,12 @@ def main():
         assert 0 < page.locator(".policy-card").count() < 8
         page.get_by_role("searchbox").fill("")
         page.screenshot(path=str(OUT / "policies-desktop.png"))
-        page.locator('[data-section="monitor"]').click()
+        page.locator('#policy-tabs [data-section="monitor"]').click()
         page.locator(".monitor-card").first.wait_for()
         assert page.locator(".monitor-status article").count() == 3
         assert page.locator(".monitor-card").count() >= 1
         page.screenshot(path=str(OUT / "monitor-desktop.png"))
-        page.locator('[data-section="sources"]').click()
+        page.locator('#policy-tabs [data-section="sources"]').click()
         expect(page.locator(".source-card")).to_have_count(6)
         check_overflow(page)
 

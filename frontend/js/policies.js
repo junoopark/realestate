@@ -125,6 +125,8 @@
     const section = active();
     document.body.classList.toggle("history-view", section === "history");
     Qual.setActive(document.querySelector("#policy-tabs"), section);
+    const policyMenu = document.querySelector("#menu-policy");
+    if (policyMenu) Qual.setActive(policyMenu, section);   // 머리 메뉴 '부동산 정책' 하위 메뉴에도 현재 구분 표시
     const tabs = document.querySelector("#policy-tabs"), selectedTab = tabs.querySelector('[aria-current="page"]');
     if (selectedTab) tabs.scrollLeft = selectedTab.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - selectedTab.offsetWidth) / 2;
     if (section === "history") { PolicyHistory.mount(container); return; }

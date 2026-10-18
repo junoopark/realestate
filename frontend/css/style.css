@@ -161,7 +161,7 @@ a:hover { color: var(--brand-hover); }
 }
 .header-right { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 100%; }
 
-/* 주요 메뉴 4개: Overview · 주택시장 지표 ▾ · 부동산 정책 · About ▾ (HTML 은 페이지마다 같은 내용) */
+/* 주요 메뉴 4개: Home · 부동산 대시보드 ▾ · 부동산 정책 ▾ · About ▾ (HTML 은 페이지마다 같은 내용) */
 .main-nav { display: flex; flex: none; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
 .main-nav > a,
 .nav-top {
@@ -995,6 +995,7 @@ code {
   .nav-item .nav-top { font-size: 13px; padding: 6px 5px; }
   .nav-caret { width: 16px; }
   .nav-menu { min-width: 200px; }
+  #menu-policy { left: auto; right: 0; }   /* 세 번째 메뉴라 왼쪽 정렬이면 좁은 화면 오른쪽 밖으로 나간다 */
   .container { padding: 20px 16px 40px; }
   .rule { margin: 28px 0; }
   .filter-bar { gap: 6px 12px; }
@@ -1012,6 +1013,8 @@ code {
   .nav-top,
   .nav-item .nav-top { font-size: 12px; padding: 6px 3px; }
   .nav-caret { width: 14px; }
+  .header-right { flex-wrap: wrap; row-gap: 4px; }   /* 메뉴만으로 한 줄이 차면 로그인·테마 버튼은 다음 줄 오른쪽으로 */
+  .controls { margin-left: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

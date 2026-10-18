@@ -1,4 +1,4 @@
-/* 정책 연혁: 검토한 공식 발표를 시간순으로 읽는 독립 화면. */
+/* 정책 연혁: 검토한 공식 발표를 최신순(2026 → 2016)으로 읽는 독립 화면. */
 window.PolicyHistory = (() => {
   const { el, link, list, matches } = Qual;
   const TOPICS = { finance: "대출·금융", tax: "세금", supply: "공급·정비", rental: "임대차", market: "거래·청약" };
@@ -15,6 +15,7 @@ window.PolicyHistory = (() => {
   }
   const visible = () => location.hash === "#history" && root?.isConnected;
   const dateLabel = date => date.replaceAll("-", ".");
+  const newestEras = () => [...data.eras].reverse();   // policy-history.json 의 eras 는 과거 → 현재 순서
   function button(text, className, handler) {
     const node = el("button", className, text); node.type = "button"; node.addEventListener("click", handler); return node;
   }
@@ -23,7 +24,7 @@ window.PolicyHistory = (() => {
       (eraId === "all" || event.era === eraId) &&
       (topic === "all" || event.topics.includes(topic)) &&
       matches([event.title, event.short_title, event.date, dateLabel(event.date), event.date.slice(5).split("-").map(Number).join("."), event.summary, event.change, event.agency, ...event.highlights].join(" "), query)
-    ).sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+    ).sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   }
   function statusNode() {
     const node = el("p", "history-data-status"); node.id = "history-data-status"; node.setAttribute("role", "status");
@@ -108,7 +109,7 @@ window.PolicyHistory = (() => {
     if (!events.length) {
       const empty = el("div", "history-empty"); empty.append(el("strong", "", "이 조건에 맞는 전환점이 없습니다."), el("p", "", "선정한 주요 정책만 수록되어 있습니다. 다른 시기나 주제를 선택해 보세요."), button("전체 흐름으로 돌아가기", "qual-btn", reset)); output.append(empty); return;
     }
-    for (const era of data.eras) {
+    for (const era of newestEras()) {
       const eraEvents = events.filter(event => event.era === era.id);
       if (!eraEvents.length) continue;
       const phase = el("section", "history-phase"); phase.setAttribute("aria-label", `${era.period} ${era.title}`);
@@ -158,7 +159,7 @@ window.PolicyHistory = (() => {
     const h = el("h4", "", "10년의 흐름, 다섯 장면"); h.id = "history-overview-title";
     overviewHeading.append(h, el("p", "", "시기를 선택해 자세히 살펴보세요")); overview.append(overviewHeading);
     const eraGrid = el("div", "history-era-grid");
-    for (const era of data.eras) {
+    for (const era of newestEras()) {
       const node = button("", "history-era", () => {
         eraId = eraId === era.id ? "all" : era.id;
         for (const b of eraGrid.children) b.setAttribute("aria-pressed", String(b.dataset.era === eraId));
@@ -171,7 +172,7 @@ window.PolicyHistory = (() => {
     }
     overview.append(eraGrid, el("p", "history-era-caption", "시기 구분과 방향 요약은 선정한 발표를 바탕으로 한 해설입니다. 같은 시기에도 정책 수단별 방향은 다를 수 있습니다.")); root.append(overview);
     const filters = el("section", "history-filters"); filters.setAttribute("aria-label", "연혁 검색과 주제 선택");
-    const filterTop = el("div", "history-filter-top"); filterTop.append(el("h4", "", "시간을 따라 읽기"), el("span", "", "과거 → 현재 · 발표·시행일 기준"));
+    const filterTop = el("div", "history-filter-top"); filterTop.append(el("h4", "", "시간을 따라 읽기"), el("span", "", "최신 → 과거 · 발표·시행일 기준"));
     const chips = el("div", "history-topic-chips");
     for (const [key,label] of Object.entries({ all: "모든 주제", ...TOPICS })) {
       const node = button(label, "history-topic", () => {
