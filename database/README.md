@@ -1,6 +1,6 @@
 ﻿# 정성 콘텐츠 저장소와 정책 수집
 
-기초 자료와 검증한 정책 요약은 JSON을 원본으로 관리하고, FastAPI 시작 시 DB에 반영합니다. 자동 수집한 정책 후보는 별도 테이블에 누적합니다. 기존 ECOS·FRED 지표 API와 메모리 캐시는 그대로 사용합니다.
+기초 자료와 검증한 정책 요약은 JSON을 원본으로 관리하고, FastAPI 시작 시 DB에 반영합니다. 자동 수집한 정책 후보는 별도 테이블에 누적합니다. 정량 지표는 Open API에서 받아 indicator_* 테이블에 캐시합니다(아래 "정량 지표 테이블").
 
 ## 구성
 
@@ -46,12 +46,25 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 1. Supabase Connect → Session pooler의 PostgreSQL URL을 확인합니다.
 2. Render 서버 환경변수 DATABASE_URL에 URL을 저장합니다. 예: postgresql+psycopg://postgres.PROJECT:PASSWORD@HOST.pooler.supabase.com:5432/postgres
 3. 비밀번호의 @, /, # 등은 URL 인코딩합니다. URL·DB 비밀번호·관리자 토큰은 HTML·JS·GitHub에 넣지 않습니다.
-4. 서비스를 재시작합니다. DB 소유자 권한으로 4개 테이블을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다.
+4. 서비스를 재시작합니다. DB 소유자 권한으로 9개 테이블(정성 4 + 지표 5)을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다.
 5. /policies, /policies/monitor, /policies/history의 storage.type=postgresql, storage.available=true를 확인합니다. CLI 또는 관리자 API를 한 번 실행해 실제 정책 후보를 저장합니다.
 
 서버는 psycopg 3로 TLS 연결합니다. 브라우저에서 Supabase 익명 REST 테이블 접근을 사용하지 않고 RLS를 켭니다. FastAPI의 DB 소유자 연결로 읽고 씁니다. 별도 제한된 DB 역할을 쓰면 팀원이 테이블 권한과 RLS 정책을 설정해야 합니다.
 
 검증한 JSON은 새 DB에 바로 반영됩니다. 기존 SQLite의 수집 이력은 연결 문자열만 바꾸면 자동으로 이동하지 않습니다. 필요한 이력은 기존 DB를 보관하고 별도 마이그레이션해야 합니다. 새 Supabase에서 수집기를 실행하면 현재 피드부터 축적합니다. Render 임시 디스크의 SQLite는 재배포·재시작 시 사라질 수 있으므로 지속적인 이력에는 Supabase를 사용합니다.
+
+## 정량 지표 테이블 (indicator_*)
+
+외부 Open API(한국부동산원 R-ONE·한국은행 ECOS·통계청 KOSIS·국토교통부 실거래)에서 받은 시계열의 영속 캐시(indicator_variables·observations·fetch_logs)와, 전처리본 51개 변수를 적재한 기본 패널(indicator_series·series_values)입니다. 화면 값은 모두 이 테이블에서 나갑니다. 구조·컬럼·운영은 [docs/indicator-pipeline.md](../docs/indicator-pipeline.md) 5장에 있습니다.
+
+| 테이블 | 저장 내용 | 갱신 |
+|---|---|---|
+| indicator_variables | 변수(지표) 정의·출처 코드·마지막 수집 시각/시점/상태 | 시작 시 코드 레지스트리와 동기화, 수집 후 상태 갱신 |
+| indicator_observations | (변수, 지역, 시점) 별 값. 기본키가 세 열이라 재수집은 UPSERT | CLI·관리자 API·GitHub Actions 수집 |
+| indicator_fetch_logs | 수집 1회의 소요 시간·행 수·오류 | 수집마다 1행 |
+| indicator_series | 기본 패널 계열(51개 변수·106개 계열)의 이름·단위·주기·시점 목록·출처·보완 방법 | `python scripts/seed_indicators.py` 적재 시 |
+| indicator_series_values | (계열, 지역, 시점) 별 값. 빈칸은 저장하지 않음 | 적재 시 계열별로 지우고 다시 넣음. Open API 수집값은 바뀐 칸만 고치고 새 시점은 이어붙임 |
+| rtms_progress | 국토부 실거래(V006·V007) 시군구·월별 건수와 마지막 조회 시각. 건별 원자료는 저장하지 않음 | `python scripts/collect_rtms.py` (GitHub Actions 매일, 호출 한도 안에서 최근 6개월) |
 
 ## 테이블과 콘텐츠 관리
 

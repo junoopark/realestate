@@ -1,0 +1,165 @@
+name: Collect quantitative indicators
+
+# 하루 1회(KST 09:40)
+#  1) rtms: 국토부 실거래(V006·V007) 최근 6개월을 호출 한도 안에서 다시 받아 시군구·월 건수를 DB(rtms_progress)에 저장한다.
+#     수백~천여 회 호출이라 Render 요청으로 하지 않고 이 러너에서 직접 돌린다(scripts/collect_rtms.py --no-apply).
+#  2) collect: Render 백엔드의 관리자 수집 API 를 출처별(R-ONE → ECOS → KOSIS → MOLIT)로 나눠 호출한다.
+#     변수마다 최근 12개월을 다시 받고(MOLIT 은 1)의 건수를 시도·서울 구로 합치고), DB 와 비교해 바뀐 값만 저장한다.
+#     바뀐 값이 있을 때만 CDN 을 예열한다. 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
+# 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
+#         SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
+#         DATABASE_URL · DATA_GO_KR_API_KEY (실거래용) — 없으면 1) 은 건너뛴다
+#         POLICY_API_BASE_URL 의 백엔드에 R-ONE·ECOS·KOSIS 키가 하나도 없으면 2) 도 건너뛴다(실패로 표시하지 않음)
+# 변수(선택): RTMS_BUDGET — 실거래 유형 1개당 하루 호출 상한 (기본 1000. 운영계정이면 늘려도 된다)
+
+on:
+  workflow_dispatch:
+    inputs:
+      vars:
+        description: '쉼표 구분 변수 ID (비우면 전체)'
+        required: false
+        default: ''
+      force:
+        description: '신선해도 다시 받기'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '40 0 * * *'   # 00:40 UTC = 09:40 KST
+
+permissions: {}
+
+concurrency:
+  group: indicator-collection
+  cancel-in-progress: false
+
+jobs:
+  rtms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect MOLIT transaction counts when secrets are configured
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATA_GO_KR_API_KEY: ${{ secrets.DATA_GO_KR_API_KEY }}
+          RTMS_BUDGET: ${{ vars.RTMS_BUDGET }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$DATA_GO_KR_API_KEY" ]; then
+            echo "::notice::Skipped: configure DATABASE_URL and DATA_GO_KR_API_KEY repository secrets to collect MOLIT transactions."
+            exit 0
+          fi
+          python -m pip install -q -r backend/requirements.txt
+          python scripts/collect_rtms.py --no-apply --budget "${RTMS_BUDGET:-1000}"
+
+  collect:
+    needs: rtms
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install HTTP client
+        run: python -m pip install 'requests>=2.32,<3'
+      - name: Refresh indicators when secrets are configured
+        env:
+          POLICY_API_BASE_URL: ${{ secrets.POLICY_API_BASE_URL }}
+          POLICY_ADMIN_TOKEN: ${{ secrets.POLICY_ADMIN_TOKEN }}
+          SITE_BASE_URL: ${{ secrets.SITE_BASE_URL }}
+          INPUT_VARS: ${{ github.event.inputs.vars }}
+          INPUT_FORCE: ${{ github.event.inputs.force }}
+        run: |
+          python - <<'PY'
+          import os, sys, time
+          from urllib.parse import urlsplit
+          import requests
+
+          base = os.environ.get('POLICY_API_BASE_URL', '').strip().rstrip('/')
+          token = os.environ.get('POLICY_ADMIN_TOKEN', '').strip()
+          if not base or not token:
+              print('::notice::Skipped: configure POLICY_API_BASE_URL and POLICY_ADMIN_TOKEN repository secrets.')
+              sys.exit(0)
+          target = urlsplit(base)
+          if target.scheme != 'https' or not target.hostname or target.username or target.password or target.query or target.fragment:
+              print('::error::POLICY_API_BASE_URL must be an HTTPS API base URL without credentials, query, or fragment.')
+              sys.exit(1)
+          params = {}
+          if os.environ.get('INPUT_VARS', '').strip():
+              params['vars'] = os.environ['INPUT_VARS'].strip()
+          if os.environ.get('INPUT_FORCE', '').strip().lower() == 'true':
+              params['force'] = 'true'
+          # Render 무료 플랜은 잠들어 있을 수 있다 — /health 로 먼저 깨운다 (최대 90초)
+          for attempt in range(6):
+              try:
+                  if requests.get(base + '/health', timeout=30).status_code == 200:
+                      break
+              except requests.RequestException:
+                  pass
+              time.sleep(15)
+          # 이 백엔드에 출처별 API 키가 있는지 먼저 본다. 키가 하나도 없으면 지표 수집을 맡지 않는 서버로 보고 건너뛴다
+          # (예: 수집은 다른 저장소의 Actions 가 맡고, 이 저장소의 비밀값은 정책 수집용 서버를 가리키는 경우)
+          keys = {}
+          try:
+              keys = requests.get(base + '/indicators/status', timeout=60).json().get('keys') or {}
+          except (requests.RequestException, ValueError, AttributeError):
+              pass
+          if keys and not any(keys.get(s) for s in ('R-ONE', 'ECOS', 'KOSIS')):
+              print('::notice::Skipped: this backend has no R-ONE/ECOS/KOSIS API keys, so it does not collect indicators.')
+              sys.exit(0)
+          failed, changed = False, 0
+          sources = ['R-ONE', 'ECOS', 'KOSIS', 'MOLIT'] if not params.get('vars') else [None]
+          for s in [s for s in sources if s and keys and not keys.get(s, True)]:
+              print(f'::notice::{s}: skipped (no API key on the backend).')
+          sources = [s for s in sources if not s or not keys or keys.get(s, True)]
+          for source in sources:  # 한 요청에 47개를 다 받으면 길어져 출처별로 나눈다
+              query = dict(params, **({'source': source} if source else {}))
+              try:
+                  response = requests.post(base + '/indicators/refresh', params=query, headers={'X-Admin-Token': token}, timeout=300, allow_redirects=False)
+              except requests.RequestException:
+                  print(f'::error::{source or "selected"}: collection request failed.')
+                  failed = True
+                  continue
+              if response.status_code == 409:
+                  print('::notice::Collection is already running. Existing job will complete it.')
+                  continue
+              if response.status_code != 200:
+                  print(f'::error::{source or "selected"}: Indicator API returned HTTP {response.status_code}. Check Render availability and the administrator token.')
+                  failed = True
+                  continue
+              try:
+                  result = response.json()
+              except ValueError:
+                  print('::error::Collection returned invalid JSON.')
+                  failed = True
+                  continue
+              print(f"== {source or 'selected'}: changed={result.get('changed', 0)}")
+              for item in result.get('results', []):
+                  print(f"{item.get('id')}: {item.get('status')} new={item.get('new', '')} changed={item.get('changed', '')} unchanged={item.get('unchanged', '')} last={item.get('last_period', '')} {item.get('error', '')}")
+              failed = failed or result.get('status') != 'ok'
+              changed += result.get('changed', 0) or 0
+          try:
+              # CDN 예열: 화면이 부르는 묶음을 한 번씩 불러 Vercel CDN 에 새 응답을 채운다. 실패해도 수집 결과에는 영향 없음
+              site = os.environ.get('SITE_BASE_URL', '').strip().rstrip('/')
+              if site.startswith('https://') and changed:  # 바뀐 값이 있을 때만
+                  for params in ({'set': 'all'}, {}):
+                      for attempt in range(2):  # 1회차: 오래된 보관본이면 뒤에서 갱신 시작 · 2회차: 새 응답 확인
+                          try:
+                              r = requests.get(site + '/api/indicators/bundle', params=params, timeout=120)
+                              print(f"warm {params or 'set=live'} #{attempt + 1}: HTTP {r.status_code} cache={r.headers.get('x-vercel-cache')}")
+                          except requests.RequestException:
+                              print('::notice::CDN warm-up request failed; the next visitor will refill the cache.')
+                          time.sleep(3)
+              if failed:
+                  print('::error::Some indicators failed. Prior data was preserved; inspect /indicators/status.')
+                  sys.exit(1)
+              print('Indicator collection completed.')
+          except (requests.RequestException, ValueError):
+              print('::error::Collection request failed or returned invalid JSON.')
+              sys.exit(1)
+          PY

@@ -82,17 +82,20 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 | 구성 | 기술 |
 |---|---|
 | 웹 화면 | HTML · CSS · JavaScript (빌드 없음), 자체 SVG 차트, 라이트 / 다크 모드 |
-| API 서버 | Python · FastAPI · Pydantic |
+| API 서버 | Python · FastAPI · SQLAlchemy · Pydantic |
 | 데이터베이스 | PostgreSQL (Supabase), 행 수준 보안(RLS) 적용 |
-| 데이터 수집 | R-ONE · ECOS · FRED 클라이언트, 정책 발표 수집기, [DFMBA](https://github.com/ksroh1913/DFMBA) 전처리 파이프라인 |
+| 데이터 수집 | R-ONE · ECOS · KOSIS Open API 수집기(지표 레지스트리), R-ONE 월세지수 적재, 정책 발표 수집기, [DFMBA](https://github.com/ksroh1913/DFMBA) 전처리 파이프라인 |
 
 ### 공개 API
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/health` | 서버 상태 |
-| GET | `/indicators` | 제공 지표 목록 |
-| GET | `/indicators/{key}` | 지표 시계열 |
+| GET | `/indicators` | 제공 지표 목록 · 수집 상태 · 출처 |
+| GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에. `set=all`이면 51개 변수 전체(DB 기본 패널 + Open API 실제 수집값) |
+| GET | `/indicators/{var}` | 지표 시계열 (DB에 캐시, 없으면 외부 API 1회 수집) |
+| GET | `/indicators/status` | 지표별 수집 상태 · 최근 수집 기록 |
+| GET | `/usage` | 이용 통계 — 로그인·로그아웃·데이터 내려받기 횟수와 사용자 수(일별), 많이 내려받은 변수. 개인 정보 없음 (`activity_logs` 집계 뷰) |
 | GET | `/knowledge` | 부동산 기초 학습 자료 |
 | GET | `/policies` | 주요 정책 요약 |
 | GET | `/policies/monitor` | 정책 발표 수집 현황 |
@@ -120,8 +123,32 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | 문서 | 내용 |
 |---|---|
 | [데이터베이스](database/README.md) | 테이블 구조, Supabase 연결, R-ONE 수집 · 지역 매핑 |
+| [정량 지표 파이프라인](docs/indicator-pipeline.md) | 지표 레지스트리, Open API 수집 → DB 캐시 → `/indicators`, 매일 자동 수집 |
 | [정성 자료 가이드](docs/qualitative-guide.md) | 부동산 기초 · 정책 자료의 출처와 수집 운영 |
 | [작업 설계서](docs/작업설계서.md) | 설계 결정과 진행 단계 |
+
+---
+
+## 서비스 주소
+
+| 항목 | 주소 |
+|---|---|
+| 대시보드 | https://www.khmi.kr |
+| API 연동 실습 페이지 | https://www.khmi.kr/demo.html |
+| CDN 경유 API (화면이 부르는 주소) | https://www.khmi.kr/api/indicators/bundle?set=all |
+| Swagger UI | https://realestate-roh-api.onrender.com/docs |
+| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
+
+- 웹 화면은 팀 Vercel 이 이 저장소 main 을 배포합니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버(Render `realestate-roh-api`)로 넘기고 응답을 CDN 에 캐시합니다.
+- API 서버와 DB(Supabase)는 운영 계정에서 돌며, 매일 수집(GitHub Actions)도 그 계정의 포크([ksroh1913/realestate_roh](https://github.com/ksroh1913/realestate_roh))에서 돕니다. 백엔드 변경은 그 포크의 `feat/indicator-api` 에 반영되면 배포됩니다.
+- Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase 를 씁니다. 화면이 supabase-js 공개 키로 직접 기록하고(RLS: 본인 기록 추가만), API 서버가 `/usage` 로 집계합니다.
+
+---|---|
+| 대시보드 | https://realestateroh-frontend.vercel.app |
+| API 연동 실습 페이지 | https://realestateroh-frontend.vercel.app/demo.html |
+| Swagger UI | https://realestate-roh-api.onrender.com/docs |
+| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
+| CDN 경유 API (화면이 부르는 주소) | https://realestateroh-frontend.vercel.app/api/indicators/bundle?set=all |
 
 ---
 

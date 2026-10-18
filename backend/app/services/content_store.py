@@ -32,6 +32,9 @@ def read_seed(key):
 
 
 def initialize_storage():
+    from app.db import models  # noqa: F401 — 모든 테이블(indicator_* 포함)이 Base 에 등록되도록
+    from app.services.indicator_pipeline import sync_registry
+
     engine = get_engine()
     Base.metadata.create_all(engine)
     if engine.dialect.name == "postgresql":
@@ -53,6 +56,7 @@ def initialize_storage():
                 # Reviewed git content remains the source of truth for this MVP.
                 row.content, row.content_hash, row.updated_at = value, content_hash, utc_now()
         session.commit()
+        sync_registry(session)  # 지표 레지스트리(코드) → indicator_variables
 
 
 def get_content(key):

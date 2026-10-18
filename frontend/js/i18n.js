@@ -14,6 +14,10 @@ const I18N = {
 
     // 동인 탭 (factors.js)
     "factor.loadError": "동인 데이터를 불러오지 못했습니다 (data/drivers.json)",
+    "factor.loading": "지표 자료를 서버(DB)에서 불러오는 중입니다. 서버가 잠들어 있으면 30초쯤 걸릴 수 있습니다.",
+    "factor.apiError": "지표 자료를 서버에서 받지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    "factor.staleNotice": "서버에 연결하지 못해 이 브라우저에 보관한 자료({when})로 보여 드립니다.",
+    "factor.retry": "다시 시도",
 
     // 대시보드 페이지
     "index.title": "KHMI",
@@ -30,13 +34,18 @@ const I18N = {
     "demo.p1.title": "1. 서버 상태 확인",
     "demo.p2.title": "2. 지표 목록",
     "demo.p3.title": "3. 지표 데이터",
+    "demo.p4.title": "4. 이용 통계",
+    "demo.out.usageAria": "이용 통계 응답",
+    "demo.usageHint": "로그인·로그아웃·데이터 내려받기 기록(activity_logs)을 횟수와 사용자 수로만 집계합니다. 이메일 등 개인 정보는 나오지 않습니다.",
+    "demo.usageSummary": "최근 {days}일: 로그인 {login}회 · 내려받기 {download}회 · 사용자 {users}명",
+    "demo.usageNone": "아직 집계할 사용 기록이 없습니다.",
     "demo.call": "호출하기",
     "demo.out.empty": "아직 호출하지 않았습니다.",
     "demo.out.healthAria": "서버 상태 응답",
     "demo.out.listAria": "지표 목록 응답",
     "demo.out.seriesAria": "지표 데이터 응답",
     "demo.form.key": "지표 key",
-    "demo.hint": "key 는 2번 지표 목록에서 확인할 수 있습니다.",
+    "demo.hint": "변수 ID(V002 등)는 2번 지표 목록에서 확인할 수 있습니다. 응답의 origin 이 db(cache) 면 DB 에서, api(…) 면 방금 외부 API 로 받아 저장한 것입니다.",
     "demo.back": "← 대시보드로",
 
     // 요청 상태
@@ -49,6 +58,7 @@ const I18N = {
     "label.health": "서버 상태 확인",
     "label.list": "지표 목록 조회",
     "label.series": "지표 데이터 조회",
+    "label.usage": "이용 통계 조회",
     "err.network": "서버에 연결할 수 없습니다 (서버가 꺼져 있거나 CORS 설정을 확인하세요)",
     "err.validation": "입력값 오류: {detail}",
     "err.detail": "{detail} (HTTP {status})",
@@ -64,6 +74,10 @@ const I18N = {
 
     // Driver tabs (factors.js)
     "factor.loadError": "Failed to load driver data (data/drivers.json)",
+    "factor.loading": "Loading indicator data from the server (database). This can take about 30 seconds if the server is waking up.",
+    "factor.apiError": "Could not load indicator data from the server. Please try again shortly.",
+    "factor.staleNotice": "Could not reach the server — showing the copy saved in this browser ({when}).",
+    "factor.retry": "Retry",
 
     // Dashboard page
     "index.title": "KHMI",
@@ -80,6 +94,11 @@ const I18N = {
     "demo.p1.title": "1. Server health check",
     "demo.p2.title": "2. Indicator list",
     "demo.p3.title": "3. Indicator data",
+    "demo.p4.title": "4. Usage statistics",
+    "demo.out.usageAria": "Usage statistics response",
+    "demo.usageHint": "Counts of sign-ins, sign-outs and data downloads (activity_logs) — totals and user counts only, no e-mails or other personal data.",
+    "demo.usageSummary": "Last {days} days: {login} sign-ins · {download} downloads · {users} users",
+    "demo.usageNone": "No usage records to summarize yet.",
     "demo.call": "Call",
     "demo.out.empty": "Not called yet.",
     "demo.out.healthAria": "Server health response",
@@ -99,6 +118,7 @@ const I18N = {
     "label.health": "Health check",
     "label.list": "Indicator list",
     "label.series": "Indicator data",
+    "label.usage": "Usage statistics",
     "err.network": "Cannot reach the server (it may be down, or check the CORS settings)",
     "err.validation": "Invalid input: {detail}",
     "err.detail": "{detail} (HTTP {status})",
