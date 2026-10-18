@@ -155,3 +155,31 @@ def test_molit_recomputes_even_when_recently_run(db, monkeypatch):
         rtms._save(s, "apt_trade", [(SEJONG, "202609", rtms.count_rows("apt_trade", [{}] * 4), 1)])
         r = pipeline.refresh_variable(s, spec, client="rtms_progress")  # force 없이 곧바로 다시
         assert r["status"] == "ok" and r["new"] == 1 and r["last_period"] == "2026-09"
+
+
+def test_rtms_job_endpoints(db, monkeypatch):
+    """Actions 는 비밀값 없이 API 서버에 실거래 수집을 맡긴다: 시작(202) → 진행 상태 확인 → 끝나면 요약. 키는 응답에 나오지 않는다."""
+    from fastapi.testclient import TestClient
+    from app.main import app
+    monkeypatch.setenv("POLICY_ADMIN_TOKEN", "t0ken")
+    monkeypatch.setenv("DATA_GO_KR_API_KEY", "SECRET-KEY-123")
+    monkeypatch.setattr(rtms, "RtmsClient", lambda: FakeRtms(n=2))
+    with TestClient(app) as client:
+        assert client.post("/indicators/rtms/collect").status_code == 401
+        assert client.get("/indicators/rtms/job").status_code == 401
+        res = client.post("/indicators/rtms/collect", params={"budget": 3, "window": 1}, headers={"X-Admin-Token": "t0ken"})
+        assert res.status_code == 202 and res.json()["running"] is True and res.json()["budget"] == 3
+        rtms._thread.join(timeout=30)
+        st = client.get("/indicators/rtms/job", headers={"X-Admin-Token": "t0ken"})
+        body = st.json()
+        assert st.status_code == 200 and body["running"] is False and body["error"] is None
+        assert body["result"]["apt_rent"]["fetched"] == 3 and body["result"]["apt_rent"]["stopped"] == "budget"
+        assert body["lines"] > 0 and "SECRET-KEY-123" not in st.text
+        monkeypatch.delenv("DATA_GO_KR_API_KEY")
+        assert client.post("/indicators/rtms/collect", headers={"X-Admin-Token": "t0ken"}).status_code == 503
+
+
+def test_rtms_redacts_service_key(monkeypatch):
+    monkeypatch.setenv("DATA_GO_KR_API_KEY", "abc%2Bdef")
+    assert rtms._redact("GET /x?serviceKey=abc%2Bdef&LAWD_CD=11110 failed") == "GET /x?serviceKey=***&LAWD_CD=11110 failed"
+    assert rtms._redact("key abc%2Bdef leaked") == "key *** leaked"

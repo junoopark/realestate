@@ -15,7 +15,10 @@
   매매  : 해제 건(cdealType='O')을 빼고 센다.
 """
 
+import logging
 import os
+import re
+import threading
 import time
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -70,7 +73,7 @@ class RtmsClient:
                  pause: float = 0.1):
         self.key = (api_key or os.getenv("DATA_GO_KR_API_KEY", "")).strip()
         if not self.key:
-            raise ValueError("DATA_GO_KR_API_KEY가 설정되지 않았습니다. backend/.env 또는 GitHub Secrets 를 확인하세요.")
+            raise ValueError("DATA_GO_KR_API_KEY가 설정되지 않았습니다. backend/.env 또는 Render 환경변수를 확인하세요.")
         self.http = session or requests.Session()
         self.timeout, self.pause = timeout, pause
         self.calls = 0
@@ -268,3 +271,59 @@ def status(session: Session, today: date | None = None, window: int = WINDOW) ->
             per[ym].append(at)
         out[kind] = {ym: {"sgg": len(per[ym]), "of": len(SGG), "oldest": min(per[ym]) if per[ym] else None} for ym in months}
     return out
+
+
+# ── API 서버에서 돌리는 수집 작업 (GitHub Actions 가 POST /indicators/rtms/collect 로 시작하고 GET /indicators/rtms/job 으로 기다린다)
+# 호출이 수백~천여 번이라 한 HTTP 요청 안에서 끝내지 않고 백그라운드 스레드로 돌린다. 한 번에 하나만.
+# 저장소 비밀값에 DB 주소·공공데이터 키를 두지 않으려고 이렇게 한다 — 둘 다 API 서버 환경변수에만 있다.
+_JOB_LOCK = threading.Lock()
+_JOB = {"running": False, "started_at": None, "finished_at": None, "budget": None, "result": None, "error": None,
+        "lines": 0, "log": []}
+_thread: threading.Thread | None = None
+_log = logging.getLogger(__name__)
+_SECRET_PARAM = re.compile(r"(serviceKey=)[^&\s]+", re.I)
+
+
+def _redact(text) -> str:
+    text = _SECRET_PARAM.sub(r"\1***", str(text))
+    key = os.getenv("DATA_GO_KR_API_KEY", "").strip()
+    return text.replace(key, "***") if key else text
+
+
+def _job_log(message) -> None:
+    line = _redact(message)
+    _log.info("rtms: %s", line)
+    _JOB["lines"] += 1
+    _JOB["log"] = (_JOB["log"] + [line])[-40:]
+
+
+def job_state() -> dict:
+    """작업 상태(진행 중 여부·시작/끝 시각·유형별 요약·최근 로그 40줄). 키·주소는 들어 있지 않다."""
+    return {**_JOB, "log": list(_JOB["log"])}
+
+
+def start_job(budget: int = BUDGET, window: int = WINDOW, kinds=None, client: RtmsClient | None = None) -> bool:
+    """수집을 백그라운드로 시작한다. 이미 돌고 있으면 False."""
+    global _thread
+    if not _JOB_LOCK.acquire(blocking=False):
+        return False
+    _JOB.update(running=True, started_at=utc_now(), finished_at=None, budget=budget, result=None, error=None,
+                lines=0, log=[])
+    _thread = threading.Thread(target=_run_job, args=(budget, window, kinds, client), daemon=True, name="rtms-collect")
+    _thread.start()
+    return True
+
+
+def _run_job(budget, window, kinds, client) -> None:
+    from app.db.session import get_engine
+    try:
+        with Session(get_engine()) as session:
+            _JOB["result"] = collect(session, kinds, budget=budget, window=window, client=client or RtmsClient(),
+                                     log=_job_log)
+    except Exception as exc:  # 받은 데까지는 이미 저장됐다 — 다음 실행이 이어받는다
+        _JOB["error"] = _redact(f"{type(exc).__name__}: {exc}")
+        _job_log(f"! 중단: {_JOB['error']}")
+    finally:
+        _JOB.update(running=False, finished_at=utc_now())
+        _JOB_LOCK.release()
+

@@ -64,7 +64,7 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 | indicator_fetch_logs | 수집 1회의 소요 시간·행 수·오류 | 수집마다 1행 |
 | indicator_series | 기본 패널 계열(51개 변수·106개 계열)의 이름·단위·주기·시점 목록·출처·보완 방법 | `python scripts/seed_indicators.py` 적재 시 |
 | indicator_series_values | (계열, 지역, 시점) 별 값. 빈칸은 저장하지 않음 | 적재 시 계열별로 지우고 다시 넣음. Open API 수집값은 바뀐 칸만 고치고 새 시점은 이어붙임 |
-| rtms_progress | 국토부 실거래(V006·V007) 시군구·월별 건수와 마지막 조회 시각. 건별 원자료는 저장하지 않음 | `python scripts/collect_rtms.py` (GitHub Actions 매일, 호출 한도 안에서 최근 6개월) |
+| rtms_progress | 국토부 실거래(V006·V007) 시군구·월별 건수와 마지막 조회 시각. 건별 원자료는 저장하지 않음 | API 서버 `POST /indicators/rtms/collect` (GitHub Actions 가 매일 시작, 호출 한도 안에서 최근 6개월) · 로컬은 `python scripts/collect_rtms.py` |
 
 ## 테이블과 콘텐츠 관리
 

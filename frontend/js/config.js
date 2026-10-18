@@ -5,8 +5,8 @@
 // - 로컬: FastAPI 를 직접 부른다.
 const IS_LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
 const API_BASE_URL = IS_LOCAL ? "http://127.0.0.1:8000" : "/api";
-// Swagger UI 는 /api 아래에서 열리지 않으므로(openapi.json 경로) 백엔드 주소로 직접 연다.
-const API_DOCS_URL = IS_LOCAL ? "http://127.0.0.1:8000/docs" : "https://realestate-roh-api.onrender.com/docs";
+// Swagger UI 도 같은 주소의 /api/docs 에서 연다 (명세는 /api/openapi.json — 백엔드가 /api 접두어를 받아 준다).
+const API_DOCS_URL = `${API_BASE_URL}/docs`;
 
 // Supabase (Google 로그인 · 사용 기록). 공개(publishable) 키라 화면에 들어가도 된다.
 // 데이터는 테이블마다 RLS 로 보호한다. secret / service_role 키는 절대 여기에 넣지 않는다.

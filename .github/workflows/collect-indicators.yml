@@ -1,16 +1,17 @@
 name: Collect quantitative indicators
 
-# 하루 1회(KST 09:40)
+# 하루 1회(KST 09:40). 이 워크플로는 트리거만 한다 — 외부 API 호출·DB 저장은 모두 API 서버(Render)가 맡는다.
 #  1) rtms: 국토부 실거래(V006·V007) 최근 6개월을 호출 한도 안에서 다시 받아 시군구·월 건수를 DB(rtms_progress)에 저장한다.
-#     수백~천여 회 호출이라 Render 요청으로 하지 않고 이 러너에서 직접 돌린다(scripts/collect_rtms.py --no-apply).
+#     수백~천여 회 호출이라 한 요청으로 끝내지 않는다: POST /indicators/rtms/collect 로 서버의 백그라운드 작업을 시작하고(202),
+#     GET /indicators/rtms/job 으로 끝날 때까지 확인한다(이 확인 요청이 Render 무료 플랜을 깨어 있게 한다).
 #  2) collect: Render 백엔드의 관리자 수집 API 를 출처별(R-ONE → ECOS → KOSIS → MOLIT)로 나눠 호출한다.
 #     변수마다 최근 12개월을 다시 받고(MOLIT 은 1)의 건수를 시도·서울 구로 합치고), DB 와 비교해 바뀐 값만 저장한다.
 #     바뀐 값이 있을 때만 CDN 을 예열한다. 백엔드는 INDICATOR_REFRESH_HOURS(기본 24) 안에 받은 변수는 건너뛴다(skipped).
-# 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
-#         SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
-#         DATABASE_URL · DATA_GO_KR_API_KEY (실거래용) — 없으면 1) 은 건너뛴다
-#         POLICY_API_BASE_URL 의 백엔드에 R-ONE·ECOS·KOSIS 키가 하나도 없으면 2) 도 건너뛴다(실패로 표시하지 않음)
-# 변수(선택): RTMS_BUDGET — 실거래 유형 1개당 하루 호출 상한 (기본 1000. 운영계정이면 늘려도 된다)
+# 비밀값(저장소): POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
+#                 SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
+# 외부 API 키(RONE·ECOS·KOSIS·DATA_GO_KR)와 DATABASE_URL 은 저장소에 두지 않고 API 서버 환경변수에만 둔다.
+#   서버에 DATA_GO_KR_API_KEY 가 없으면 1) 은 건너뛰고, R-ONE·ECOS·KOSIS 키가 하나도 없으면 2) 도 건너뛴다(실패로 표시하지 않음).
+# 변수(선택): RTMS_BUDGET — 실거래 유형 1개당 하루 호출 상한 (기본 1000)
 
 on:
   workflow_dispatch:
@@ -34,34 +35,86 @@ concurrency:
 
 jobs:
   rtms:
-    # 정기 수집은 API·DB 를 운영하는 저장소(ksroh1913/realestate_roh, README '배포' 참고)에서 돈다.
-    # 팀 저장소에는 비밀값이 없어 실행해도 건너뛰기만 하므로, 초록 '성공' 대신 '건너뜀'으로 보이게 한다.
-    if: github.repository != 'junoopark/realestate'
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Collect MOLIT transaction counts when secrets are configured
+      - name: Install HTTP client
+        run: python -m pip install 'requests>=2.32,<3'
+      - name: Ask the API server to collect MOLIT transaction counts
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATA_GO_KR_API_KEY: ${{ secrets.DATA_GO_KR_API_KEY }}
+          POLICY_API_BASE_URL: ${{ secrets.POLICY_API_BASE_URL }}
+          POLICY_ADMIN_TOKEN: ${{ secrets.POLICY_ADMIN_TOKEN }}
           RTMS_BUDGET: ${{ vars.RTMS_BUDGET }}
         run: |
-          if [ -z "$DATABASE_URL" ] || [ -z "$DATA_GO_KR_API_KEY" ]; then
-            echo "::notice::Skipped: configure DATABASE_URL and DATA_GO_KR_API_KEY repository secrets to collect MOLIT transactions."
-            exit 0
-          fi
-          python -m pip install -q -r backend/requirements.txt
-          python scripts/collect_rtms.py --no-apply --budget "${RTMS_BUDGET:-1000}"
+          python - <<'PY'
+          import os, sys, time
+          from urllib.parse import urlsplit
+          import requests
+
+          base = os.environ.get('POLICY_API_BASE_URL', '').strip().rstrip('/')
+          token = os.environ.get('POLICY_ADMIN_TOKEN', '').strip()
+          if not base or not token:
+              print('::notice::Skipped: configure POLICY_API_BASE_URL and POLICY_ADMIN_TOKEN repository secrets.')
+              sys.exit(0)
+          target = urlsplit(base)
+          if target.scheme != 'https' or not target.hostname or target.username or target.password or target.query or target.fragment:
+              print('::error::POLICY_API_BASE_URL must be an HTTPS API base URL without credentials, query, or fragment.')
+              sys.exit(1)
+          for attempt in range(6):  # Render 무료 플랜이 잠들어 있을 수 있다 — 먼저 깨운다 (최대 90초)
+              try:
+                  if requests.get(base + '/health', timeout=30).status_code == 200:
+                      break
+              except requests.RequestException:
+                  pass
+              time.sleep(15)
+          headers = {'X-Admin-Token': token}
+          budget = (os.environ.get('RTMS_BUDGET') or '1000').strip()
+          try:
+              r = requests.post(base + '/indicators/rtms/collect', params={'budget': budget}, headers=headers, timeout=60, allow_redirects=False)
+          except requests.RequestException:
+              print('::error::Could not start MOLIT collection on the API server.')
+              sys.exit(1)
+          if r.status_code == 503:
+              print('::notice::Skipped: the API server has no DATA_GO_KR_API_KEY (or admin token) configured.')
+              sys.exit(0)
+          if r.status_code == 404:
+              print('::notice::Skipped: the API server does not have the MOLIT collection endpoint yet.')
+              sys.exit(0)
+          if r.status_code == 409:
+              print('::notice::MOLIT collection is already running on the server; waiting for it.')
+          elif r.status_code not in (200, 202):
+              print(f'::error::MOLIT collection API returned HTTP {r.status_code}. Check Render availability and the administrator token.')
+              sys.exit(1)
+          seen, deadline, state = 0, time.time() + 85 * 60, {}
+          while time.time() < deadline:  # 30초마다 진행 상태 확인
+              time.sleep(30)
+              try:
+                  state = requests.get(base + '/indicators/rtms/job', headers=headers, timeout=60).json()
+              except (requests.RequestException, ValueError):
+                  continue
+              lines, log = int(state.get('lines') or 0), state.get('log') or []
+              for line in log[max(0, len(log) - (lines - seen)):]:
+                  print(line)
+              seen = lines
+              if not state.get('running'):
+                  break
+          else:
+              print('::error::MOLIT collection did not finish in time; counts fetched so far are saved and the next run continues.')
+              sys.exit(1)
+          for kind, s in (state.get('result') or {}).items():
+              print(f"{kind}: fetched={s.get('fetched')} calls={s.get('calls')} changed={s.get('changed')} left={s.get('left')} stopped={s.get('stopped') or '-'}")
+          if state.get('error'):
+              print(f"::error::MOLIT collection stopped: {state['error']}")
+              sys.exit(1)
+          print('MOLIT transaction counts collected.')
+          PY
 
   collect:
     needs: rtms
-    if: always() && github.repository != 'junoopark/realestate'
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
