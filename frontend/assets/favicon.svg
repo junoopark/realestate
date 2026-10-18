@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- 브라우저 탭 아이콘: 머리띠 남색(--masthead) 바탕에 흰 집. PNG·ICO 판은 scripts/build_favicon.py 로 만든다 -->
+  <!-- 브라우저 탭 아이콘: 머리띠 남색(style.css 의 masthead 색) 바탕에 흰 집. PNG·ICO 판은 scripts/build_favicon.py 로 만든다.
+       XML 주석 안에는 하이픈 두 개를 이어 쓰면 파일 전체가 깨져 아이콘이 안 뜬다 -->
   <rect width="64" height="64" rx="14" fill="#233a70"/>
   <path d="M9 33 L32 12 L55 33 Z M16 30 H48 V52 H16 Z M41 15 H47 V27 H41 Z" fill="#ffffff"/>
   <rect x="28" y="39" width="8" height="13" fill="#233a70"/>
