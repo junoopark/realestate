@@ -136,20 +136,13 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | 대시보드 | https://www.khmi.kr |
 | API 연동 실습 페이지 | https://www.khmi.kr/demo.html |
 | CDN 경유 API (화면이 부르는 주소) | https://www.khmi.kr/api/indicators/bundle?set=all |
-| Swagger UI | https://realestate-roh-api.onrender.com/docs |
-| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
+| Swagger UI (API 명세) | https://www.khmi.kr/api/docs |
+| 지표 수집 상태 | https://www.khmi.kr/api/indicators/status |
 
-- 웹 화면(Vercel)과 API 서버(Render `realestate-roh-api`) 모두 이 저장소 main 을 배포합니다. main 에 합치면 둘 다 자동으로 다시 배포됩니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버로 넘기고 응답을 CDN 에 캐시합니다.
+- 웹 화면(Vercel)과 API 서버(Render `realestate-roh-api`) 모두 이 저장소 main 을 배포합니다. main 에 합치면 둘 다 자동으로 다시 배포됩니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버로 넘기고 응답을 CDN 에 캐시합니다. 그래서 화면·API·Swagger 모두 www.khmi.kr 한 주소로 씁니다(서버 직접 주소는 Actions 비밀값에서만 씀).
 - 매일 수집은 이 저장소의 GitHub Actions 가 트리거합니다. 09:40 에 API 서버의 수집 API(실거래 건수 → R-ONE·ECOS·KOSIS → 실거래 합계)를, 6시간마다 정책 수집 API 를 부릅니다. 외부 API 호출과 DB 저장은 API 서버가 맡고, 오래 걸리는 실거래 수집은 서버의 백그라운드 작업으로 돌립니다(`POST /indicators/rtms/collect` → `GET /indicators/rtms/job`).
 - 저장소 비밀값은 `POLICY_API_BASE_URL`·`POLICY_ADMIN_TOKEN`·`SITE_BASE_URL` 3개뿐입니다. 외부 API 키와 DB 주소(`DATABASE_URL`)는 API 서버(Render) 환경변수에만 둡니다.
 - Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase 를 씁니다. 화면이 supabase-js 공개 키로 직접 기록하고(RLS: 본인 기록 추가만), API 서버가 `/usage` 로 집계합니다.
-
----|---|
-| 대시보드 | https://realestateroh-frontend.vercel.app |
-| API 연동 실습 페이지 | https://realestateroh-frontend.vercel.app/demo.html |
-| Swagger UI | https://realestate-roh-api.onrender.com/docs |
-| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
-| CDN 경유 API (화면이 부르는 주소) | https://realestateroh-frontend.vercel.app/api/indicators/bundle?set=all |
 
 ---
 
