@@ -74,7 +74,7 @@ class BundleOut(BaseModel):
 
 class RefreshResultItem(BaseModel):
     id: str
-    status: str = Field(description="ok · skipped(아직 신선함) · error")
+    status: str = Field(description="ok · skipped(22시간 안에 이미 받아 건너뜀) · error")
     rows: int | None = Field(default=None, description="받은 행 수")
     new: int | None = Field(default=None, description="새로 생긴 값 (새로 공표된 시점 등)")
     changed: int | None = Field(default=None, description="값이 바뀐 것 (공표 뒤 수정)")
