@@ -106,8 +106,35 @@ $("#series-form").addEventListener("submit", async (event) => {
   if (data) showJson("#out-series", data);
 });
 
+// ── 4. 이용 통계 ──────────────────────────────────────
+// 응답 전체는 아래 JSON 으로, 핵심 숫자는 한 줄 요약으로 보여 준다. 사용 기록이 없는 DB 면 그 이유(reason)를 그대로.
+let usageData = null;
+function renderUsage() {
+  const el = $("#usage-summary");
+  if (!usageData) return;
+  if (!usageData.available) {
+    el.textContent = usageData.reason || t("demo.usageNone");
+    return;
+  }
+  const tot = usageData.totals || {};
+  el.textContent = t("demo.usageSummary", {
+    days: usageData.days, login: tot.login?.events ?? 0, download: tot.download?.events ?? 0, users: usageData.users ?? 0,
+  });
+}
+$("#btn-usage").addEventListener("click", async () => {
+  const data = await run("label.usage", () => api("/usage"));
+  if (data) {
+    usageData = data;
+    renderUsage();
+    showJson("#out-usage", data);
+  }
+});
+
 // 언어가 바뀌면 동적으로 그린 상태 줄을 새 언어로 다시 그린다
-document.addEventListener("langchange", renderStatus);
+document.addEventListener("langchange", () => {
+  renderStatus();
+  renderUsage();
+});
 
 // 페이지를 열면 서버 상태를 한 번 확인한다 (잠든 서버를 미리 깨우는 효과도 있다)
 renderStatus();

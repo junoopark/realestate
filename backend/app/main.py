@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.routers import indicators, qualitative
+from app.routers import indicators, qualitative, usage
 from app.services.content_store import initialize_storage
 
 
@@ -52,6 +52,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(indicators.router)
 app.include_router(qualitative.router)
+app.include_router(usage.router)
 
 
 @app.get("/")
