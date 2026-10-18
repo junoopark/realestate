@@ -3,12 +3,13 @@
   python scripts/collect_rtms.py                    # 유형마다 1,000회까지 받고 → 시도·서울 구 합계를 화면 계열에 반영
   python scripts/collect_rtms.py --budget 3000      # 일일 한도가 넉넉하면(운영계정) 한 번에 더 받는다
   python scripts/collect_rtms.py --kinds apt_rent   # 전월세만
-  python scripts/collect_rtms.py --no-apply         # 받기만 (GitHub Actions: 반영은 Render 수집 API 의 source=MOLIT 가 맡아 캐시도 비운다)
+  python scripts/collect_rtms.py --no-apply         # 받기만 (반영은 Render 수집 API 의 source=MOLIT 가 맡아 캐시도 비운다)
   python scripts/collect_rtms.py --apply-only       # API 를 부르지 않고 이미 받은 건수만 화면 계열에 반영
   python scripts/collect_rtms.py --status           # 받지 않고 월별 진행 상황만
 
 키: DATA_GO_KR_API_KEY (공공데이터포털 인증키, 국토교통부 아파트 전월세·매매 실거래가 두 API 활용신청). DB: DATABASE_URL.
 한도에 걸리면 받은 데까지 저장하고 멈춘다. 다음 실행이 남은 것부터 이어받는다.
+매일 운영 수집은 API 서버의 POST /indicators/rtms/collect(같은 services/rtms.collect)가 맡고, 이 CLI 는 로컬·수동 실행용이다.
 """
 
 import argparse

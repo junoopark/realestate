@@ -5,6 +5,8 @@
   GET  /indicators/bundle          여러 변수를 한 번에. set=live(기본): Open API 수집 변수만 · set=all: 기본 패널 51개 변수 전체 + 실제 수집값
   GET  /indicators/{var}           변수 하나의 시계열 (factor_sample.json 과 같은 모양). Open API 변수가 아니면 기본 패널에서
   POST /indicators/refresh         관리자 토큰으로 외부 API 수집 (GitHub Actions cron 이 하루 1회 호출)
+  POST /indicators/rtms/collect    관리자 토큰으로 국토부 실거래 건수 수집을 백그라운드로 시작 (Actions 가 매일 호출)
+  GET  /indicators/rtms/job        그 작업의 진행 상태 (관리자 토큰)
 
 응답 origin 값: 'db(cache)' = Open API 수집값을 DB 에서, 'db(panel)' = 기본 패널(전처리본 적재분)을 DB 에서,
 'api(R-ONE)' = DB 에 없어 방금 받아와 저장한 뒤 응답.
@@ -21,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_engine, storage_info
 from app.schemas import BundleOut, IndicatorListOut, MetricOut, RefreshOut
-from app.services import cache
+from app.services import cache, rtms
 from app.services.indicator_pipeline import (
     is_stale, load_metric, recent_logs, refresh_all, refresh_hours, refresh_variable, utc_now, variable_status,
 )
@@ -265,11 +267,7 @@ def refresh(response: Response, vars: str | None = Query(default=None, descripti
             source: str | None = Query(default=None, pattern="^(R-ONE|ECOS|KOSIS|MOLIT)$", description="이 출처만 수집 (Actions 가 출처별로 나눠 부른다)"),
             x_admin_token: str | None = Header(default=None)):
     """관리자 토큰(X-Admin-Token)으로 외부 API 수집을 실행한다. 정책 수집과 같은 POLICY_ADMIN_TOKEN 을 쓴다."""
-    expected = os.getenv("POLICY_ADMIN_TOKEN", "").strip()
-    if not expected:
-        raise HTTPException(status_code=503, detail="관리자 수집 기능이 설정되지 않았습니다. 서버에서 POLICY_ADMIN_TOKEN을 설정하세요.")
-    if not x_admin_token or not hmac.compare_digest(x_admin_token.encode(), expected.encode()):
-        raise HTTPException(status_code=401, detail="관리자 인증이 필요합니다.")
+    _require_admin(x_admin_token)
     try:
         with Session(get_engine()) as session:
             result = refresh_all(session, _parse_list(vars) or None, force=force, trigger="admin", source=source)
@@ -281,3 +279,33 @@ def refresh(response: Response, vars: str | None = Query(default=None, descripti
         cache.clear("indicator:")
     _no_store(response)
     return result
+
+def _require_admin(x_admin_token: str | None) -> None:
+    expected = os.getenv("POLICY_ADMIN_TOKEN", "").strip()
+    if not expected:
+        raise HTTPException(status_code=503, detail="관리자 수집 기능이 설정되지 않았습니다. 서버에서 POLICY_ADMIN_TOKEN을 설정하세요.")
+    if not x_admin_token or not hmac.compare_digest(x_admin_token.encode(), expected.encode()):
+        raise HTTPException(status_code=401, detail="관리자 인증이 필요합니다.")
+
+
+@router.post("/rtms/collect", status_code=202)
+def rtms_collect(response: Response,
+                 budget: int = Query(default=rtms.BUDGET, ge=1, le=10000, description="실거래 유형 1개당 이번 실행의 호출 상한"),
+                 window: int = Query(default=rtms.WINDOW, ge=1, le=24, description="최근 몇 개월을 다시 받을지"),
+                 x_admin_token: str | None = Header(default=None)):
+    """국토부 실거래(V006·V007) 시군구·월 건수 수집을 백그라운드로 시작한다. 화면 반영은 이어서 refresh?source=MOLIT 이 맡는다."""
+    _require_admin(x_admin_token)
+    if not os.getenv("DATA_GO_KR_API_KEY", "").strip():
+        raise HTTPException(status_code=503, detail="DATA_GO_KR_API_KEY 가 서버에 설정되지 않았습니다. Render 환경변수에 넣으세요.")
+    if not rtms.start_job(budget=budget, window=window):
+        raise HTTPException(status_code=409, detail="실거래 수집이 이미 진행 중입니다.")
+    _no_store(response)
+    return rtms.job_state()
+
+
+@router.get("/rtms/job")
+def rtms_job(response: Response, x_admin_token: str | None = Header(default=None)):
+    """실거래 수집 작업의 상태. running 이 false 가 되면 끝난 것이다(result: 유형별 요약, error: 중단 사유)."""
+    _require_admin(x_admin_token)
+    _no_store(response)
+    return rtms.job_state()
