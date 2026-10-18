@@ -185,7 +185,7 @@ function renderMap() {
   legend.append(swatch(colors.zero, `±${fmtAxis(zeroBand)} 미만`));
   for (let k = 0; k <= 3; k++) legend.append(swatch(colors.pos[k], k === 3 ? `≥ +${fmtAxis(step * 3)}` : `+${lo(k)}~${fmtAxis(step * (k + 1))}`));
   mapCol.append(legend);
-  mapCol.append(el("p", "fig-source", `단위 ${unit}. 상승 파랑 · 하락 빨강. 자료: 한국부동산원 R-ONE, DFMBA 전처리본(1차_결측보완). 지도: ${koreaMap.source}`));
+  mapCol.append(el("p", "fig-source", `단위 ${unit}. 상승 파랑 · 하락 빨강. 자료: 한국부동산원 R-ONE, ${dataBase(m)}. 지도: ${koreaMap.source}`));
 
   // 순위표: 17개 시도 막대 (0 기준 좌우)
   const rankCol = el("div", "rank-col");
@@ -271,7 +271,7 @@ function mapDownload(m, { period, prevPeriod, sorted, levels, mode, unit, change
     range: period,
     title: `아파트 ${metaName}지수 ${changeLabel} 상승률`,
     subtitle: `${changeHead.replace(/\(.*\)/, "").trim()} · 17개 시도 · ${periodLabel(period, true)} 기준 (비교 ${periodLabel(prevPeriod, true)})`,
-    source: "자료: 한국부동산원 R-ONE, DFMBA 전처리본(1차_결측보완)",
+    source: `자료: 한국부동산원 R-ONE, ${dataBase(m)}`,
     sourceTable: m.source,
     method: `${m.method || ""} · 상승률 = 기준 시점 ÷ 비교 시점 − 1 (모든 시도에 값이 있는 마지막 확정 기간)`,
     release: m.release,
@@ -327,7 +327,7 @@ function renderGraphOfMonth() {
     title: "기준금리 · 국고채 3년 · 주택담보대출",
     subtitle: "연% · 월 · 전국",
     height: 270,
-    source: "자료: 한국은행, DFMBA 전처리본(1차_결측보완)",
+    source: `자료: 한국은행 ECOS, ${dataBase(ms[0])}`,
   });
   const lasts = ids.map(([, n]) => latestOf(merged, n));
   const [, ktb, mort] = lasts;
