@@ -48,13 +48,23 @@ def probe(var_id: str) -> int:
         if rows:
             print("샘플 행:", json.dumps(rows[-1], ensure_ascii=False))
     else:
-        p = spec.params
-        rows = client.fetch_rows(p["org_id"], p["tbl_id"], p["itm_id"], "2026-01", "2026-12", obj_l1=p.get("obj_l1", "ALL"))
-        print(f"올해 행 수: {len(rows)}")
-        print("지역(C1_NM):", Counter(r.get("C1_NM") for r in rows).most_common(25))
+        from app.services.indicator_pipeline import today_period
+        from app.services.kosis_readers import read
+        start = {"M": "2026-01", "Q": "2025Q1", "H": "2024H1", "A": "2022"}[spec.freq]
+        rows, item = read(client, spec, start, today_period(spec.freq))
+        print(f"항목: {item} · 행 수: {len(rows)} (KOSIS 호출 {client.calls}회)")
+        print("지역:", Counter(r for r, _, _ in rows).most_common(25))
         if rows:
-            print("샘플 행:", json.dumps(rows[-1], ensure_ascii=False))
+            print("최근 값:", sorted(rows, key=lambda x: (x[1], x[0]))[-5:])
     return 0
+
+
+def show_progress(r: dict, done: int, total: int) -> None:
+    counts = (f"새로={r.get('new', '')} 수정={r.get('changed', '')} 같음={r.get('unchanged', '')} 화면계열={r.get('panel_written', '')}"
+              if r["status"] == "ok" else "")
+    secs = f"{r['duration_ms'] / 1000:.0f}초" if r.get("duration_ms") is not None else ""
+    print(f"  [{done}/{total}] {r['id']}: {r['status']}  {counts} last={r.get('last_period', '')} {secs} "
+          f"{r.get('error', r.get('reason', ''))}".rstrip(), flush=True)
 
 
 def main():
@@ -74,10 +84,8 @@ def main():
     with Session(get_engine()) as session:
         if not args.status:
             ids = [v.strip() for v in args.vars.split(",")] if args.vars else None
-            result = refresh_all(session, ids, force=args.force, trigger="cli", source=args.source)
-            for r in result["results"]:
-                counts = f"새로={r.get('new', '')} 수정={r.get('changed', '')} 같음={r.get('unchanged', '')} 화면계열={r.get('panel_written', '')}" if r["status"] == "ok" else ""
-                print(f"  {r['id']}: {r['status']}  {counts} last={r.get('last_period', '')} {r.get('error', r.get('reason', ''))}")
+            print("수집 시작 — 변수 하나가 끝날 때마다 한 줄씩 나옵니다.", flush=True)
+            result = refresh_all(session, ids, force=args.force, trigger="cli", source=args.source, progress=show_progress)
             print(f"수집 결과: {result['status']} · 바뀐 값 {result.get('changed', 0)}개")
         status = variable_status(session)
         print(f"DB({storage_info()['type']}): 변수 {len(status)}개 · 관측 {sum(s['rows'] for s in status):,}행")

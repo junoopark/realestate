@@ -111,6 +111,15 @@ REL_MARKET = "시장 관측치(월평균·월말값). 해당 월 말 확정"
 REL_RATE = "기준월 익월 말 공표 (금융기관 가중평균금리)"
 REL_HHLOAN = "기준월 익익월 14일 이내 공표 (예금취급기관 가계대출)"
 REL_DEAL = "기준월 익월 말일경 공표 (부동산거래현황)"
+REL_RESIDENT = "기준월 익월 초 공표 (주민등록인구현황)"
+REL_SUPPLY = "기준월 익월 말 잠정치 공표, 익년 9월 확정 (주택건설실적통계)"
+REL_RENTAL = "작성기준 연도 익년 12월 공표 (임대주택통계)"
+
+# V074 가계동향 소득: 구계열 2019년 4개 분기 평균 ÷ 신계열(DT_1L9V121) 같은 기간 평균 (DFMBA build_preprocessed 와 같은 값)
+V074_LINK_K = 0.9416781445361877
+RENT_PRIVATE = {"org_id": "116", "tbl_id": "DT_MLTM_6827", "itm_id": "ALL", "chunk": 1, "obj": {"objL1": "ALL", "objL2": "ALL"}}
+RENT_ALL = {"org_id": "116", "tbl_id": "DT_MLTM_7174", "itm_id": "ALL", "chunk": 1,
+            "obj": {"objL1": "ALL", "objL2": "ALL", "objL3": "ALL"}}
 
 REGISTRY: list[IndicatorSpec] = [
     # ── 한국부동산원 R-ONE — 17개 시도 + 서울 구(gu=True). 표 코드는 DFMBA collect_rone.py 와 같다 ──
@@ -226,13 +235,94 @@ REGISTRY: list[IndicatorSpec] = [
                   params={"stat_code": "901Y118", "item_code": "T002"}, outputs=(Output("nation"),)),
     IndicatorSpec("V071", "정책대출(주금공·주택도시기금)", "macro", "ECOS", scope="nation", unit="십억원", release=REL_HHLOAN,
                   params={"stat_code": "151Y005", "item_code": "1120093"}, outputs=(Output("nation"),)),
-    # ── 통계청 KOSIS — 다음 묶음에서 연동 (항목·분류 코드 확인 후 enabled=True 로) ──
-    IndicatorSpec("V012", "인구이동 순이동자수", "demand", "KOSIS", unit="명", enabled=False,
-                  release="기준월 익월 말 공표 (국내인구이동통계)",
-                  params={"org_id": "101", "tbl_id": "DT_1B26001_A01", "itm_id": "T70", "obj_l1": "ALL"}),
-    IndicatorSpec("V023", "주택건설 아파트준공", "supply", "KOSIS", unit="호", enabled=False,
-                  release="기준월 익월 말 공표 (주택건설실적통계)",
-                  params={"org_id": "116", "tbl_id": "DT_MLTM_5373", "itm_id": "T1", "obj_l1": "ALL"}),
+    # ── 통계청 KOSIS — 표·항목 코드와 가공 규칙은 DFMBA collect_kosis.py · preprocess/prep_kosis_*.py 와 같다 ──
+    #    reader 는 kosis_readers.py 참고. 같은 표를 여러 수집 단위가 쓰면 한 번만 부른다(클라이언트 캐시).
+    *[IndicatorSpec(vid, label, "demand", "KOSIS", unit=unit, release=REL_RESIDENT,
+                    params={"org_id": "101", "tbl_id": tbl, "itm_id": f"{itm}+", "item": itm, "reader": "admin", "chunk": 5},
+                    note="2026-07 광주·전남 통합 뒤: 광주 = 통합 아래 광주 5개 구 합계, 전남 = 통합 - 광주", outputs=SIDO_AND_GU)
+      for vid, label, unit, tbl, itm in (("V009", "주민등록 인구", "명", "DT_1B040A3", "T20"),
+                                         ("V010", "주민등록 세대수", "세대", "DT_1B040B3", "T1"))],
+    *[IndicatorSpec(f"V011.{i}", f"주민등록 인구 {name}", "demand", "KOSIS", unit=unit, release=REL_RESIDENT, var="V011",
+                    params={"org_id": "101", "tbl_id": "DT_1B04006", "itm_id": "T2+", "reader": "age", "band": band, "chunk": 2},
+                    note=note, outputs=(Output("sido", match=match), Output("gu", match=match)))
+      for i, (name, unit, band, match, note) in enumerate((
+          ("20–29세", "명", "20-29", "_20-29세_", "1세별 인구(20~29세) 합계"),
+          ("30–39세", "명", "30-39", "_30-39세_", "1세별 인구(30~39세) 합계"),
+          ("20–39세", "명", "20-39", "_20-39세_명", "1세별 인구(20~39세) 합계"),
+          ("20–39세 비중", "%", "share", "20-39세비중", "20~39세 인구 ÷ 총인구 x 100")), start=1)],
+    IndicatorSpec("V012", "인구이동 순이동자수", "demand", "KOSIS", unit="명", release="기준월 익월 말 전후 공표 (국내인구이동통계)",
+                  params={"org_id": "101", "tbl_id": "DT_1B26001_A01", "itm_id": "T25+", "item": "T25", "reader": "admin", "chunk": 5},
+                  note="2026-07 광주·전남 통합 뒤: 광주 = 광주 5개 구 합계, 전남 = 통합 - 광주 (옛 코드는 0 으로 와서 쓰지 않는다)",
+                  outputs=SIDO_AND_GU),
+    *[IndicatorSpec(f"V013.{i}", f"경제활동인구조사 {name}", "demand", "KOSIS", unit=unit, var="V013",
+                    release="조사기준 월 익월 중순 공표 (경제활동인구조사)",
+                    params={"org_id": "101", "tbl_id": "DT_1DA7004S", "itm_id": "T30+T90+", "item": itm, "reader": "name"},
+                    outputs=(Output("sido", match=f"_{name}_"), Output("seoul", match=f"_{name}_", regions=("서울",))))
+      for i, (name, unit, itm) in enumerate((("고용률", "%", "T90"), ("취업자", "천명", "T30")), start=1)],
+    *[IndicatorSpec(f"V013H.{i}", f"지역별고용조사 서울 구 {name}", "demand", "KOSIS", freq="H", scope="gu", unit=unit, var="V013",
+                    start="2021H1", release="상반기 8월 · 하반기 익년 2월 공표 (지역별고용조사)",
+                    params={"org_id": "101", "tbl_id": "DT_1ES3A01S", "itm_id": "T3+T7+", "item": itm, "reader": "seoul_gu"},
+                    outputs=(Output("gu", match=f"서울구반기_{name}"),))
+      for i, (name, unit, itm) in enumerate((("고용률", "%", "T7"), ("취업자", "천명", "T3")), start=1)],
+    *[IndicatorSpec(f"{vid}.{j}", f"{label}{suffix}", "demand", "KOSIS", freq="A", unit=unit, var=vid, start="2016",
+                    release="작성기준 연도 익년 12월 공표 (지역소득)",
+                    params={"org_id": "101", "tbl_id": "DT_1C96", "itm_id": "T1+T3+", "item": itm, "reader": "name",
+                            "ratio_nation": ratio},
+                    note="시도 값 ÷ 같은 해 전국 값" if ratio else "", outputs=(Output("sido", match=match),))
+      for vid, label, itm in (("V015", "1인당 GRDP", "T1"), ("V017", "1인당 가계총처분가능소득", "T3"))
+      for j, (suffix, unit, ratio, match) in enumerate((("", "천원", False, "_천원"), (" 전국대비", "전국=1", True, "_전국대비")),
+                                                       start=1)],
+    IndicatorSpec("V021", "주택건설 아파트 인허가", "supply", "KOSIS", unit="호", release=REL_SUPPLY,
+                  params={"org_id": "116", "tbl_id": "DT_MLTM_1948", "itm_id": "13103871090T1+", "reader": "name", "ytd": True,
+                          "chunk": 1, "obj": {"objL1": "ALL", "objL2": "ALL", "objL3": "ALL", "objL4": "13102871090D.0009+"}},
+                  note="월별 누계 표라 전월 누계를 빼서 월 실적으로. 2024년까지 빈 달 보완값과 2026-07 이후 광주·전남(통합 공표)은 기본 패널 유지",
+                  outputs=SIDO_AND_SEOUL),
+    *[IndicatorSpec(vid, label, "supply", "KOSIS", unit="호", release=REL_SUPPLY,
+                    params={"org_id": "116", "tbl_id": tbl, "itm_id": f"13103{code}T1+", "reader": "name", "chunk": 1,
+                            "obj": {"objL1": "ALL", "objL2": "ALL", "objL3": "ALL", "objL4": f"13102{code}D.0008+"}},
+                    note="월계 표. 2024년까지 빈 달 0 채움 값과 2026-07 이후 광주·전남(통합 공표)은 기본 패널 유지",
+                    outputs=SIDO_AND_SEOUL)
+      for vid, label, tbl, code in (("V022", "주택건설 아파트 착공", "DT_MLTM_5387", "766969"),  # 항목 13103…, 분류 13102…
+                                    ("V023", "주택건설 아파트 준공", "DT_MLTM_5373", "766973"))],
+    *[IndicatorSpec(f"V024.{i}", f"서울 구 주거용 신축허가 {name}", "supply", "KOSIS", freq="A", scope="gu", unit=unit, var="V024",
+                    start="2016", release="작성기준 연도 익년 공표 (서울특별시 기본통계)",
+                    params={"org_id": "201", "tbl_id": "DT_201004_O090005", "itm_id": "T001+T002+", "item": itm,
+                            "reader": "seoul_gu", "per_household": per_hh,
+                            "obj": {"objL1": "ALL", "objL2": "002+", "objL3": "001001+", "objL4": "001+"}},
+                    note="그해 12월 주민등록세대수(V010) 1천 세대당" if per_hh else "",
+                    outputs=(Output("gu", match=match),))
+      for i, (name, unit, itm, per_hh, match) in enumerate((
+          ("동수", "동", "T001", False, "_동수_동"), ("연면적", "㎡", "T002", False, "_연면적_"),
+          ("동수(천 세대당)", "동/천세대", "T001", True, "_동수_천세대당")), start=1)],
+    IndicatorSpec("V072", "주택보급률(국토부, 다가구 구분거처 반영)", "supply", "KOSIS", freq="A", unit="%", start="2016",
+                  release="작성기준 연도 익년 공표 (국토교통부 주택보급률)",
+                  params={"org_id": "116", "tbl_id": "DT_MLTM_2100", "itm_id": "13103871096T6+", "item": "13103871096T6",
+                          "reader": "name"},
+                  outputs=(Output("sido"),)),
+    IndicatorSpec("V074", "가계동향 도시 2인 이상 월평균소득(신계열 연결)", "macro", "KOSIS", freq="Q", scope="nation", unit="원",
+                  start="2020Q1", release="분기 종료 후 약 2개월 공표 (가계동향조사)",
+                  params={"org_id": "101", "tbl_id": "DT_1L9V121", "itm_id": "T210+", "reader": "link",
+                          "obj": {"objL1": "A+"}, "link_from": "2020Q1", "link_k": V074_LINK_K},
+                  note=f"구계열(DT_1L9I002)은 2019Q4 종료. 2020Q1~ = 신계열 x {V074_LINK_K:.4f} (2019년 4개 분기 평균 비율)",
+                  outputs=(Output("nation", match="신계열연결"),)),
+    IndicatorSpec("V076.1", "임대주택공급 민간임대(2020~)", "supply", "KOSIS", freq="A", unit="호", var="V076", start="2020",
+                  release=REL_RENTAL, params={**RENT_PRIVATE, "reader": "sum"},
+                  note="임대사업자 유형 x 주택유형 전체 합계", outputs=(Output("sido", match="민간임대(2020~)_호"),)),
+    IndicatorSpec("V076.2", "임대주택공급 민간임대(2020~, 천 세대당)", "supply", "KOSIS", freq="A", unit="호/천세대", var="V076",
+                  start="2020", release=REL_RENTAL, params={**RENT_PRIVATE, "reader": "sum", "per_household": True},
+                  note="그해 12월 주민등록세대수(V010) 1천 세대당", outputs=(Output("sido", match="민간임대(2020~)_천세대당"),)),
+    *[IndicatorSpec(f"V076.{i}", f"임대주택공급 {name}(2024~){' 천 세대당' if per_hh else ''}", "supply", "KOSIS", freq="A",
+                    unit="호/천세대" if per_hh else "호", var="V076", start="2024", release=REL_RENTAL,
+                    params={**RENT_ALL, "reader": "pick", "pick": pick, "per_household": per_hh},
+                    note="그해 12월 주민등록세대수(V010) 1천 세대당" if per_hh else "",
+                    outputs=(Output("sido", match=f"{name}(2024~)_{'천세대당' if per_hh else '호'}"),))
+      for i, (name, pick, per_hh) in enumerate((
+          ("공공+민간총계", ("임대주택 총계 (공공+민간)", "총계", "총계"), False),
+          ("공공임대", ("공공임대주택", "계", "계"), False),
+          ("민간임대", ("민간임대주택", "계", "계"), False),
+          ("공공+민간총계", ("임대주택 총계 (공공+민간)", "총계", "총계"), True),
+          ("공공임대", ("공공임대주택", "계", "계"), True),
+          ("민간임대", ("민간임대주택", "계", "계"), True)), start=3)],
 ]
 
 BY_ID: dict[str, IndicatorSpec] = {s.id: s for s in REGISTRY}

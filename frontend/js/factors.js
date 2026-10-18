@@ -550,7 +550,7 @@ function showView() {
   }
 }
 
-// 백엔드의 실제 수집값(/indicators/bundle)을 받아 같은 변수·지역단위 계열을 덮어쓴다. 실패하면 조용히 기본본을 유지한다.
+// 백엔드의 실제 수집값(/indicators/bundle)을 받아 같은 변수·지역단위·열 이름의 계열을 덮어쓴다. 실패하면 조용히 기본본을 유지한다.
 const LIVE_TIMEOUT_MS = 20000; // Render 무료 플랜은 첫 요청이 느릴 수 있다 — 그동안은 기본본을 보여 준다
 async function overlayLiveIndicators() {
   if (typeof API_BASE_URL === "undefined" || !sample) return;
@@ -565,7 +565,8 @@ async function overlayLiveIndicators() {
       if (!live.periods?.length) continue;
       const when = live.fetched_at ? live.fetched_at.slice(0, 16).replace("T", " ") + " UTC" : "";
       live.method = `${live.method || "원자료 그대로"} · Open API 수집본 (${live.origin}${when ? `, ${when}` : ""})`;
-      const i = sample.metrics.findIndex((m) => m.var === live.var && m.scope === live.scope);
+      // 한 변수에 계열이 여럿이면(연령대·동호수/면적 등) 열 이름(column)까지 맞춘다
+      const i = sample.metrics.findIndex((m) => m.var === live.var && m.scope === live.scope && (!live.column || m.column === live.column));
       if (i >= 0) sample.metrics[i] = live;
       else sample.metrics.push(live);
       replaced++;

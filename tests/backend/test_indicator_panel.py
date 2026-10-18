@@ -148,7 +148,8 @@ def test_get_indicator_falls_back_to_panel(db):
         # V002 는 Open API 변수지만 키가 없으면 기본 패널로 응답
         assert client.get("/indicators/V002").json()["origin"] == "db(panel)"
         assert client.get("/indicators/V999").status_code == 404
-        assert client.get("/indicators/V012").status_code == 404  # enabled=False 이고 패널에도 없음
+        assert client.get("/indicators/V034").status_code == 404  # 수집 안 함(종료 통계)이고 이 테스트 패널에도 없음
+        assert client.get("/indicators/V012").status_code == 503  # 수집 변수지만 키가 없고 패널에도 없음
         status = client.get("/indicators/status").json()
         assert status["panel"]["series"] == 5
 
@@ -198,3 +199,29 @@ def test_vercel_rewrite_points_api_to_backend():
     assert rw["source"] == "/api/:path*" and rw["destination"].startswith("https://") and rw["destination"].endswith("/:path*")
     hdrs = {h["key"]: h["value"] for h in conf["headers"][0]["headers"]}
     assert conf["headers"][0]["source"] == "/api/:path*" and hdrs["x-vercel-enable-rewrite-caching"] == "1"
+
+
+def test_bundle_live_keeps_multi_series_vars_apart(db):
+    """한 변수에 화면 계열이 여럿이면(V011 연령대) set=live 도 열 이름별로 따로 준다 — 화면이 엉뚱한 계열을 덮어쓰지 않게."""
+    from app.main import app
+    p = ["2026-07", "2026-08"]
+    data = {"generated": "t", "aliases": {}, "regions": {"sido": ["서울"], "gu": []}, "metrics": [
+        {"var": "V011", "column": "V011_주민등록인구_20-29세_명", "label": "20-29", "unit": "명", "freq": "M", "scope": "sido",
+         "periods": p, "series": {"서울": [1.0, 2.0]}},
+        {"var": "V011", "column": "V011_주민등록인구_20-39세비중_%", "label": "비중", "unit": "%", "freq": "M", "scope": "sido",
+         "periods": p, "series": {"서울": [3.0, 4.0]}}]}
+    rows = [{"PRD_DE": "202608", "C1": "11", "DT": v, "C2": c} for c, v in (("000", "1000"), ("1201", "100"), ("1501", "50"))]
+
+    class FakeKosis:
+        def fetch(self, *args, **kwargs):
+            return rows
+
+    with Session(get_engine()) as s:
+        seed_panel(s, data)
+        for sid in ("V011.1", "V011.4"):
+            assert pipeline.refresh_variable(s, pipeline.get_spec(sid), force=True, client=FakeKosis())["status"] == "ok"
+    with TestClient(app) as client:
+        body = client.get("/indicators/bundle", params={"vars": "V011.1,V011.4"}).json()
+    got = {m["column"]: m["series"]["서울"] for m in body["metrics"]}
+    assert got == {"V011_주민등록인구_20-29세_명": [1.0, 100.0], "V011_주민등록인구_20-39세비중_%": [3.0, 15.0]}
+    assert all(m["live"] and m["origin"] == "db(api)" for m in body["metrics"])

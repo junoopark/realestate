@@ -149,29 +149,10 @@ def _ecos_rows(client, spec: IndicatorSpec, start: str, end: str, **_) -> tuple[
     return out, item
 
 
-def _kosis_rows(client, spec: IndicatorSpec, start: str, end: str, **_) -> tuple[list[tuple], str | None]:
-    from app.services.kosis_client import to_period
-    p = spec.params
-    raw = client.fetch_rows(p["org_id"], p["tbl_id"], p["itm_id"], start, end, prd_se=spec.freq if spec.freq != "A" else "Y",
-                            obj_l1=p.get("obj_l1", "ALL"), **{k: v for k, v in p.items() if k.startswith("obj_l") and k != "obj_l1"})
-    out, item = [], None
-    for r in raw:
-        item = item or r.get("ITM_NM")
-        region = _region_for(spec, r.get("C1_NM"))
-        if region is None:
-            continue
-        value = _to_float(r.get("DT"))
-        if value is None:
-            continue
-        out.append((region, to_period(r.get("PRD_DE", ""), "M" if spec.freq == "M" else "Y"), value))
-    return out, item
-
-
-def _region_for(spec: IndicatorSpec, name) -> str | None:
-    n = normalize_sido(name)
-    if spec.scope == "nation":
-        return "전국" if n == "전국" else None
-    return n if n in SIDO else None
+def _kosis_rows(client, spec: IndicatorSpec, start: str, end: str, keep_gu=None, **_) -> tuple[list[tuple], str | None]:
+    """KOSIS 는 표마다 지역 코드와 가공 규칙이 달라 kosis_readers 가 맡는다."""
+    from app.services.kosis_readers import read
+    return read(client, spec, start, end, keep_gu=keep_gu)
 
 
 def _to_float(v):
@@ -326,8 +307,9 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
 
 
 def refresh_all(session: Session, var_ids: list[str] | None = None, force: bool = False, trigger: str = "cli",
-                clients: dict | None = None, source: str | None = None) -> dict:
-    """여러 변수를 차례로 갱신. 동시에 두 번 돌지 않도록 잠근다(busy). source 를 주면 그 출처만(R-ONE·ECOS·KOSIS)."""
+                clients: dict | None = None, source: str | None = None, progress=None) -> dict:
+    """여러 변수를 차례로 갱신. 동시에 두 번 돌지 않도록 잠근다(busy). source 를 주면 그 출처만(R-ONE·ECOS·KOSIS).
+    progress(결과) 를 주면 변수 하나가 끝날 때마다 부른다(CLI 진행 표시)."""
     if not REFRESH_LOCK.acquire(blocking=False):
         return {"status": "busy", "results": []}
     try:
@@ -346,8 +328,12 @@ def refresh_all(session: Session, var_ids: list[str] | None = None, force: bool 
                     clients[spec.source] = make_client(spec.source)
                 except ValueError as exc:  # 키 미설정
                     results.append({"id": spec.id, "status": "error", "error": str(exc)})
+                    if progress:
+                        progress(results[-1], len(results), len(specs))
                     continue
             results.append(refresh_variable(session, spec, trigger=trigger, force=force, client=clients[spec.source]))
+            if progress:
+                progress(results[-1], len(results), len(specs))
         status = "ok" if all(r["status"] in ("ok", "skipped") for r in results) else "partial"
         changed = sum(r.get("new", 0) + r.get("changed", 0) for r in results)
         return {"status": status, "checked_at": utc_now(), "changed": changed, "results": results}

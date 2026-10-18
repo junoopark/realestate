@@ -7,7 +7,7 @@
 ```
 한국부동산원 R-ONE ─┐                                   ┌─ GET /indicators/bundle ──▶ Vercel 대시보드(Home·Overview·동인)
 한국은행 ECOS ─────┼─▶ FastAPI 수집기 ─▶ Supabase PostgreSQL ─┼─ GET /indicators/{var} ──▶ demo.html · Swagger
-통계청 KOSIS(2차) ─┘   (정규화·UPSERT)   indicator_* 3개 테이블  └─ GET /indicators/status ─▶ 수집 모니터
+통계청 KOSIS ─────┘   (정규화·UPSERT)   indicator_* 3개 테이블  └─ GET /indicators/status ─▶ 수집 모니터
         ▲                                                           ▲
         │  하루 1회 GitHub Actions cron ─▶ POST /indicators/refresh (관리자 토큰)
         │  또는 python scripts/collect_indicators.py                │
@@ -62,6 +62,9 @@
 | V056 | 주택담보대출 금리(신규) | 한국은행 ECOS | `121Y006` / `BECBLA0302` | 연% · 월 · 전국 |
 | V004 · V031 · V032 · V035(2) · V036(2) · V038 | R-ONE 6개 (5단계 2차) + V002·V003·V026 서울 구 | 한국부동산원 R-ONE | `indicator_registry.py` 참고 (DFMBA `collect_rone.py` 와 같은 표) | 월 · 17개 시도 + 서울 구(화면에 있는 구) |
 | V044 · V046 · V047 · V048 · V049 · V050 · V057 · V059 · V060 · V061~V063 · V064 · V066 · V067 · V069 · V070 · V071 | ECOS 18개 (5단계 1차) | 한국은행 ECOS | `indicator_registry.py` 참고 (DFMBA `collect_ecos.py` 와 같은 표·항목) | 월·분기 · 전국 (V050 만 17개 시도) |
+| V009 · V010 · V011 · V012 · V013 · V015 · V017 · V021 · V022 · V023 · V024 · V072 · V074 · V076 | KOSIS 14개 (5단계 3차, 수집 단위 31개 → 화면 계열 43개) | 통계청 KOSIS (국토부·서울시 표 포함) | `indicator_registry.py` · `kosis_readers.py` 참고 (DFMBA `collect_kosis.py`·`prep_kosis_*.py` 와 같은 표·가공) | 월·반기·분기·연 · 17개 시도 + 서울 구 |
+
+**KOSIS 표별 가공 (5단계 3차)** — 표마다 지역 코드 체계가 달라 `kosis_readers.py` 의 읽는 방식(reader)으로 나눴다. 주민등록 표(V009~V012)는 행정표준코드로 시도·서울 구를 고르고, 2026-07 광주·전남 통합 뒤에는 통합코드 아래 광주 5개 구로 광주 = 5개 구 합계, 전남 = 통합 - 광주 를 복원한다. V011 은 1세별 인구를 더해 20–29세·30–39세·20–39세와 비중(%)을 만들고, V021 인허가는 월별 누계라 전월 누계를 뺀다. V015·V017 전국대비는 같은 해 전국 값으로 나누고, V024·V076 천 세대당은 그해 12월 주민등록세대수로 나눈다. V074 는 구계열이 2019Q4 에 끝나 2020Q1 부터 신계열(DT_1L9V121) x 0.9417(2019년 4개 분기 평균 비율)로 잇는다. 같은 표를 여러 수집 단위가 쓰면(예: V011 4개 계열) 클라이언트가 한 번만 부른다. DFMBA 원자료로 대조한 결과 43개 계열 약 3만 값이 기본 패널과 같았고, 다른 곳은 V012 광주·전남 2026-07~08 4칸뿐이었다(기본 패널은 통합 뒤 0 으로 오는 옛 코드를 그대로 썼고, 수집기는 복원값을 쓴다). V021~V023 의 2024년까지 빈 달 보완값과 V074 구계열 구간은 원자료에 없어 기본 패널 값을 그대로 둔다(2025년부터는 0 도 공표된다).
 
 5단계에서 데이터사전 51개 중 47개를 같은 방식으로 붙인다(ECOS 21 → R-ONE 12 → KOSIS 14). 실거래 2개는 예외(호출 한도 안에서 이후분만), 끝난 통계 2개(V034 · V077)는 적재값을 그대로 쓴다. 변수별 표는 계획서의 '변수별 수집 방식' 절.
 
@@ -224,7 +227,7 @@ indicator_series    (1) ──< indicator_series_values (N)     PK (series_id, r
 ## 6. 운영 절차
 
 ```powershell
-# 1) 키 설정: backend/.env 에 RONE_API_KEY, ECOS_API_KEY (KOSIS_API_KEY 는 2차)
+# 1) 키 설정: backend/.env 에 RONE_API_KEY, ECOS_API_KEY, KOSIS_API_KEY
 # 2) 실제 항목·지역 이름 확인 (처음 한 번, 변수별)
 python scripts/collect_indicators.py --probe V002
 # 3) 수집 → DB (없으면 backend/local.db)
@@ -240,11 +243,11 @@ fastapi dev backend/app/main.py      # http://127.0.0.1:8000/docs → /indicator
 python scripts/collect_indicators.py --export frontend/data/factor_live.json
 ```
 
-Supabase 연결은 `DATABASE_URL`(Session pooler) 만 바꾸면 된다(`database/README.md`). Render 환경변수에 `RONE_API_KEY`·`ECOS_API_KEY`·`POLICY_ADMIN_TOKEN` 을 넣고, GitHub 저장소 Secrets 에 `POLICY_API_BASE_URL`·`POLICY_ADMIN_TOKEN` 을 넣으면 `.github/workflows/collect-indicators.yml` 이 매일 09:40(KST) 수집을 호출한다. Render 무료 플랜이 잠들어 있어도 워크플로가 `/health` 로 먼저 깨운다.
+Supabase 연결은 `DATABASE_URL`(Session pooler) 만 바꾸면 된다(`database/README.md`). Render 환경변수에 `RONE_API_KEY`·`ECOS_API_KEY`·`KOSIS_API_KEY`·`POLICY_ADMIN_TOKEN` 을 넣고, GitHub 저장소 Secrets 에 `POLICY_API_BASE_URL`·`POLICY_ADMIN_TOKEN` 을 넣으면 `.github/workflows/collect-indicators.yml` 이 매일 09:40(KST) 수집을 호출한다. Render 무료 플랜이 잠들어 있어도 워크플로가 `/health` 로 먼저 깨운다.
 
 ## 7. 알려진 한계와 다음 단계
 
 - R-ONE 통계표의 항목명(`ITM_NM`)·지역명(`CLS_NM`)은 표마다 다르다. 레지스트리의 `item` 은 '지수' 부분 일치로 잡아 두었고, `--probe` 로 실제 이름을 보고 다르면 고친다. 응답 `Type=json` 의 한글 인코딩 선언이 빠진 사례가 보고돼 `resp.encoding = "utf-8"` 로 고정했다.
 - 일일 호출 한도(R-ONE `ERROR-337`)를 넘기지 않도록 사용자 요청 경로에서는 외부 API 를 부르지 않고, 수집도 변수당 하루 1회·증분(최근 12개월)으로 제한했다.
-- 2차: KOSIS 변수(V012·V023)는 `itm_id`·`objL1` 코드 확인 후 `enabled=True`. 서울 자치구(`scope=gu`) 계열은 R-ONE `CLS_FULLNM` 의 '서울 > 구' 경로를 쓰면 같은 구조로 붙일 수 있다.
+- KOSIS 는 한 번에 4만 셀까지만 준다. 넘으면 오류 31 로 멈추게 했다(예전처럼 '자료 없음' 으로 넘기지 않는다). 표가 커지면 레지스트리의 `chunk`(연 단위로 나눠 받기)를 줄인다.
 - 2단계에서 51개 변수 전체가 DB(기본 패널)에 들어갔다. 화면을 `set=all` 한 번으로 그리게 바꾸고 `factor_sample.json` 을 화면에서 빼는 일은 팀 프론트엔드 수정본을 반영할 때 함께 한다. 그 전까지 화면은 기본본을 먼저 그리고 Open API 변수만 덮어쓴다.

@@ -138,6 +138,7 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
     def build():
         metrics, missing, fetched = [], [], False
         live: dict[tuple, dict] = {}
+        fed = []
         with Session(get_engine()) as session:
             for vid in (live_ids if dataset == "all" else (requested or live_ids)):
                 spec = get_spec(vid)
@@ -152,7 +153,26 @@ def bundle(request: Request, response: Response, background: BackgroundTasks,
                     missing.append(vid)
                     continue
                 fetched = fetched or origin.startswith("api")
+                if dataset == "live" and spec.outputs:
+                    fed.append((spec, metric))  # 화면 계열에 이어붙이는 변수: 아래에서 그 계열(열 이름까지)을 그대로 준다
+                    continue
                 live[(metric["var"], metric["scope"])] = metric
+            if dataset == "live" and fed:
+                # 한 변수에 화면 계열이 여럿이면(V011 연령대 4개, V035 동·호수/면적 등) 변수·지역 단위만으로는 구분이 안 된다.
+                # 그래서 수집값을 이어붙인 기본 패널 계열을 열 이름(column)과 함께 준다. 패널이 비어 있으면 예전처럼 수집값만.
+                api = live_series(session, [spec for spec, _ in fed])
+                panel_live = [m for m in panel_metrics(session, sorted({spec.var_id for spec, _ in fed}), region_list, start)
+                              if f"{m['scope']}:{m['column']}" in api]
+                for m in panel_live:
+                    info = api[f"{m['scope']}:{m['column']}"]
+                    src = SOURCES.get(info["source"], {})
+                    m.update(live=True, origin="db(api)", fetched_at=info["fetched_at"], source=info["source_ref"],
+                             source_name=src.get("name", ""), source_url=src.get("url", ""))
+                covered = {i["spec"] for i in api.values()}
+                for spec, metric in fed:
+                    if spec.id not in covered:  # 이어붙일 패널 계열이 없으면(패널 미적재) 수집값 그대로
+                        live[(metric["var"], metric["scope"], spec.id)] = metric
+                live = {**{(m["var"], m["scope"], m["column"]): m for m in panel_live}, **live}
             if dataset == "all":
                 missing, used = [], set()
                 api = live_series(session, enabled_specs())

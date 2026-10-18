@@ -146,7 +146,8 @@ def test_get_indicator_lazy_fetches_then_serves_from_db(db):
         assert second.headers["cache-control"].startswith("public, max-age=") and second.headers["etag"]
         assert client.get("/indicators/V002", headers={"If-None-Match": second.headers["etag"]}).status_code == 304
         assert client.get("/indicators/V999").status_code == 404
-        assert client.get("/indicators/V012").status_code == 404  # enabled=False
+        assert client.get("/indicators/V034").status_code == 404  # 수집 안 함(종료 통계)
+        assert client.get("/indicators/V012").status_code == 503  # KOSIS 변수인데 이 테스트에는 키가 없다
 
 
 def test_bundle_and_status(db):
