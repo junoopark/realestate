@@ -880,6 +880,7 @@ code {
 .status.error   { border-color: var(--err-line); background: var(--err-bg); color: var(--err-ink); }
 .status.error::before { background: var(--err-line); }
 @keyframes pulse { 50% { opacity: 0.3; } }
+.status-retry { margin-left: auto; padding: 4px 10px; font-size: 13px; border-radius: 6px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
 
 .panel {
   background: var(--card-bg);

@@ -14,6 +14,10 @@ const I18N = {
 
     // 동인 탭 (factors.js)
     "factor.loadError": "동인 데이터를 불러오지 못했습니다 (data/drivers.json)",
+    "factor.loading": "지표 자료를 서버(DB)에서 불러오는 중입니다. 서버가 잠들어 있으면 30초쯤 걸릴 수 있습니다.",
+    "factor.apiError": "지표 자료를 서버에서 받지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    "factor.staleNotice": "서버에 연결하지 못해 이 브라우저에 보관한 자료({when})로 보여 드립니다.",
+    "factor.retry": "다시 시도",
 
     // 대시보드 페이지
     "index.title": "KHMI",
@@ -70,6 +74,10 @@ const I18N = {
 
     // Driver tabs (factors.js)
     "factor.loadError": "Failed to load driver data (data/drivers.json)",
+    "factor.loading": "Loading indicator data from the server (database). This can take about 30 seconds if the server is waking up.",
+    "factor.apiError": "Could not load indicator data from the server. Please try again shortly.",
+    "factor.staleNotice": "Could not reach the server — showing the copy saved in this browser ({when}).",
+    "factor.retry": "Retry",
 
     // Dashboard page
     "index.title": "KHMI",

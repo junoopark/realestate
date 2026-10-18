@@ -1,5 +1,5 @@
 // 차트 옆 설명 문장 만들기 (index.html 전용, charts.js 다음에 읽는다)
-// 문장에 들어가는 숫자는 모두 data/factor_sample.json 에서 계산한다. 원인·전망 같은 해석은 쓰지 않고,
+// 문장에 들어가는 숫자는 모두 지표 API(/indicators/bundle?set=all, DB) 에서 받은 계열로 계산한다. 원인·전망 같은 해석은 쓰지 않고,
 // 해석이 필요한 곳은 데이터사전(drivers.json)의 '예상 부호'만 근거로 쓴다.
 
 // 변화 표현: 월별 → 전년동월, 그 밖 → 전년동기
@@ -46,7 +46,7 @@ function signReading(v, change) {
 }
 
 // 차트 한 개의 머리기사와 본문 문장들
-// v: drivers.json 의 변수, m: factor_sample 계열, region: 지역 이름
+// v: drivers.json 의 변수, m: 지표 계열(factor_sample.json 과 같은 모양), region: 지역 이름
 function describe(v, m, region) {
   const l = latestOf(m, region);
   const name = m.label.replace(/^(국토부실거래|주민등록인구|인구이동|주택건설|소비자동향조사|부동산원)\s*/, "").replace(/\((구지수연결|권역역산 학습용)\)$/, "");

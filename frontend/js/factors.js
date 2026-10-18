@@ -1,8 +1,9 @@
 // index.html 의 화면 전환과 '부동산 대시보드' (Overview + 6개 동인)
-// - data/drivers.json      : 동인·변수 설명 (데이터사전 엑셀의 동인분류_가이드·Driver_Map·Variable_Master)
-// - data/factor_sample.json: 값의 기본본 (DFMBA 전처리본, scripts/build_factor_sample.py 로 생성) — 먼저 그린다
-// - API /indicators/bundle : 백엔드가 R-ONE·ECOS Open API 에서 받아 DB 에 캐시한 실제 값 — 도착하면 같은 변수를 덮어쓴다
-//   (서버가 잠들어 있거나 실패하면 기본본으로 계속 보여 준다)
+// - data/drivers.json            : 동인·변수 설명 (데이터사전 엑셀의 동인분류_가이드·Driver_Map·Variable_Master)
+// - API /indicators/bundle?set=all: 값은 모두 백엔드 DB(Supabase)에서 읽는다. 51개 변수·106개 계열 = 기본 패널(DFMBA 전처리본을
+//   적재한 것) + Open API(R-ONE·ECOS·KOSIS·국토부 실거래)로 매일 갱신되는 계열. 응답은 CDN 이 캐시한다.
+// - 마지막으로 받은 응답을 브라우저(localStorage)에 보관해, 다시 오면 바로 그리고 새 응답이 오면 바꾼다.
+//   서버에 닿지 않으면 보관본을 그대로 보여 주고 안내한다. data/factor_sample.json 은 DB 적재용 원본이라 화면에서는 읽지 않는다.
 // 주소 끝의 #id 로 화면을 고른다: #home(기본), #overview, #demand, #supply, #finance, #rental, #trigger, #macro
 // Home 화면은 home.js, 숫자 표시·차트는 charts.js, 설명 문장은 notes.js 에 있다.
 
@@ -476,7 +477,7 @@ function renderFactor(driver) {
   const cards = list.map(variableCard);
   grid.append(...cards);
   wrap.append(grid);
-  wrap.append(el("p", "data-note", `자료: ${sample._source}. 생성 ${sample.generated.split("|")[0].trim()}. 전처리본의 보완값이 포함되어 있으며 각 차트의 '해설·출처'에서 방법을 확인할 수 있습니다. 해설 문장은 수치에서 자동으로 만들며, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.`));
+  wrap.append(el("p", "data-note", `${dataSourceNote()} 전처리본의 보완값이 포함되어 있으며 각 차트의 '해설·출처'에서 방법을 확인할 수 있습니다. 해설 문장은 수치에서 자동으로 만들며, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.`));
   dashView.append(wrap);
 
   // 너비가 정해진 뒤에 그린다
@@ -519,11 +520,17 @@ function renderDashOverview() {
     if (h) toDraw.push([plot, h]);
   }
   wrap.append(grid);
-  wrap.append(el("p", "data-note", `자료: ${sample._source}. 해설 문장은 수치에서 자동으로 만들며, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.`));
+  wrap.append(el("p", "data-note", `${dataSourceNote()} 해설 문장은 수치에서 자동으로 만들며, 방향 해석은 데이터사전의 예상 부호만 근거로 합니다.`));
   dashView.append(wrap);
   for (const [plot, h] of toDraw) {
     drawMetric(plot, h.m, [{ r: h.region, slot: 0 }], { title: shortTitle(h.m), height: 220, source: sourceLine(h.v, h.m) });
   }
+}
+// 자료 출처 한 줄: DB 기본 패널 + Open API 매일 갱신
+function dataSourceNote() {
+  const base = sample.generated ? sample.generated.split("|")[0].trim() : "";
+  const last = sample.live.lastFetched ? sample.live.lastFetched.slice(0, 10) : "";
+  return `자료: KHMI 백엔드 DB(Supabase) — DFMBA 전처리본${base ? `(${base})` : ""} 기본 패널 + Open API 매일 갱신 ${sample.live.count}개 계열${last ? `(마지막 수집 ${last})` : ""}.`;
 }
 const shortTitle = (m) => m.label.replace(/^(국토부실거래|주민등록인구|인구이동|주택건설|소비자동향조사|부동산원)\s*/, "").replace(/\((구지수연결|권역역산 학습용)\)$/, "");
 
@@ -550,61 +557,133 @@ function showView() {
   }
 }
 
-// 백엔드의 실제 수집값(/indicators/bundle)을 받아 같은 변수·지역단위·열 이름의 계열을 덮어쓴다. 실패하면 조용히 기본본을 유지한다.
-const LIVE_TIMEOUT_MS = 20000; // Render 무료 플랜은 첫 요청이 느릴 수 있다 — 그동안은 기본본을 보여 준다
-async function overlayLiveIndicators() {
-  if (typeof API_BASE_URL === "undefined" || !sample) return;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), LIVE_TIMEOUT_MS);
+// ── 지표 값 불러오기 (API → 화면) ─────────────────────
+const BUNDLE_CACHE_KEY = "khmiBundle:v1";
+const BUNDLE_TIMEOUT_MS = 60000; // Render 무료 플랜이 잠들어 있으면 첫 응답에 30~50초 걸릴 수 있다 (보통은 CDN 에서 바로 온다)
+let bundleSignature = "";
+
+// 응답(BundleOut)을 화면이 쓰던 모양(sample)으로 바꾼다
+function toSample(bundle) {
+  const metrics = (bundle.metrics || []).map((m) => {
+    if (!m.live || !m.fetched_at) return m;
+    const when = m.fetched_at.slice(0, 16).replace("T", " ") + " UTC";
+    return { ...m, method: `${m.method || "원자료 그대로"} · Open API 매일 갱신 (마지막 수집 ${when})` };
+  });
+  const live = metrics.filter((m) => m.live);
+  return {
+    regions: bundle.regions || { sido: [], gu: [] },
+    aliases: bundle.aliases || {},
+    metrics,
+    generated: bundle.panel?.generated || "",
+    loadedAt: bundle.panel?.loaded_at || "",
+    live: { count: live.length, lastFetched: live.reduce((a, m) => (m.fetched_at > a ? m.fetched_at : a), "") },
+  };
+}
+
+// 같은 내용이면 다시 그리지 않으려고 쓰는 간단한 지문 (계열 수 · 마지막 수집 시각 · 패널 적재 시각)
+function signatureOf(bundle) {
+  const ms = bundle.metrics || [];
+  const last = ms.reduce((a, m) => (m.fetched_at && m.fetched_at > a ? m.fetched_at : a), "");
+  return `${ms.length}|${last}|${bundle.panel?.loaded_at || ""}`;
+}
+
+function readCachedBundle() {
   try {
-    const res = await fetch(`${API_BASE_URL}/indicators/bundle`, { signal: controller.signal });
+    const saved = JSON.parse(localStorage.getItem(BUNDLE_CACHE_KEY) || "null");
+    return saved?.bundle?.metrics?.length ? saved : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveCachedBundle(bundle) {
+  try {
+    localStorage.setItem(BUNDLE_CACHE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), bundle }));
+  } catch (e) {} // 저장 공간이 모자라거나 막혀 있으면 보관하지 않는다
+}
+
+async function fetchBundle() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), BUNDLE_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_BASE_URL}/indicators/bundle?set=all`, { signal: controller.signal });
     if (!res.ok) throw new Error(`bundle: HTTP ${res.status}`);
     const bundle = await res.json();
-    let replaced = 0;
-    for (const live of bundle.metrics || []) {
-      if (!live.periods?.length) continue;
-      const when = live.fetched_at ? live.fetched_at.slice(0, 16).replace("T", " ") + " UTC" : "";
-      live.method = `${live.method || "원자료 그대로"} · Open API 수집본 (${live.origin}${when ? `, ${when}` : ""})`;
-      // 한 변수에 계열이 여럿이면(연령대·동호수/면적 등) 열 이름(column)까지 맞춘다
-      const i = sample.metrics.findIndex((m) => m.var === live.var && m.scope === live.scope && (!live.column || m.column === live.column));
-      if (i >= 0) sample.metrics[i] = live;
-      else sample.metrics.push(live);
-      replaced++;
-    }
-    sample.live = { generated: bundle.generated, origin: bundle.origin, count: replaced, missing: bundle.missing || [] };
-    if (replaced) showView(); // 이미 그린 화면을 실제 값으로 다시 그린다
-    console.info(`[KHMI] 실시간 지표 ${replaced}개 반영 (${bundle.origin})`, sample.live);
-  } catch (err) {
-    console.info("[KHMI] 실시간 지표를 받지 못해 기본본(factor_sample.json)을 사용합니다:", err.message);
+    if (!bundle.metrics?.length) throw new Error("bundle: 계열이 비어 있습니다 (DB 기본 패널 미적재)");
+    return bundle;
   } finally {
     clearTimeout(timer);
   }
 }
 
+// 머리띠 아래 상태 줄 (불러오는 중 · 보관본 사용 · 실패). 다 받으면 지운다
+function showDataStatus(kind, text, retry) {
+  let wrap = document.querySelector("#data-status");
+  if (!wrap) {
+    wrap = el("div", "container");
+    wrap.id = "data-status";
+    document.querySelector(".site-header").after(wrap);
+  }
+  const p = el("p", `status ${kind}`);
+  p.setAttribute("role", "status");
+  p.append(el("span", null, text));
+  if (retry) {
+    const b = el("button", "status-retry", t("factor.retry"));
+    b.type = "button";
+    b.addEventListener("click", retry);
+    p.append(b);
+  }
+  wrap.replaceChildren(p);
+}
+function hideDataStatus() {
+  document.querySelector("#data-status")?.remove();
+}
+
+let firstPaint = true;
+function useBundle(bundle) {
+  bundleSignature = signatureOf(bundle);
+  sample = toSample(bundle);
+  // 예전에 저장된 시도 선택이 지금 자료에 없으면 기본값으로
+  state.sidoSlots = state.sidoSlots.slice(0, MAX_SIDO).map((r) => (sample.regions.sido.includes(r) ? r : null));
+  while (state.sidoSlots.length < MAX_SIDO) state.sidoSlots.push(null);
+  if (!state.sidoSlots.some(Boolean)) state.sidoSlots = ["서울", "경기", "부산"];
+  showView();
+  if (firstPaint) window.scrollTo(0, 0);
+  firstPaint = false;
+}
+
+async function loadIndicators() {
+  const cached = readCachedBundle();
+  if (cached && !sample) useBundle(cached.bundle); // 다시 온 사람: 보관본으로 바로 그린다
+  if (!sample) showDataStatus("loading", t("factor.loading"));
+  try {
+    const fresh = await fetchBundle();
+    if (signatureOf(fresh) !== bundleSignature) useBundle(fresh); // 바뀐 게 있을 때만 다시 그린다
+    saveCachedBundle(fresh);
+    hideDataStatus();
+    console.info(`[KHMI] 지표 ${sample.metrics.length}개 계열 (Open API 매일 갱신 ${sample.live.count}개) · ${fresh.origin}`);
+  } catch (err) {
+    console.warn("[KHMI] 지표 API 응답을 받지 못했습니다:", err.message);
+    const retry = () => loadIndicators();
+    if (sample) showDataStatus("error", t("factor.staleNotice", { when: (cached?.savedAt || "").slice(0, 10) }), retry);
+    else showDataStatus("error", t("factor.apiError"), retry);
+  }
+}
+
 async function initFactors() {
   try {
-    const [d, s] = await Promise.all(
-      ["data/drivers.json", "data/factor_sample.json"].map(async (url) => {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-        return res.json();
-      }),
-    );
+    const res = await fetch("data/drivers.json");
+    if (!res.ok) throw new Error(`data/drivers.json: HTTP ${res.status}`);
+    const d = await res.json();
     drivers = d.drivers;
     variables = d.variables;
-    sample = s;
-    // 예전에 저장된 시도 선택이 지금 자료에 없으면 기본값으로
-    state.sidoSlots = state.sidoSlots.slice(0, MAX_SIDO).map((r) => (sample.regions.sido.includes(r) ? r : null));
-    while (state.sidoSlots.length < MAX_SIDO) state.sidoSlots.push(null);
-    if (!state.sidoSlots.some(Boolean)) state.sidoSlots = ["서울", "경기", "부산"];
   } catch (err) {
     console.error(err);
     document.querySelector(".site-header").after(el("p", "factor-error", t("factor.loadError")));
     return;
   }
-  showView();
-  window.scrollTo(0, 0);
-  overlayLiveIndicators(); // 기다리지 않는다 — 도착하면 덮어쓰고 다시 그린다
+  showView(); // 값이 오기 전에도 메뉴·빈 화면은 맞춰 둔다
+  await loadIndicators();
 }
 
 // 이미 같은 화면에 있을 때 로고를 눌러도 맨 위로 (같은 주소면 hashchange 가 일어나지 않는다)
