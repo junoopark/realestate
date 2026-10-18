@@ -6,8 +6,8 @@
 인증키는 URL 파라미터로 가므로 오류 메시지에 URL을 그대로 남기지 않는다.
 
 이 클라이언트를 쓰는 곳 (R-ONE 호출 코드는 이 파일 하나로 통일)
-- rone_collector.py      월세지수 원값 적재      rows · tables · table_data(기준월 1개)
 - indicator_pipeline.py  정량 지표 레지스트리    fetch_rows(기간 범위) · latest_periods(--probe)
+- tables · table_data 는 통계표 목록·원자료를 직접 확인할 때 쓴다 (R-ONE 수집은 indicator_pipeline 하나로 한다)
 """
 
 import os
