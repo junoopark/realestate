@@ -81,8 +81,13 @@ function variableProse(v) {
   return parts.join(" ");
 }
 
-// 자료 표기: '자료: 출처 · DFMBA 전처리본'
+// 값이 어디서 왔는지: 매일 수집하는 계열(live)은 KHMI DB, 공표가 끝나 처음 적재값만 쓰는 계열은 DFMBA 전처리본
+function dataBase(m) {
+  return m?.live ? "KHMI DB(Open API 매일 갱신)" : "DFMBA 전처리본(1차_결측보완)";
+}
+
+// 자료 표기: '자료: 출처, KHMI DB(…)' 또는 '자료: 출처, DFMBA 전처리본(…)'
 function sourceLine(v, m) {
   const src = (m?.source || v?.source || "").split(/\s*[\/|]\s*/)[0];
-  return `자료: ${src ? src + ", " : ""}DFMBA 전처리본(1차_결측보완)`;
+  return `자료: ${src ? src + ", " : ""}${dataBase(m)}`;
 }
