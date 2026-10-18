@@ -1,7 +1,7 @@
 // Home 화면 (index.html #home): KHMI Dashboard(주택시장 가격 동향 · 이달의 차트 · 주요 정책 동향) + 시도별 가격 상승률 지도
 // factors.js 가 자료를 읽은 뒤 renderHome() 을 부른다. 차트·숫자 함수는 charts.js, 문장은 notes.js 에 있다.
 // - data/korea_sido.json : 17개 시도 경계 SVG 경로 (scripts/build_korea_map.py, 통계청 SGIS 2018 경계)
-// - data/policies.json   : 부동산 정책 페이지와 같은 정책 정리 자료
+// - 정책 정리 자료        : 부동산 정책 페이지와 같은 방식 — 저장본(data/policies.json)을 먼저 그리고 API(/policies) 응답으로 바꾼다
 
 let koreaMap = null;
 let policyData = null;
@@ -346,7 +346,7 @@ function renderPolicies() {
   box.replaceChildren();
   const items = (policyData?.policies || []).slice().sort((a, b) => (a.published_at < b.published_at ? 1 : -1)).slice(0, 4);
   if (!items.length) {
-    box.append(el("p", "chart-empty", "정책 자료를 불러오지 못했습니다 (data/policies.json)"));
+    box.append(el("p", "chart-empty", "정책 자료를 불러오지 못했습니다"));
     return;
   }
   for (const p of items) {
@@ -374,11 +374,16 @@ function renderHome() {
 
 // 지도 경계·정책 자료는 Home 에서만 쓰므로 따로 읽는다 (실패해도 나머지 화면은 그린다)
 (async () => {
-  const load = (url) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  [koreaMap, policyData] = await Promise.all([load("data/korea_sido.json"), load("data/policies.json")]);
+  koreaMap = await fetch("data/korea_sido.json").then((r) => (r.ok ? r.json() : null)).catch(() => null);
   if (sample && !homeView.hidden) {
     mapTools();
     renderMap();
-    renderPolicies();
   }
 })();
+// 정책 자료는 부동산 정책 페이지와 같은 함수(qualitative-common.js)로 읽는다.
+// 진행 상황은 적지 않는다(null): Home 의 #data-status 는 지표 상태 줄이다
+Qual.loadContent("/policies", "policies.json", (value) => {
+  if (!Array.isArray(value.policies)) throw new Error("Invalid policy data");
+  policyData = value;
+  if (sample && !homeView.hidden) renderPolicies();
+}, null);

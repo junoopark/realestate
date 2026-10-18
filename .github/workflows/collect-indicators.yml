@@ -34,6 +34,9 @@ concurrency:
 
 jobs:
   rtms:
+    # 정기 수집은 API·DB 를 운영하는 저장소(ksroh1913/realestate_roh, README '배포' 참고)에서 돈다.
+    # 팀 저장소에는 비밀값이 없어 실행해도 건너뛰기만 하므로, 초록 '성공' 대신 '건너뜀'으로 보이게 한다.
+    if: github.repository != 'junoopark/realestate'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -58,7 +61,7 @@ jobs:
 
   collect:
     needs: rtms
-    if: always()
+    if: always() && github.repository != 'junoopark/realestate'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

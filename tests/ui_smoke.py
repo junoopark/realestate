@@ -64,6 +64,13 @@ def main():
         expect(page.locator(".source-card")).to_have_count(6)
         check_overflow(page)
 
+        # Home '주요 정책 동향'도 정책 페이지처럼 저장본을 먼저 그리고 API(/policies) 응답으로 바꾼다
+        with page.expect_response(lambda r: r.url.endswith("/policies") and r.ok):
+            page.goto(BASE + "index.html", wait_until="domcontentloaded")
+        expect(page.locator("#home-policies .policy-item")).to_have_count(4)
+        # 지표 상태 줄(#data-status, 다 받으면 사라짐)에 정책 문구가 섞이지 않는다
+        assert not page.evaluate("document.querySelector('#data-status')?.textContent.includes('출처 확인')")
+
         for width in [390, 760]:
             page.set_viewport_size({"width": width, "height": 844})
             for path, ready in [("learn.html", ".term-card"), ("learn.html#transactions", ".process-step"), ("learn.html#investment", ".metric-card"), ("policies.html", ".policy-card"), ("policies.html#monitor", ".monitor-card"), ("index.html", "#home-map .map-region"), ("index.html#overview", ".ov-item"), ("index.html#macro", ".var-card"), ("about.html", ".about-list")]:

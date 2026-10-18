@@ -84,7 +84,7 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 | 웹 화면 | HTML · CSS · JavaScript (빌드 없음), 자체 SVG 차트, 라이트 / 다크 모드 |
 | API 서버 | Python · FastAPI · SQLAlchemy · Pydantic |
 | 데이터베이스 | PostgreSQL (Supabase), 행 수준 보안(RLS) 적용 |
-| 데이터 수집 | R-ONE · ECOS · KOSIS Open API 수집기(지표 레지스트리), R-ONE 월세지수 적재, 정책 발표 수집기, [DFMBA](https://github.com/ksroh1913/DFMBA) 전처리 파이프라인 |
+| 데이터 수집 | R-ONE · ECOS · KOSIS Open API 수집기(지표 레지스트리), 정책 발표 수집기, [DFMBA](https://github.com/ksroh1913/DFMBA) 전처리 파이프라인 |
 
 ### 공개 API
 

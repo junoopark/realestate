@@ -64,11 +64,12 @@ window.Qual = (() => {
     } finally { clearTimeout(timer); }
   }
   // 저장된 검증 자료를 즉시 보여주고 서버가 응답하면 같은 데이터 계약으로 갱신한다.
-  async function loadContent(endpoint, filename, onData) {
-    const status = document.querySelector("#data-status");
+  // status 를 null 로 주면 진행 상황을 적지 않는다 (Home 은 #data-status 를 지표 상태 줄로 쓴다).
+  async function loadContent(endpoint, filename, onData, status = document.querySelector("#data-status")) {
     let hasData = false;
     let date = "";
     function setStatus(message, retry = false) {
+      if (!status) return;
       status.replaceChildren(el("span", "", message));
       if (retry) {
         const btn = el("button", "qual-btn", "서버 다시 확인");
