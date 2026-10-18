@@ -277,7 +277,8 @@ def refresh_variable(session: Session, spec: IndicatorSpec, trigger: str = "cli"
     if var is None:
         sync_registry(session)
         var = session.get(IndicatorVariable, spec.id)
-    if not force and not is_stale(var):
+    # 실거래(MOLIT)는 외부 API 가 아니라 DB(rtms_progress) 를 합치는 일이라 늘 다시 계산한다 — 새로 받은 건수가 바로 반영되게
+    if not force and spec.source != "MOLIT" and not is_stale(var):
         return {"id": spec.id, "status": "skipped", "reason": "fresh", "last_period": var.last_period, "last_fetched_at": var.last_fetched_at}
 
     started, t0 = utc_now(), time.perf_counter()

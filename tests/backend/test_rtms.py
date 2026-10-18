@@ -144,3 +144,14 @@ def test_molit_spec_updates_panel_and_provisional(db, monkeypatch):
         assert ms["sido"]["series"]["세종"] == [10.0, 12.0, 13.0]  # 8월은 수정, 9월은 새로, 10월(이번 달)은 내지 않음
         assert ms["gu"]["series"]["강남구"] == [20.0, 21.0, 30.0]
         assert s.get(IndicatorSeries, f"sido:{col}").provisional_from == "2026-07"  # 3개월 [7,8,9] → 7월부터
+
+
+def test_molit_recomputes_even_when_recently_run(db, monkeypatch):
+    """실거래 합계는 DB 만 읽으므로 '신선함' 으로 건너뛰지 않는다 — 방금 받은 건수가 같은 날 바로 반영돼야 한다."""
+    monkeypatch.setattr(pipeline, "today_period", lambda freq="M": "2026-10" if freq == "M" else "2026")
+    with Session(get_engine()) as s:
+        spec = pipeline.get_spec("V007")
+        assert pipeline.refresh_variable(s, spec, client="rtms_progress")["status"] == "ok"  # 처음: 건수 없음
+        rtms._save(s, "apt_trade", [(SEJONG, "202609", rtms.count_rows("apt_trade", [{}] * 4), 1)])
+        r = pipeline.refresh_variable(s, spec, client="rtms_progress")  # force 없이 곧바로 다시
+        assert r["status"] == "ok" and r["new"] == 1 and r["last_period"] == "2026-09"
