@@ -9,6 +9,7 @@ name: Collect quantitative indicators
 # 비밀값: POLICY_API_BASE_URL (예: https://realestate-xxxx.onrender.com), POLICY_ADMIN_TOKEN (정책 수집과 공용)
 #         SITE_BASE_URL (선택, 예: https://www.khmi.kr) — 있으면 수집 뒤 화면 주소의 /api 를 불러 CDN 캐시를 미리 채운다(예열)
 #         DATABASE_URL · DATA_GO_KR_API_KEY (실거래용) — 없으면 1) 은 건너뛴다
+#         POLICY_API_BASE_URL 의 백엔드에 R-ONE·ECOS·KOSIS 키가 하나도 없으면 2) 도 건너뛴다(실패로 표시하지 않음)
 # 변수(선택): RTMS_BUDGET — 실거래 유형 1개당 하루 호출 상한 (기본 1000. 운영계정이면 늘려도 된다)
 
 on:
@@ -101,8 +102,21 @@ jobs:
               except requests.RequestException:
                   pass
               time.sleep(15)
+          # 이 백엔드에 출처별 API 키가 있는지 먼저 본다. 키가 하나도 없으면 지표 수집을 맡지 않는 서버로 보고 건너뛴다
+          # (예: 수집은 다른 저장소의 Actions 가 맡고, 이 저장소의 비밀값은 정책 수집용 서버를 가리키는 경우)
+          keys = {}
+          try:
+              keys = requests.get(base + '/indicators/status', timeout=60).json().get('keys') or {}
+          except (requests.RequestException, ValueError, AttributeError):
+              pass
+          if keys and not any(keys.get(s) for s in ('R-ONE', 'ECOS', 'KOSIS')):
+              print('::notice::Skipped: this backend has no R-ONE/ECOS/KOSIS API keys, so it does not collect indicators.')
+              sys.exit(0)
           failed, changed = False, 0
           sources = ['R-ONE', 'ECOS', 'KOSIS', 'MOLIT'] if not params.get('vars') else [None]
+          for s in [s for s in sources if s and keys and not keys.get(s, True)]:
+              print(f'::notice::{s}: skipped (no API key on the backend).')
+          sources = [s for s in sources if not s or not keys or keys.get(s, True)]
           for source in sources:  # 한 요청에 47개를 다 받으면 길어져 출처별로 나눈다
               query = dict(params, **({'source': source} if source else {}))
               try:

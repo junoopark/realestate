@@ -129,12 +129,21 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 
 ---
 
-## 개발 테스트 배포 (`feat/quant-indicators`)
-
-정량 지표 파이프라인을 개인 계정(Vercel · Render · Supabase)에서 먼저 확인하는 테스트 배포입니다. 위 서비스(www.khmi.kr)와는 별개이며, main에 합칠 때 이 절은 빼고 `frontend/vercel.json`의 rewrite 목적지와 `frontend/js/config.js`의 `API_DOCS_URL`을 팀 Render 주소로 바꿉니다.
+## 서비스 주소
 
 | 항목 | 주소 |
 |---|---|
+| 대시보드 | https://www.khmi.kr |
+| API 연동 실습 페이지 | https://www.khmi.kr/demo.html |
+| CDN 경유 API (화면이 부르는 주소) | https://www.khmi.kr/api/indicators/bundle?set=all |
+| Swagger UI | https://realestate-roh-api.onrender.com/docs |
+| 지표 수집 상태 | https://realestate-roh-api.onrender.com/indicators/status |
+
+- 웹 화면은 팀 Vercel 이 이 저장소 main 을 배포합니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버(Render `realestate-roh-api`)로 넘기고 응답을 CDN 에 캐시합니다.
+- API 서버와 지표 DB(Supabase)는 지표 담당 계정에서 운영하며, 매일 수집(GitHub Actions)도 그 계정의 포크([ksroh1913/realestate_roh](https://github.com/ksroh1913/realestate_roh))에서 돕니다. 백엔드 변경은 그 포크의 `feat/indicator-api` 에 반영되면 배포됩니다.
+- Google 로그인과 이용 기록(`activity_logs`)은 화면이 팀 Supabase 에 직접 기록합니다.
+
+---|---|
 | 대시보드 | https://realestateroh-frontend.vercel.app |
 | API 연동 실습 페이지 | https://realestateroh-frontend.vercel.app/demo.html |
 | Swagger UI | https://realestate-roh-api.onrender.com/docs |

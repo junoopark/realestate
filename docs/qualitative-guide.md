@@ -81,7 +81,7 @@ Render의 Root Directory가 `backend`이므로 같은 검토본을 `backend/data
 
 ## 주요 API
 
-전체 기본 주소는 로컬 `http://127.0.0.1:8000`, 배포 `https://realestate-qr7h.onrender.com`입니다. 현재 구현을 배포한 뒤 배포 API를 사용할 수 있습니다.
+전체 기본 주소는 로컬 `http://127.0.0.1:8000`, 배포 `https://www.khmi.kr/api`(Vercel CDN 경유, `frontend/vercel.json`)입니다.
 
 | 메서드·경로 | 입력 | 응답 |
 |---|---|---|
