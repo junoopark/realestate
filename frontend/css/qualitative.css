@@ -118,7 +118,6 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
 }
 @media (max-width: 700px) {
   .qual-page .site-header { padding: 13px 18px; }
-  .qual-page .header-right { flex-wrap: nowrap; width: 100%; }
   /* 머리 메뉴 크기는 style.css 의 공통 규칙(주요 메뉴 4개)이 정한다 */
   .qual-main { padding: 0 20px; }
   .qual-hero { padding-top: 32px; }
@@ -150,9 +149,6 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
   .process-list > li::before { width: 28px; height: 28px; font-size: 10px; }
   .process-step { padding: 16px; }
   .method-steps { grid-template-columns: repeat(2,1fr); }
-}
-@media (max-width: 380px) {
-  .qual-page .header-right { flex-wrap: wrap; }   /* style.css 와 같이: 메뉴만으로 한 줄이 차면 로그인·테마 버튼은 다음 줄로 */
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 
