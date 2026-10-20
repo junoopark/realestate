@@ -4,7 +4,7 @@
 
 [www.khmi.kr](https://www.khmi.kr)
 
-KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 통계를 한곳에 모아, 차트와 짧은 해설로 보여주는 주택시장 정보 서비스입니다. 서울 자치구 아파트 월세 리스크를 중심으로, 임대시장에 영향을 주는 지표를 **6개 동인(driver)** 으로 나누어 보여줍니다.
+KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 통계를 한곳에 모아, 차트와 짧은 해설로 보여주는 주택시장 정보 서비스입니다. 17개 시·도와 서울 자치구의 주택 임대시장을 중심으로, 임대시장에 영향을 주는 지표를 **6개 동인(driver)** 으로 나누어 보여줍니다.
 
 ---
 

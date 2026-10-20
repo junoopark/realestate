@@ -195,6 +195,8 @@ th { text-align: left; font-weight: 650; }
 .policy-notes { gap: 38px; padding: 25px 0; border-top: 1px solid var(--line); }
 .policy-notes p { font-size: 18px; color: var(--muted); line-height: 1.7; }
 .policy-notes strong { color: var(--ink); }
+.policy-notes.three { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.policy-notes.three p { font-size: 17px; }
 .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 .schedule-grid article { padding: 27px 34px; border: 1px solid var(--line); border-top: 4px solid var(--blue); background: #f9fbfe; }
 .schedule-grid article:last-child { border-top-color: var(--orange); background: #fffaf7; }
@@ -530,5 +532,6 @@ dialog > p { color: var(--muted); font-size: 13px; margin: 8px 0 18px; }
   #deck .slide-head h2 { font-size: 43px; }
   #deck .slide::after { bottom: 30px; }
   #deck .slide .two-col { grid-template-columns: 1fr 1fr; }
+  #deck .slide .policy-notes.three { grid-template-columns: repeat(3, 1fr); }
   #deck .slide a { text-decoration: none; }
 }
