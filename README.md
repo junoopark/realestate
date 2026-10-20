@@ -30,6 +30,9 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 ### About · 부동산 기초
 - 사이트 구성, 데이터와 방법, 해설 규칙
 - 부동산 기초 학습 자료 — 용어, 매매 · 전세 · 월세 계약 절차, 부동산 개발과 투자 심사
+- [프로젝트 발표](https://www.khmi.kr/presentation.html) — 만든 이유 → 화면 시연 → 데이터 수집·API·DB → 전체 아키텍처 → 사업과 다음 단계. 본문 16장과 API·DB 문서 부록 3장으로 구성합니다.
+
+발표 페이지는 `frontend/presentation.html`, 전용 스타일과 동작은 `frontend/css/presentation.css`·`frontend/js/presentation.js`에서 관리합니다. `←`·`→`로 이동하고 `N`은 발표 메모, `F`는 전체 화면, `O`는 전체 읽기 보기입니다. 모바일은 읽기 보기로 시작하며 인쇄 시 전체 슬라이드를 A4 가로로 출력합니다. 화면 캡처와 구현 설명의 확인일은 2026-10-20입니다.
 
 ---
 
