@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KHMI 프로젝트 발표: 만든 이유, 서비스 시연, 공공 데이터 수집, API·DB와 클라우드 아키텍처, 앞으로의 계획.">
-  <title>KHMI 프로젝트 발표 · 클라우드컴퓨팅실습 Team2</title>
+  <meta name="description" content="KHMI 프로젝트 설명: 만든 이유, 화면 사용법, 공공 데이터 수집, API·DB와 클라우드 아키텍처, 앞으로의 계획.">
+  <title>KHMI 프로젝트 설명 · 서비스와 기술 구성</title>
   <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -112,7 +112,7 @@
 
       <section class="slide" id="policy-pipeline" data-title="정책 수집 3곳 · RSS와 공개 웹페이지" data-chapter="백엔드 · 데이터" data-page="09">
         <header class="slide-head compact"><p class="eyebrow">QUALITATIVE DATA / 공식 발표를 같은 흐름으로</p><h2>정책 수집 기관 3곳,<br>RSS와 공개 보도자료를 함께 사용합니다.</h2></header>
-        <div class="agency-row"><article><span class="badge">RSS</span><h3>국토교통부</h3><p>주택·공급·임대차 발표</p></article><article><span class="badge">RSS</span><h3>행정안전부</h3><p>지방·주거 관련 발표</p></article><article><span class="badge orange-badge">HTML</span><h3>금융위원회</h3><p>대출·가계부채·금융 정책</p></article></div>
+        <div class="agency-row"><article><span class="badge">RSS</span><h3>국토교통부</h3><p>주택·공급·임대차 발표</p></article><article><span class="badge">RSS</span><h3>행정안전부</h3><p>지방·주거 관련 발표</p></article><article><span class="badge orange-badge">웹 크롤링</span><h3>금융위원회</h3><p>대출·가계부채·금융 정책</p></article></div>
         <div class="policy-pipeline"><div><b>발표 후보</b><span>제목·날짜·원문 URL</span></div><span aria-hidden="true">→</span><div><b>정책 선별</b><span>주택 관련성·변경 내용</span></div><span aria-hidden="true">→</span><div><b>원문 발췌</b><span>핵심 문장 최대 3개</span></div><span aria-hidden="true">→</span><div><b>DB와 화면</b><span>자동 요약·검토 자료 구분</span></div></div>
         <div class="two-col policy-notes"><p><strong>왜 RSS인가?</strong><br>기관마다 페이지 구조와 접근 제약이 달라, 제공되는 공식 피드로 발표 목록을 안정적으로 확인합니다.</p><p><strong>원문을 읽지 못하면?</strong><br>임의로 요약하지 않고 다음 실행에서 재시도합니다. 공식 본문·첨부 PDF를 제한적으로 읽습니다.</p></div>
         <p class="takeaway orange">추가 AI API 비용 없이, <strong>출처로 돌아갈 수 있는 정책 요약</strong>을 만듭니다.</p>
