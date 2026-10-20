@@ -46,7 +46,12 @@ def test_rejects_nonofficial_links_and_xml_entities():
         collector.parse_rss(b'<!DOCTYPE rss [<!ENTITY bad "expand">]><rss><channel><item><title>&bad;</title></item></channel></rss>', SOURCES[0])
 
 
-def test_dedup_revisions_and_failure_retains_success(local_database):
+def test_dedup_revisions_and_failure_retains_success(local_database, monkeypatch):
+    from app.services import policy_briefs
+    monkeypatch.setattr(policy_briefs, "fetch_document", lambda doc: {
+        "text": "주택 공급계획에 따라 공공주택 공급을 확대하고 신청 대상과 지원 조건을 공개합니다. 신청 대상은 발표 원문에 제시된 요건을 충족하는 가구이며 세부 일정은 별도 공고합니다.",
+        "url": doc["source_url"], "kind": "official_html",
+    })
     source = SOURCES[0]
     original = collector.parse_rss(rss(description="주택 관련 설명"), source)
     fetcher = lambda _: original

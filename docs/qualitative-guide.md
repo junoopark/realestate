@@ -36,19 +36,32 @@ flowchart LR
 
 기초 설명을 DB에 저장하는 목적은 여러 프론트 페이지가 같은 버전·출처의 콘텐츠를 API로 공유하도록 하는 것입니다. 이번 버전은 검토한 JSON을 배포 시 DB에 반영합니다. 웹 편집기·사용자 계정·임의 콘텐츠 작성 API는 없습니다. DB 내용을 직접 수정하면 다음 시작 때 Git에 저장된 검토본으로 갱신되므로 콘텐츠 편집은 JSON에서 합니다.
 
-정책 수집 데이터는 별도로 누적합니다. 원문 URL을 기준으로 중복을 제거하고, 제목·날짜·설명문 해시가 바뀌면 버전을 남깁니다. 한 기관이 실패해도 다른 기관 결과와 이전 자료는 유지합니다. 수집된 문서는 자동으로 검토 정책 요약으로 승격하지 않습니다.
+정책 수집 데이터는 별도로 누적합니다. 원문 URL을 기준으로 중복을 제거하고, 제목·날짜·설명문 해시가 바뀌면 버전을 남깁니다. 수집 후 주요 정책을 자동 선별해 `policy_briefs`에 원문 발췌 요약을 저장합니다. 자동 요약에는 사람의 검토일을 붙이지 않습니다. `policy_briefs`와 실행 상태(`content_snapshots`의 `policy-briefs-state`)는 시작 시 JSON 동기화 대상이 아니므로 재배포에도 유지됩니다.
+
+## 주요 정책 자동 정리
+
+기존 `POST /policies/refresh`와 CLI `python scripts/collect_policies.py`가 **후보 수집 → 정책 선별 → 원문 문장 추출 → DB 저장**을 모두 처리합니다. GitHub Actions의 기존 6시간 주기를 사용하며 추가 AI API 키·모델 사용료가 없습니다. `GET /policies`는 저장된 자동 요약과 검토 JSON을 합쳐 읽기만 합니다. 홈의 주요 정책 동향도 같은 응답을 사용합니다.
+
+- **선정:** 제목에 주택·임대차·부동산·가계대출 등 직접 관련 주제가 있고 대책·계획·개편·확대·지원 등의 내용이 있는 발표. 단순 통계·잠정치·회의·점검은 정책 변경이 명시되지 않으면 제외하고, 보도설명·장차관 동정도 모니터링에만 둡니다. 시장 영향의 크기를 추정하는 점수는 아닙니다.
+- **요약:** 기관별 본문 영역에서 핵심 문장 최대 3개를 발췌합니다. 같은 기관의 본문 iframe 또는 PDF 1개까지 보완하고, 본문 연결이 실패하면 RSS 설명문을 활용하되 `source_kind=rss_excerpt`로 구분합니다. 제목만 있는 후보는 요약으로 게시하지 않습니다. 시행일·영향 해설은 추정하지 않습니다.
+- **범위·한도:** 최근 90일 후보, 최신 150건 내에서 실행당 문서 최대 6건·작업 예산 60초. 이미 처리한 원문은 약 하루 뒤 다시 확인하고, 실패는 다음 6시간 수집에서 재시도합니다. 예산이 끝나면 다음 실행에서 이어갑니다. HTML 3MB, PDF 8MB·앞 12쪽이며 OCR·HWP는 지원하지 않습니다.
+- **보존·중복:** 같은 URL 또는 같은 날·같은 제목의 합동 발표는 중복 표시하지 않습니다. 동일 발표의 검토 자료가 있으면 우선합니다. 원문에 변화가 없으면 요약 생성일을 유지합니다. 원문을 다시 읽지 못하면 이전 요약에 보관본 표시를 붙이되, 수집 제목·개요가 바뀐 발표의 옛 요약은 새 본문 확인 전까지 내립니다.
+- **날짜:** `published_at`은 발표일, `generated_at`은 자동 요약 생성일, `source_checked_at`은 원문 수집일, `verified_at`은 사람의 검토일입니다. 자동 요약의 `verified_at`은 `null`이며 검토 JSON의 2026-10-05 날짜를 오늘 날짜로 바꾸지 않습니다.
+- **장애:** 기관 대기실·본문 구조 변경·이미지 PDF 등 읽지 못하는 자료는 `automation.failed`로 집계하며 자동 재시도합니다. 성공적으로 읽힌 다른 자료는 제공하고, DB 장애 시에는 확인일을 표시한 검토 JSON으로 돌아갑니다.
+
+배포는 변경한 백엔드·프론트엔드를 함께 반영합니다. `requirements.txt`의 `pypdf`를 설치하면 앱 시작 시 `policy_briefs` 테이블과 RLS가 준비됩니다(기존 컬럼 변경 없음). 기존 `POLICY_ADMIN_TOKEN`·Actions 설정을 그대로 사용하며, 배포 후 Actions의 **Collect official policy updates → Run workflow**를 한 번 실행하거나 다음 예약을 기다립니다. `/api/policies`의 `automation.generated`·`failed`·`deferred`와 정책 카드의 자동 요약 표시로 확인합니다. 새 배포 이후에는 매번 JSON을 수정할 필요가 없습니다.
 
 ## 화면과 편집 위치
 
 | 화면 | 주요 기능 | 원본 |
 |---|---|---|
 | `learn.html` | 용어·분류 검색, 매매·전세·월세 각 7단계, 개발·기관 투자 각 7단계, 7개 사업성 지표 | `frontend/data/knowledge.json` |
-| `policies.html#briefs` | 확인한 정책 8건의 제목·발표일·핵심·일정·리스크·원문 | `frontend/data/policies.json` |
+| `policies.html#briefs` | 자동 선별한 원문 요약 + 검토한 정책, 발표일·요약일·검토일 구분 | `policy_briefs` + `frontend/data/policies.json` |
 | `policies.html#monitor` | 자동 수집 후보, 키워드, 기관별 최근 성공·실패, 수정 횟수 | DB, 연결 실패 시 `frontend/data/monitor.json` |
 | `policies.html#history` | 최근 10년 정책의 변화 흐름, 시기·주제별 타임라인, 발표 맥락·달라진 점·공식 원문 | `frontend/data/policy-history.json` |
 | `policies.html#sources` | 제공 기관·수집 방식·항목·출처·한계 | 정책 JSON의 `sources` |
 
-정책 자료는 2026-10-05에 원문을 확인했습니다. 선정한 정책 8건의 발표일은 2026-08-13~2026-10-01입니다. 수집 후보는 이 범위보다 새로운 발표를 포함할 수 있습니다. 날짜가 지났다는 이유만으로 발표된 계획을 ‘시행 중’으로 바꾸지 않습니다.
+검토 JSON은 2026-10-05 확인한 정책 8건(발표일 2026-08-13~2026-10-01)입니다. 이후 자동 요약은 별도 DB에서 함께 표시합니다. 날짜가 지났다는 이유만으로 발표된 계획을 ‘시행 중’으로 바꾸지 않습니다.
 
 ```powershell
 # JSON 수정 후 저장소 루트에서
@@ -75,7 +88,7 @@ Render의 Root Directory가 `backend`이므로 같은 검토본을 `backend/data
 
 금융위 RSS는 확인 당시 HTTP 503이어서 공개 목록을 사용합니다. 정책브리핑은 [RSS 제공 중단 안내](https://www.korea.kr/etc/noticeView.do?newsId=132038885)를 확인해 자동 수집원으로 사용하지 않습니다. 정책 요약의 공식 원문 출처로는 활용합니다. 경기도 RSS는 확인한 확장 후보이며 현재 수집기에는 포함하지 않았습니다. 법령 시행·부칙 확인은 국가법령정보센터에서 별도로 합니다.
 
-소스당 한 번의 목록/피드 요청, 응답 시간·크기 제한을 적용합니다. 첨부파일·로그인 영역·기사 링크를 재귀 수집하지 않습니다. 인증키를 사용하는 별도 공공데이터 API는 이번 기능에 필요하지 않습니다.
+후보 수집은 소스당 한 번의 목록/피드 요청으로 제한합니다. 자동 요약 단계에서 선별한 공식 원문과 같은 기관의 iframe/PDF 하나까지 읽으며, 각 응답의 시간·크기에 제한을 둡니다. 로그인 영역이나 대기실을 우회하지 않고, 외부 도메인으로 이동하는 링크·리다이렉트는 차단합니다. 별도 인증키는 필요하지 않습니다.
 
 피드는 최근 일부 자료만 제공하므로 수집 주기 사이에 항목이 밀려 누락될 수 있습니다. 키워드 분류는 관련 후보를 찾는 규칙이고, 정책확정 여부나 중요도를 평가하는 모델이 아닙니다. 주택 피해 지원 같은 연관 발표도 들어올 수 있으며 ‘미검토’로 표시합니다. 본문이 없는 피드 항목에는 임의 요약을 만들지 않습니다.
 
@@ -86,10 +99,10 @@ Render의 Root Directory가 `backend`이므로 같은 검토본을 `backend/data
 | 메서드·경로 | 입력 | 응답 |
 |---|---|---|
 | `GET /knowledge` | 없음 | `title`, `verified_at`, `scope_note`, `sources`, `glossary`, `transactions`, `development`, `investment` |
-| `GET /policies` | 없음 | `verified_at`, `coverage_note`, `sources`, `policies`, `storage`, `sync` |
+| `GET /policies` | 없음 | `verified_at`, `reviewed_at`, `generated_at`, `last_checked_at`, `automation`, `coverage_note`, `sources`, `policies`, `storage`, `sync` |
 | `GET /policies/monitor` | `limit` 정수 1~300, 기본 100 | `items`, `sources`, `last_checked_at`, `coverage_note`, `storage` |
 | `GET /policies/history` | 없음 | `verified_at`, `period_start`, `period_end`, `coverage_note`, `eras`, `events`, `storage`, `sync` |
-| `POST /policies/refresh` | `X-Admin-Token` 헤더 | 전체 `status`, 수집 확인시각, 기관별 생성·변경·일치 건수 또는 실패 |
+| `POST /policies/refresh` | `X-Admin-Token` 헤더 | 전체 `status`, 기관별 결과, `briefs`의 생성·동일·제외·실패·다음 실행 이월 건수 |
 
 `policies[]`는 `id`, `title`, `agency`, `published_at`, `effective_date`, `effective_note`, `status`, `status_note`, `category`, `summary`, `highlights`, `impact_path`, `risk_points`, `source_url`, `verified_at` 등을 포함합니다. `effective_date=null`은 미확정·원문 재확인이 필요하다는 뜻입니다.
 
@@ -125,7 +138,7 @@ Supabase 연결 후 Render 환경변수 `POLICY_ADMIN_TOKEN`을 팀이 정한 �
 1. **DB 담당:** Supabase Session pooler의 연결 문자열을 Render `DATABASE_URL`에 설정합니다. 상세 단계·권한·테이블 설명은 [DB 문서](../database/README.md)를 따릅니다.
 2. **배포 담당:** 이 변경을 기존 GitHub 저장소에 반영하고 Vercel/Render 자동 배포 로그와 `/docs`를 확인합니다. `ALLOWED_ORIGINS`에 실제 Vercel 주소가 있어야 합니다.
 3. **수집 담당:** 관리자 토큰과 Actions 비밀값을 설정하고 처음 한 번 수동 실행합니다. 정책 모니터에서 각 기관의 최근 성공시각을 확인합니다.
-4. **콘텐츠 담당:** 새로 수집된 자료의 원문을 읽고 검토한 정책만 `policies.json`에 추가합니다. 발표 당시 계획·시행완료·적용대상을 구분합니다.
+4. **콘텐츠 담당:** 자동 요약은 정기 수집으로 갱신됩니다. 별도 해설을 검토해 추가할 때만 `policies.json`을 편집·동기화합니다. 자동 요약 생성일과 사람의 검토일을 구분합니다.
 
 현재 로컬 SQLite에 수집한 이력은 Supabase로 자동 복사되지 않습니다. 연결 후 수집되는 자료부터 새 DB에 누적합니다. 예전 이력을 옮길 필요가 있으면 별도 이관 작업을 해야 합니다. 검토한 기초/정책 JSON은 앱 시작 시 새 DB에 적재됩니다.
 

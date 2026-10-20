@@ -7,6 +7,7 @@ from app.db.session import storage_info
 from app.services.content_store import get_content, read_seed
 from app.services.policy_collector import collect_all, read_monitor
 from app.services.policy_sources import COVERAGE_NOTE, SOURCES
+from app.services.policy_briefs import merge_briefs
 
 router = APIRouter(tags=["qualitative"])
 
@@ -31,7 +32,16 @@ def knowledge():
 @router.get("/policies")
 def policies():
     content, available = content_response("policies")
-    return {**content, "storage": storage_info(available), "sync": {"mode": "reviewed_snapshot", "verified_at": content.get("verified_at"), "note": "원문을 확인한 편집 자료입니다. 자동 수집 후보는 /policies/monitor에서 제공합니다."}}
+    if available:
+        try:
+            content = merge_briefs(content)
+        except Exception:
+            available = False
+    return {**content, "storage": storage_info(available), "sync": {
+        "mode": "reviewed_and_automatic" if available else "reviewed_snapshot",
+        "verified_at": content.get("verified_at"),
+        "note": "자동 요약은 공식 원문에서 추린 문장입니다. 검토 자료의 확인일과 자동 갱신일은 별도로 표시합니다.",
+    }}
 
 
 @router.get("/policies/monitor")

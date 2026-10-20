@@ -128,6 +128,18 @@ CREATE TABLE IF NOT EXISTS policy_document_versions (
     UNIQUE(document_id, revision)
 );
 CREATE INDEX IF NOT EXISTS ix_policy_document_versions_document_id ON policy_document_versions(document_id);
+CREATE TABLE IF NOT EXISTS policy_briefs (
+    document_id VARCHAR(64) PRIMARY KEY REFERENCES policy_documents(id) ON DELETE CASCADE,
+    document_hash VARCHAR(64) NOT NULL DEFAULT '',
+    algorithm_version VARCHAR(20) NOT NULL DEFAULT '',
+    content JSON,
+    body_hash VARCHAR(64),
+    last_attempt_at VARCHAR(40) NOT NULL,
+    last_success_at VARCHAR(40),
+    status VARCHAR(20) NOT NULL,
+    error TEXT
+);
+ALTER TABLE policy_briefs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE policy_source_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE policy_documents ENABLE ROW LEVEL SECURITY;

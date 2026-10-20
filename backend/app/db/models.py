@@ -155,3 +155,17 @@ class PolicyDocumentVersion(Base):
     content_hash: Mapped[str] = mapped_column(String(64))
     content: Mapped[dict] = mapped_column(JSON)
     observed_at: Mapped[str] = mapped_column(String(40))
+
+
+class PolicyBrief(Base):
+    """자동 정책 요약. 검토한 JSON과 별도 보관하여 재배포 시에도 유지한다."""
+    __tablename__ = "policy_briefs"
+    document_id: Mapped[str] = mapped_column(ForeignKey("policy_documents.id", ondelete="CASCADE"), primary_key=True)
+    document_hash: Mapped[str] = mapped_column(String(64), default="")
+    algorithm_version: Mapped[str] = mapped_column(String(20), default="")
+    content: Mapped[dict | None] = mapped_column(JSON)
+    body_hash: Mapped[str | None] = mapped_column(String(64))
+    last_attempt_at: Mapped[str] = mapped_column(String(40))
+    last_success_at: Mapped[str | None] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(20))
+    error: Mapped[str | None] = mapped_column(Text)

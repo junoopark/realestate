@@ -351,7 +351,7 @@ function renderPolicies() {
   }
   for (const p of items) {
     const card = el("div", "policy-item");
-    card.append(metaLine(p.agency, p.published_at, p.category));
+    card.append(metaLine(p.agency, p.published_at, p.category, p.review_status === "automatic" ? "자동 요약" : "검토 자료"));
     const h = el("h4");
     const a = el("a", null, p.title);
     a.href = "policies.html#briefs";
@@ -360,7 +360,7 @@ function renderPolicies() {
     if (p.summary) card.append(el("p", "policy-sum", p.summary));
     box.append(card);
   }
-  document.querySelector("#home-policy-note").textContent = policyData.verified_at ? `공식 발표 원문 확인일 ${policyData.verified_at}. 전체 목록과 적용 조건은 부동산 정책 페이지에서 봅니다.` : "";
+  document.querySelector("#home-policy-note").textContent = `${Qual.freshnessText(policyData)}. 전체 목록과 적용 조건은 부동산 정책 페이지에서 봅니다.`;
 }
 
 // ── Home 그리기 ──────────────────────────────────────

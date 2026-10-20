@@ -1,6 +1,6 @@
 ﻿# 정성 콘텐츠 저장소와 정책 수집
 
-기초 자료와 검증한 정책 요약은 JSON을 원본으로 관리하고, FastAPI 시작 시 DB에 반영합니다. 자동 수집한 정책 후보는 별도 테이블에 누적합니다. 정량 지표는 Open API에서 받아 indicator_* 테이블에 캐시합니다(아래 "정량 지표 테이블").
+기초 자료와 검증한 정책 요약은 JSON을 원본으로 관리하고, FastAPI 시작 시 DB에 반영합니다. 자동 수집한 후보는 `policy_documents`, 자동 원문 요약은 `policy_briefs`에 별도 보관하여 재배포에도 유지합니다. 정량 지표는 Open API에서 받아 indicator_* 테이블에 캐시합니다(아래 "정량 지표 테이블").
 
 ## 구성
 
@@ -9,7 +9,7 @@
 | 경로 | 기능 |
 |---|---|
 | GET /knowledge | 출처를 붙여 편집한 용어·거래·개발·투자 기초 자료 |
-| GET /policies | 원문을 확인한 정책 요약과 자료 확인일 |
+| GET /policies | 자동 원문 요약 + 검토 자료, 자동 갱신일·검토일·자동화 상태 |
 | GET /policies/monitor | 수집 후보, 기관별 성공 시각·오류, 저장소 상태 |
 | GET /policies/history | 최근 10년 정책의 시기별 변화·발표일·맥락·공식 원문·확인일 |
 | POST /policies/refresh | X-Admin-Token 인증 후 수집. POLICY_ADMIN_TOKEN 미설정이면 비활성화 |
@@ -46,7 +46,7 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 1. Supabase Connect → Session pooler의 PostgreSQL URL을 확인합니다.
 2. Render 서버 환경변수 DATABASE_URL에 URL을 저장합니다. 예: postgresql+psycopg://postgres.PROJECT:PASSWORD@HOST.pooler.supabase.com:5432/postgres
 3. 비밀번호의 @, /, # 등은 URL 인코딩합니다. URL·DB 비밀번호·관리자 토큰은 HTML·JS·GitHub에 넣지 않습니다.
-4. 서비스를 재시작합니다. DB 소유자 권한으로 9개 테이블(정성 4 + 지표 5)을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다.
+4. 서비스를 재시작합니다. DB 소유자 권한으로 ORM 테이블(정성 5 + 지표·실거래 6)을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다. 이용 기록은 별도 `003_activity_logs.sql`로 만듭니다.
 5. /policies, /policies/monitor, /policies/history의 storage.type=postgresql, storage.available=true를 확인합니다. CLI 또는 관리자 API를 한 번 실행해 실제 정책 후보를 저장합니다.
 
 서버는 psycopg 3로 TLS 연결합니다. 브라우저에서 Supabase 익명 REST 테이블 접근을 사용하지 않고 RLS를 켭니다. FastAPI의 DB 소유자 연결로 읽고 씁니다. 별도 제한된 DB 역할을 쓰면 팀원이 테이블 권한과 RLS 정책을 설정해야 합니다.
@@ -74,8 +74,9 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 | policy_source_states | 시도·성공 시각, 상태, 오류, 마지막 성공의 후보 수 | 기관별 수집 후 |
 | policy_documents | URL별 최신 제목·발표일·RSS 발췌·키워드·관측 시각 | URL 중복 없이 최신 내용 |
 | policy_document_versions | 수집 내용의 버전 및 해시 | 변경 시 이력 추가 |
+| policy_briefs | 문서별 자동 요약 JSON, 원문 해시, 생성·시도·성공 시각, 상태 | 6시간 수집 후 원문 변경분 갱신 |
 
-관계: policy_documents 한 건에 policy_document_versions 여러 건이 연결됩니다(document_id 외래키). source_id는 코드에 정의한 기관 ID와 policy_source_states.id에 대응하며, 원문 URL은 유일합니다. content_snapshots는 knowledge/policies/policy-history 키별 독립된 검증 콘텐츠입니다.
+관계: policy_documents 한 건에 policy_document_versions 여러 건, policy_briefs 최대 한 건이 연결됩니다(document_id 외래키). source_id는 코드에 정의한 기관 ID와 policy_source_states.id에 대응하며, 원문 URL은 유일합니다. content_snapshots의 knowledge/policies/policy-history는 검토 JSON이며 policy-briefs-state는 최근 자동 요약 실행 결과입니다. 후자는 시작 시 덮어쓰지 않습니다.
 
 ORM은 backend/app/db/models.py, 대응 SQL은 database/schema.sql입니다. 앱 시작 시 없는 테이블만 생성합니다. 이후 컬럼·제약을 바꾸면 별도 마이그레이션을 작성해야 합니다.
 

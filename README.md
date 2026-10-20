@@ -23,7 +23,7 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 - **보기 설정** — 17개 시도 중 최대 3곳 비교 또는 서울 자치구 · 기간(3년 / 5년 / 전체) · 값(수준 / 전년동기 대비)
 
 ### 부동산 정책
-- **주요 정책 정리** — 공식 원문을 확인한 정책 요약, 적용 대상 · 조건 · 시행일
+- **주요 정책 정리** — 공식 발표를 6시간마다 자동 선별하고 본문·PDF의 핵심 문장을 발췌. 자동 요약일과 기존 검토 자료의 확인일을 구분하며 별도 AI API 비용 없음
 - **새 발표 모니터링** — 국토교통부 등 공식 발표를 자동 수집한 후보 목록
 - **정책 히스토리** — 최근 10년 주요 정책 전환점을 시기별 · 연도별 타임라인으로 정리
 
@@ -141,6 +141,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 
 - 웹 화면(Vercel)과 API 서버(Render · FastAPI) 모두 이 저장소 main 을 배포합니다. main 에 합치면 둘 다 자동으로 다시 배포됩니다. `/api/*` 는 `frontend/vercel.json` 이 API 서버로 넘기고 응답을 CDN 에 캐시합니다. 그래서 화면·API·Swagger 모두 www.khmi.kr 한 주소로 씁니다(API 서버 자체 주소는 `vercel.json` 의 전달 목적지와 Actions 비밀값에만 있습니다).
 - 매일 수집은 이 저장소의 GitHub Actions 가 트리거합니다. 09:40 에 API 서버의 수집 API(실거래 건수 → R-ONE·ECOS·KOSIS → 실거래 합계)를, 6시간마다 정책 수집 API 를 부릅니다. 외부 API 호출과 DB 저장은 API 서버가 맡고, 오래 걸리는 실거래 수집은 서버의 백그라운드 작업으로 돌립니다(`POST /indicators/rtms/collect` → `GET /indicators/rtms/job`).
+- 정책 수집은 주요 정책 자동 요약까지 같은 작업에서 처리합니다. 새 요약은 `policy_briefs`에 보관해 재배포에도 유지합니다. 본문을 읽지 못한 후보는 다음 실행에서 재시도하며, `/api/policies`의 `automation`에서 처리 결과를 확인합니다. 선정 기준·처리 한도·배포 절차는 [정성 자료 가이드](docs/qualitative-guide.md#주요-정책-자동-정리)에 있습니다.
 - 저장소 비밀값은 `POLICY_API_BASE_URL`·`POLICY_ADMIN_TOKEN`·`SITE_BASE_URL` 3개뿐입니다. 외부 API 키와 DB 주소(`DATABASE_URL`)는 API 서버(Render) 환경변수에만 둡니다.
 - Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase 를 씁니다. 화면이 supabase-js 공개 키로 직접 기록하고(RLS: 본인 기록 추가만), API 서버가 `/usage` 로 집계합니다.
 

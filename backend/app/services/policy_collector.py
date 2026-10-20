@@ -179,7 +179,7 @@ def store_items(session, source, items, checked_at):
     return {"created": created, "changed": changed, "matched": state.item_count}
 
 
-def collect_all(sources=None, fetcher=None):
+def collect_all(sources=None, fetcher=None, brief_fetcher=None):
     sources, fetcher = SOURCES if sources is None else sources, fetch_source if fetcher is None else fetcher
     if not REFRESH_LOCK.acquire(blocking=False):
         return {"status": "busy", "sources": []}
@@ -204,9 +204,14 @@ def collect_all(sources=None, fetcher=None):
                     state.last_checked_at, state.status, state.error = checked_at, "error", error
                     session.commit()
                 results.append({"id": source["id"], "status": "error", "error": error})
+        # Same scheduled job: candidates -> bounded official-text extraction ->
+        # persistent automatic briefs. Keep the lock for both stages.
+        from app.services.policy_briefs import refresh_briefs
+        briefs = refresh_briefs(fetcher=brief_fetcher)
     finally:
         REFRESH_LOCK.release()
-    return {"status": "ok" if all(row["status"] == "ok" for row in results) else "partial_failure", "checked_at": utc_now(), "sources": results}
+    return {"status": "ok" if all(row["status"] == "ok" for row in results) and briefs["status"] == "ok" else "partial_failure",
+            "checked_at": utc_now(), "sources": results, "briefs": briefs}
 
 
 def read_monitor(limit=100):

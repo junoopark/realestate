@@ -1,5 +1,8 @@
 name: Collect official policy updates
 
+# 기존 6시간 주기로 후보 수집과 주요 정책 원문 요약을 함께 실행한다.
+# AI API 키는 필요 없다. 본문 읽기는 실행당 6건·60초 예산이며 나머지는 다음 실행에서 이어간다.
+
 on:
   workflow_dispatch:
   schedule:
@@ -42,7 +45,7 @@ jobs:
               print('::error::POLICY_API_BASE_URL must be an HTTPS API base URL without credentials, query, or fragment.')
               sys.exit(1)
           try:
-              response = requests.post(base + '/policies/refresh', headers={'X-Admin-Token': token}, timeout=90, allow_redirects=False)
+              response = requests.post(base + '/policies/refresh', headers={'X-Admin-Token': token}, timeout=240, allow_redirects=False)
               if response.status_code == 409:
                   print('::notice::Collection is already running. Existing job will complete it.')
                   sys.exit(0)
@@ -52,8 +55,10 @@ jobs:
               result = response.json()
               for source in result.get('sources', []):
                   print(f"Source {source.get('id')}: {source.get('status')}, matched={source.get('matched', 'unknown')}")
+              briefs = result.get('briefs', {})
+              print(f"Policy briefs: generated={briefs.get('generated', 0)}, unchanged={briefs.get('unchanged', 0)}, failed={briefs.get('failed', 0)}, deferred={briefs.get('deferred', 0)}")
               if result.get('status') != 'ok':
-                  print('::error::Collection returned a partial failure. Prior successful data was preserved; inspect /policies/monitor for source status.')
+                  print('::error::Collection or brief extraction partially failed. Inspect /policies/monitor and /policies automation status; pending documents retry on the next run.')
                   sys.exit(1)
               print('Official policy collection completed.')
           except (requests.RequestException, ValueError):

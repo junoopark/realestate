@@ -4,14 +4,22 @@
   let data, query = "", category = "전체", monitorData = null, monitorBusy = false, monitorMode = "", monitorQuery = "";
   const active = () => ["briefs", "monitor", "history", "sources"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "briefs";
   function card(policy) {
+    const automatic = policy.review_status === "automatic";
     const details = el("details", "policy-card"), summary = el("summary");
     const meta = el("div", "policy-meta");
-    meta.append(el("span", "qual-tag", policy.category), el("span", "", policy.agency), el("time", "", `발표 ${policy.published_at}`));
-    summary.append(meta, el("h4", "", policy.title), el("p", "", policy.summary), el("span", "expand-hint", "핵심 내용 · 적용 시점 · 점검할 리스크 +"));
+    meta.append(el("span", "qual-tag", policy.category), el("span", "qual-tag", automatic ? "자동 요약" : "검토 자료"), el("span", "", policy.agency), el("time", "", `발표 ${policy.published_at}`));
+    summary.append(meta, el("h4", "", policy.title), el("p", "", policy.summary), el("span", "expand-hint", automatic ? "원문 핵심 문장 · 선정 기준 +" : "핵심 내용 · 적용 시점 · 점검할 리스크 +"));
     const content = el("div", "policy-detail");
     const facts = el("div"), risks = el("div");
-    facts.append(el("h5", "", "발표의 핵심"), list(policy.highlights));
-    risks.append(el("h5", "", "점검할 리스크 · 학습용 해석"), list(policy.risk_points));
+    facts.append(el("h5", "", automatic ? "원문에서 추린 핵심 문장" : "발표의 핵심"), list(policy.highlights));
+    if (automatic) {
+      risks.append(el("h5", "", "자동 선정 기준"), el("p", "", policy.selection_reason));
+      const kinds = { official_html: "공식 발표 본문", official_pdf: "공식 첨부 PDF", rss_excerpt: "기관 RSS에 제공된 설명문" };
+      risks.append(el("p", "coverage-note", `${kinds[policy.source_kind] || "공식 원문"}에서 문장을 발췌했습니다.`));
+      if (policy.source_stale) risks.append(el("p", "coverage-note", "최근 원문 연결에 실패해 이전에 수집한 요약을 표시합니다."));
+    } else {
+      risks.append(el("h5", "", "점검할 리스크 · 학습용 해석"), list(policy.risk_points));
+    }
     if (policy.impact_path) risks.append(el("p", "coverage-note", `영향 경로: ${Array.isArray(policy.impact_path) ? policy.impact_path.join(" → ") : policy.impact_path}`));
     content.append(facts, risks);
     const timing = el("div", "effective");
@@ -21,17 +29,20 @@
     content.append(timing);
     const links = el("div", "source-links"); links.append(link(`${policy.source_name || "공식 발표"} 원문 ↗`, policy.source_url));
     if (policy.original_source_url && policy.original_source_url !== policy.source_url) links.append(link("소관 기관 자료 ↗", policy.original_source_url));
-    links.append(el("span", "muted", `확인 ${policy.verified_at || data.verified_at}`)); content.append(links);
+    if (automatic && policy.excerpt_url && policy.excerpt_url !== policy.source_url) links.append(link("발췌한 문서 ↗", policy.excerpt_url));
+    links.append(el("span", "muted", automatic ? `자동 요약 ${timeText(policy.generated_at)} · 원문 수집 ${timeText(policy.source_checked_at)}` : `원문 검토 ${policy.verified_at || data.verified_at}`)); content.append(links);
     details.append(summary, content); return details;
   }
   function briefs() {
-    container.append(sectionTitle("주요 정책 정리", "공식 발표를 확인해 정리한 정책입니다. 카드를 열면 핵심 내용과 적용 조건을 볼 수 있습니다."));
+    container.append(sectionTitle("주요 정책 정리", "공식 발표에서 자동으로 추린 핵심 문장과 검토한 정책 자료입니다. 카드를 열면 요약 방식과 원문을 볼 수 있습니다."));
     const policies = [...data.policies].sort((a,b) => b.published_at.localeCompare(a.published_at));
     const strip = el("dl", "summary-strip");
-    for (const [label,value] of [["수록 정책", `${policies.length}건`], ["수록 자료의 최근 발표일", policies[0]?.published_at || "없음"], ["출처 확인일", data.verified_at]]) {
+    const freshness = data.automation?.enabled ? ["자동 수집 확인", data.last_checked_at ? timeText(data.last_checked_at, true) : "첫 수집 대기"] : ["검토 자료 확인일", data.verified_at];
+    for (const [label,value] of [["수록 정책", `${policies.length}건 · 자동 요약 ${policies.filter(p => p.review_status === "automatic").length}건`], ["수록 자료의 최근 발표일", policies[0]?.published_at || "없음"], freshness]) {
       const item = el("div"); item.append(el("dt", "", label), el("dd", "", value)); strip.append(item);
     }
     container.append(strip, el("p", "coverage-note", data.coverage_note));
+    if (data.automation?.failed) container.append(el("p", "coverage-note", `이번 실행에서 원문을 읽지 못한 후보 ${data.automation.failed}건은 다음 수집에서 다시 확인합니다.`));
     const filters = el("div", "search-row"), results = el("div", "policy-list"), count = el("p", "result-count"); count.setAttribute("role", "status");
     const draw = () => {
       const items = policies.filter(p => (category === "전체" || category === p.category) && matches([p.title,p.summary,p.agency,...p.highlights,...p.risk_points].join(" "), query));
@@ -46,10 +57,11 @@
     select.addEventListener("change", () => { category = select.value; draw(); }); label.append(select); filters.append(label);
     container.append(filters, count, results); draw();
   }
-  const timeText = value => {
+  const timeText = (value, short = false) => {
     if (!value) return "아직 없음";
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", hour12: false });
+    if (Number.isNaN(date.getTime())) return value;
+    return short ? date.toLocaleString("sv-SE", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) : date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", hour12: false });
   };
   function monitor() {
     container.append(sectionTitle("새 발표 모니터링", "공식 기관에서 수집한 발표 중 주택 관련 키워드가 포함된 항목입니다. 수집 후보에는 보도설명·행사·통계도 포함될 수 있어 정책 확정 여부는 원문 확인이 필요합니다."));
@@ -105,9 +117,9 @@
     finally { monitorBusy = false; if (active() === "monitor") render(); }
   }
   function sources() {
-    container.append(sectionTitle("수집 출처 · 방법", "주요 정책 정리는 원문을 읽고 검토한 자료이며, 새 발표 모니터링은 공식 피드·공개 게시판에서 수집한 후보입니다."));
+    container.append(sectionTitle("수집 출처 · 방법", "주요 정책 정리는 자동 선별한 원문 요약과 검토 자료를 함께 제공합니다. 새 발표 모니터링에서는 선별 전 수집 후보를 볼 수 있습니다."));
     const flow = el("div", "method-steps");
-    for (const [title,copy] of [["01 공식 발표 수집","기관이 공개한 제목·날짜·원문 링크·개요"],["02 주제 분류","주택·임대차·대출·PF 등 키워드 대조"],["03 변경 기록","같은 URL 중복 제거, 제목·개요 수정 이력 보존"],["04 원문 검토","발표·시행·예외를 확인한 정책만 요약에 반영"]]) {
+    for (const [title,copy] of [["01 공식 발표 수집","6시간 주기로 기관의 제목·날짜·원문 링크·개요 수집"],["02 주요 정책 선별","제목의 주택·임대차·대출 관련성과 정책 변경·지원 내용 대조, 단순 통계·행사 제외"],["03 원문 문장 추출","공식 본문·PDF에서 핵심 문장 추출, 원문 연결 실패 시 제공된 RSS 설명문 활용"],["04 자동 갱신","정책 카드와 홈에 반영, 자동 요약일과 사람이 검토한 날짜 구분"]]) {
       const step = el("div"); step.append(el("strong", "", title),el("p", "", copy)); flow.append(step);
     }
     container.append(flow);
@@ -138,7 +150,7 @@
   render();
   Qual.loadContent("/policies", "policies.json", value => {
     if (!Array.isArray(value.policies) || !Array.isArray(value.sources)) throw new Error("Invalid policy data");
-    if (data && JSON.stringify(data.policies) === JSON.stringify(value.policies) && JSON.stringify(data.sources) === JSON.stringify(value.sources) && data.verified_at === value.verified_at) return;
+    if (data && JSON.stringify(data.policies) === JSON.stringify(value.policies) && JSON.stringify(data.sources) === JSON.stringify(value.sources) && data.verified_at === value.verified_at && JSON.stringify(data.automation) === JSON.stringify(value.automation)) return;
     data = value; render(); if (active() === "monitor") loadMonitor();
   });
 })();

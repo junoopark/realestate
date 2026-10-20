@@ -138,6 +138,8 @@ summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
   .section-tabs { gap: 22px; }
   .section-tabs a { font-size: 13px; }
   .summary-strip > div { padding: 13px 10px; }
+  .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-strip > div:last-child { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
   .summary-strip dd { font-size: 16px; }
   .summary-strip dt { font-size: 10px; }
   .policy-card summary, .policy-detail, .monitor-card { padding: 18px; }
