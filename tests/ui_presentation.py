@@ -187,7 +187,7 @@ def main():
         about.goto(urljoin(base, "about.html#intro"), wait_until="domcontentloaded", timeout=30000)
         about_link = about.locator("dt > a[href='presentation.html']")
         expect(about_link).to_have_text("About")
-        expect(about.locator("dt:has(> a[href='presentation.html']) + dd")).to_contain_text("프로젝트 발표")
+        expect(about.locator("dt:has(> a[href='presentation.html']) + dd")).to_contain_text("프로젝트 설명")
         about_link.click()
         about.wait_for_function("document.documentElement.dataset.presentationReady === 'true'")
         expect(about.locator("#intro")).to_be_visible()

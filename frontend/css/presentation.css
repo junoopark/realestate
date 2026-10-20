@@ -247,29 +247,50 @@ th { text-align: left; font-weight: 650; }
 .efficiency-panel li::before { content: "0" counter(benefit); position: absolute; top: 12px; left: 0; font-size: 14px; color: var(--blue); }
 .efficiency-panel b { display: block; font-size: 23px; }
 .efficiency-panel span { font-size: 17px; color: var(--muted); display: block; margin-top: 8px; }
-.architecture { background: #f8fafc; padding: 33px 26px 23px; border: 1px solid var(--line); margin-top: 10px; }
-.arch-row { display: grid; grid-template-columns: 1fr 64px 1.15fr 80px 1.3fr 75px 1.15fr; align-items: center; }
-.arch-box { border: 1px solid #ccd6e5; border-top: 4px solid #7389ab; background: white; padding: 17px 14px; text-align: center; }
-.arch-box span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 7px; }
-.arch-box b { display: block; font-size: 21px; line-height: 1.35; color: var(--navy); white-space: nowrap; }
-.arch-box small { display: block; font-size: 13px; line-height: 1.7; color: var(--muted); margin-top: 10px; }
-.arch-box.vercel { border-top-color: #252d3d; }
-.arch-box.render { border-top-color: var(--blue); }
-.arch-box.supabase { border-top-color: var(--green); }
-.arch-arrow { position: relative; text-align: center; font-size: 31px; color: #8199bd; }
-.arch-arrow > span { display: block; font-size: 11px; line-height: 1.5; color: var(--muted); }
-.arch-lower { display: grid; grid-template-columns: .85fr 1.4fr; gap: 40px; margin-top: 30px; align-items: center; }
-.arch-auth { border-left: 3px solid var(--green); padding: 13px 17px; background: #ecf5f1; }
-.path-label { display: block; font-size: 12px; color: var(--green); margin-bottom: 10px; }
-.arch-auth b { font-size: 18px; color: #275b49; }
-.arch-auth p { font-size: 14px; color: var(--muted); margin-top: 7px; }
-.arch-collect { display: grid; grid-template-columns: 1fr 75px 1.5fr; align-items: center; }
-.arch-collect .arch-box { border-top-color: var(--orange); }
-.arch-collect .arch-arrow { color: var(--orange); }
-.arch-collect .arch-arrow span { font-size: 10px; }
-.architecture-legend { display: flex; gap: 40px; padding: 18px 0; font-size: 15px; color: var(--muted); }
-.legend-line { display: inline-block; width: 24px; height: 3px; background: var(--blue); vertical-align: middle; margin-right: 8px; }
-.orange-line { background: var(--orange); }
+.architecture { margin: 0; }
+.arch-headings { display: grid; grid-template-columns: 43.921% 43.921%; justify-content: space-between; margin-bottom: 10px; }
+.arch-headings p, .arch-mobile-heading { color: var(--blue); font-size: 17px; font-weight: 700; }
+.arch-headings p:last-child, .arch-mobile-heading { color: var(--orange); }
+.arch-headings b, .arch-mobile-heading b { display: inline-grid; place-items: center; width: 25px; height: 25px; margin-right: 8px; background: var(--blue-soft); font-size: 14px; }
+.arch-headings p:last-child b, .arch-mobile-heading b { background: #fbf1e9; }
+.arch-headings span { margin-left: 14px; font-size: 13px; font-weight: 400; color: var(--muted); }
+.arch-map { position: relative; display: grid; grid-template-columns: 43.921% 12.158% 43.921%; grid-template-rows: repeat(4, 90px); row-gap: 24px; }
+.arch-connectors { position: absolute; inset: 0; width: 100%; height: 432px; pointer-events: none; }
+.arch-node { position: relative; min-width: 0; padding: 10px 17px; background: #f7f9fd; border: 1px solid #cdd9eb; border-left: 4px solid var(--blue); }
+.slide .arch-node h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 22px; line-height: 1.3; color: var(--navy); }
+.arch-node h3 span { flex-shrink: 0; font: 600 11px/1.5 var(--sans); padding: 2px 7px; background: white; border: 1px solid #dce3ed; color: var(--muted); }
+.arch-node p { font-size: 15px; line-height: 1.5; margin-top: 2px; }
+.arch-node small { display: block; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.arch-browser { grid-area: 1 / 1; }
+.arch-cdn { grid-area: 2 / 1; }
+.arch-backend { grid-area: 3 / 1; background: var(--blue-soft); border-color: var(--blue); }
+.arch-database { grid-area: 4 / 1; background: #edf6f2; border-color: #bedbce; border-left-color: var(--green); }
+.arch-database h3 { color: #20634e; }
+.arch-collection-intro { grid-area: 1 / 3; align-self: center; padding: 0 4px; }
+.arch-collection-intro strong { font-size: 21px; font-weight: 650; color: #7b4b31; }
+.arch-collection-intro > p:not(.arch-mobile-heading) { margin-top: 5px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.arch-mobile-heading { display: none; }
+.arch-scheduler { grid-area: 2 / 3; }
+.arch-sources { grid-area: 3 / 3; }
+.arch-scheduler, .arch-sources { background: #fdf8f3; border-color: #e8d6c7; border-left-color: var(--orange); }
+.slide .arch-scheduler h3, .slide .arch-sources h3 { color: #7b4b31; }
+.arch-sources p { font-size: 14px; }
+.arch-seed { grid-area: 4 / 3; background: #fafbfc; border-color: var(--line); border-left-color: #8390a3; }
+.slide .arch-seed h3 { color: var(--muted); }
+.arch-link-label { position: absolute; font-size: 12px; line-height: 20px; color: var(--muted); background: white; white-space: nowrap; }
+.arch-request, .arch-forward, .arch-store { left: calc(21.9605% + 15px); }
+.arch-request { top: 92px; }
+.arch-forward { top: 206px; }
+.arch-store { top: 320px; left: calc(21.9605% + 44px); }
+.arch-store b { color: var(--orange); font-weight: 600; }
+.arch-trigger, .arch-fetch, .arch-initial { left: 50%; transform: translateX(-50%); padding: 0 5px; }
+.arch-trigger { top: 207px; color: var(--orange); }
+.arch-fetch { top: 263px; color: var(--orange); }
+.arch-initial { top: 363px; }
+.arch-direct { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; margin-top: 12px; padding: 10px 16px; border-left: 3px dashed var(--green); background: #edf6f2; color: #275b49; font-size: 14px; }
+.arch-direct > b { font-size: 12px; }
+.arch-direct small { font-size: 12px; }
+.arch-takeaway { margin-top: auto; font-size: 22px; padding: 14px 20px; }
 .business-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin: 16px 0 35px; }
 .business-steps article { border-top: 3px solid var(--line); padding: 19px 20px 26px; background: #f7f9fc; }
 .business-steps article:first-child { border-color: var(--blue); background: var(--blue-soft); }
@@ -336,8 +357,19 @@ dialog > p { color: var(--muted); font-size: 13px; margin: 8px 0 18px; }
   .reading-mode .cover-visual > img { height: 280px; }
   .reading-mode .takeaway { margin-top: 25px; font-size: 20px; }
   .reading-mode .reference-table code { font-size: 13px; }
-  .reading-mode .arch-box b { font-size: 15px; white-space: normal; }
-  .reading-mode .arch-row { grid-template-columns: 1fr 36px 1fr 38px 1fr 36px 1fr; }
+  .reading-mode .arch-headings { display: block; margin-bottom: 16px; }
+  .reading-mode .arch-headings p:last-child, .reading-mode .arch-connectors, .reading-mode .arch-link-label { display: none; }
+  .reading-mode .arch-map { display: flex; flex-direction: column; gap: 28px; }
+  .reading-mode .arch-node { padding: 16px 18px; }
+  .reading-mode .arch-node h3 { flex-wrap: wrap; font-size: 22px; }
+  .reading-mode .arch-node p { font-size: 16px; margin-top: 7px; }
+  .reading-mode .arch-node small { font-size: 13px; margin-top: 4px; }
+  .reading-mode .arch-browser::after, .reading-mode .arch-cdn::after, .reading-mode .arch-backend::after { position: absolute; bottom: -24px; left: 0; width: 100%; text-align: center; content: "↓ 요청 · ↑ 응답"; font-size: 12px; color: var(--blue); }
+  .reading-mode .arch-backend::after { content: "↓ 수집 결과 저장 · ↑ 저장값 조회"; }
+  .reading-mode .arch-mobile-heading { display: block; margin-bottom: 14px; }
+  .reading-mode .arch-collection-intro { align-self: stretch; padding-top: 18px; border-top: 1px solid var(--line); }
+  .reading-mode .arch-collection-intro strong { font-size: 20px; }
+  .reading-mode .arch-direct { flex-direction: column; align-items: start; gap: 10px; padding: 16px; margin-top: 24px; }
 }
 @media screen and (max-width: 899px) {
   .presentation-toolbar { height: 60px; padding: 0 15px; gap: 8px; }
@@ -443,14 +475,6 @@ dialog > p { color: var(--muted); font-size: 13px; margin: 8px 0 18px; }
   .reading-mode .operation-panels p:not(.eyebrow) { font-size: 18px; }
   .reading-mode .efficiency-panel b { font-size: 19px; }
   .reading-mode .efficiency-panel span { font-size: 15px; }
-  .reading-mode .architecture { padding: 22px 18px; }
-  .reading-mode .arch-row, .reading-mode .arch-lower, .reading-mode .arch-collect { grid-template-columns: 1fr; gap: 18px; }
-  .reading-mode .arch-row .arch-arrow { font-size: 0; }
-  .reading-mode .arch-row .arch-arrow::after { content: "↕"; font-size: 27px; }
-  .reading-mode .arch-box { padding: 16px; }
-  .reading-mode .arch-box b { font-size: 22px; }
-  .reading-mode .arch-box small { font-size: 14px; }
-  .reading-mode .architecture-legend { flex-direction: column; gap: 12px; font-size: 13px; }
   .reading-mode .business-steps { grid-template-columns: 1fr 1fr; gap: 15px; margin: 0 0 20px; }
   .reading-mode .business-steps article { padding: 17px; }
   .reading-mode .business-num { font-size: 40px; margin: 18px 0 10px; }

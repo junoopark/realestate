@@ -153,14 +153,36 @@
       </section>
 
       <section class="slide" id="architecture" data-title="정리 · 서비스 아키텍처와 데이터 흐름" data-chapter="전체 구조" data-page="14">
-        <header class="slide-head compact"><p class="eyebrow">SERVICE ARCHITECTURE / 지금까지의 기능을 연결하면</p><h2>모으고, 저장하고, 사용자에게 보여주는 구조</h2></header>
-        <div class="architecture" role="img" aria-label="사용자 브라우저는 Vercel 화면과 CDN을 거쳐 Render FastAPI와 Supabase DB의 데이터를 조회합니다. Actions는 관리자 수집 API를 호출하고 FastAPI가 외부 API 네 곳과 정책 세 곳의 데이터를 수집해 DB에 저장합니다. 브라우저의 Google 인증과 이용 기록은 Supabase Auth와 DB에 직접 연결합니다.">
-          <div class="arch-row read-path"><div class="arch-box"><span>사용자</span><b>브라우저</b><small>차트 · 정책 · 다운로드</small></div><div class="arch-arrow"><span>HTTPS</span>→</div><div class="arch-box vercel"><span>프론트엔드</span><b>Vercel · CDN</b><small>HTML / CSS / JS<br>www.khmi.kr</small></div><div class="arch-arrow"><span>/api/* 전달</span>↔</div><div class="arch-box render"><span>백엔드</span><b>Render · FastAPI</b><small>조회 · 수집 · 가공<br>API 문서</small></div><div class="arch-arrow"><span>SQL · TLS</span>↔</div><div class="arch-box supabase"><span>영구 저장소</span><b>Supabase</b><small>PostgreSQL<br>지표 · 정책 · 이용 기록</small></div></div>
-          <div class="arch-lower"><div class="arch-auth"><span class="path-label">인증·이용 기록 경로</span><b>브라우저 ↔ Supabase Auth ↔ Google</b><p>로그인 세션 반환<br>이용 기록: 브라우저 → Supabase DB(RLS)</p></div><div class="arch-collect"><div class="arch-box"><span>예약</span><b>GitHub Actions</b><small>정량 매일 · 정책 6시간</small></div><span class="arch-arrow"><span>관리자 API → FastAPI</span>↑</span><div class="arch-box external"><span>외부 데이터</span><b>Open API 4개 · 정책 3곳</b><small>FastAPI가 요청 → 응답 정리 → DB 저장</small></div></div></div>
-        </div>
-        <div class="architecture-legend"><span><i class="legend-line"></i>조회 경로: 저장된 값을 우선 제공</span><span><i class="legend-line orange-line"></i>수집 경로: 새 공표분·수정치 반영</span></div>
-        <p class="takeaway">화면·서버·DB의 역할을 나누고, <strong>수집과 조회를 분리</strong>했습니다.</p>
-        <p class="speaker-note" hidden>전체 구조를 정리하면, 사용자가 Vercel에서 화면을 받고 같은 도메인의 api 경로로 데이터를 요청합니다. Vercel이 Render의 FastAPI로 전달하고 서버는 Supabase PostgreSQL의 저장값을 읽습니다. 지표 API에는 브라우저와 CDN, 서버 메모리 캐시를 두어 반복 조회를 줄였습니다. 수집 경로에서는 GitHub Actions가 관리자 API를 호출하고 FastAPI가 기관 API와 정책 사이트를 읽어 저장합니다. 저장된 데이터가 없는 지표의 최초 조회에는 수집이 일어날 수 있는 예외가 있습니다. 로그인과 이용 기록 추가는 브라우저에서 Supabase로 직접 연결됩니다. 코드가 main에 합쳐지면 Vercel과 Render가 자동 배포합니다.</p>
+        <header class="slide-head compact"><p class="eyebrow">SERVICE ARCHITECTURE / 조회와 수집, 두 흐름으로 이해하기</p><h2>화면을 보는 흐름과 데이터를 모으는 흐름</h2></header>
+        <figure class="architecture" aria-label="왼쪽은 사용자 조회, 오른쪽은 자동 수집입니다. 두 흐름은 Render에서 만나 Supabase DB로 연결됩니다.">
+          <div class="arch-headings"><p><b>A</b> 사용자 조회 <span>요청은 아래로, 응답은 위로</span></p><p><b>B</b> 자동 수집 <span>예약 실행으로 새 자료 반영</span></p></div>
+          <div class="arch-map">
+            <svg class="arch-connectors" viewBox="0 0 1316 432" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <marker id="arch-blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#2f5aa8"/></marker>
+                <marker id="arch-orange-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#bc683f"/></marker>
+                <marker id="arch-gray-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#8390a3"/></marker>
+              </defs>
+              <g fill="none" stroke="#2f5aa8" stroke-width="2" marker-start="url(#arch-blue-arrow)" marker-end="url(#arch-blue-arrow)"><path d="M289 92 V112"/><path d="M289 206 V226"/><path d="M289 320 V340"/></g>
+              <g fill="none" stroke="#bc683f" stroke-width="2.5" marker-end="url(#arch-orange-arrow)"><path d="M736 159 H658 V249 H580"/><path d="M321 320 V340"/></g>
+              <path d="M580 287 H736" fill="none" stroke="#bc683f" stroke-width="2.5" marker-start="url(#arch-orange-arrow)" marker-end="url(#arch-orange-arrow)"/>
+              <path d="M736 387 H580" fill="none" stroke="#8390a3" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arch-gray-arrow)"/>
+            </svg>
+            <article class="arch-node arch-browser"><h3>사용자 브라우저 <span>프론트엔드</span></h3><p>www.khmi.kr · 차트 · 정책 · 다운로드</p><small>Vercel에서 HTML·CSS·JavaScript 화면을 받음</small></article>
+            <article class="arch-node arch-cdn"><h3>Vercel CDN <span>전달·캐시</span></h3><p>화면의 <code>/api/*</code> 요청을 Render로 전달</p><small>캐시에 저장된 지표 응답이 있으면 먼저 제공</small></article>
+            <article class="arch-node arch-backend"><h3>Render · FastAPI <span>백엔드</span></h3><p>조회 요청 처리 + 외부 자료 수집·가공</p><small>사용자에게 DB 값을 반환하고, 수집 결과는 DB에 저장</small></article>
+            <article class="arch-node arch-database"><h3>Supabase PostgreSQL <span>DB</span></h3><p>지표 · 실거래 건수 · 정책 · 이용 기록 보관</p><small>수집·가공한 데이터를 저장하고, 바뀐 값만 갱신</small></article>
+            <div class="arch-collection-intro"><p class="arch-mobile-heading"><b>B</b> 자동 수집</p><strong>방문자가 없어도 데이터는 갱신됩니다.</strong><p>Actions는 실행을 요청하고,<br>Render가 자료를 모아 DB에 저장합니다.</p></div>
+            <article class="arch-node arch-scheduler"><h3>GitHub Actions <span>① 예약 실행</span></h3><p>정량 매일 09:40 KST · 정책 6시간마다</p><small>Render의 관리자 수집 API 호출 → 수집 시작</small></article>
+            <article class="arch-node arch-sources"><h3>외부 데이터 <span>② Render가 수집</span></h3><p>Open API 4개: 부동산원 · 한국은행 · 통계청 · 국토부</p><small>정책 3곳: 국토부·행안부 RSS / 금융위 웹 크롤링</small></article>
+            <article class="arch-node arch-seed"><h3>초기 데이터 적재 <span>서비스 시작 시</span></h3><p>DFMBA 전처리본 → Supabase DB</p><small>과거 데이터로 시작한 뒤, 예약 수집으로 계속 갱신</small></article>
+            <span class="arch-link-label arch-request">/api 요청 ↕ 응답</span><span class="arch-link-label arch-forward">캐시로 응답하지 못한 요청 전달</span><span class="arch-link-label arch-store">DB 조회 · <b>③ 수집 결과 저장</b></span>
+            <span class="arch-link-label arch-trigger">① 수집 시작</span><span class="arch-link-label arch-fetch">② 자료 요청·응답</span><span class="arch-link-label arch-initial">초기 적재</span>
+          </div>
+          <figcaption class="arch-direct"><b>별도 연결</b><span>로그인: 브라우저 ↔ Supabase Auth ↔ Google</span><span>이용 기록: 브라우저 → Supabase DB <small>(RLS 적용)</small></span></figcaption>
+        </figure>
+        <p class="takeaway arch-takeaway">홈·대시보드는 <strong>DB·캐시를 조회</strong>하고, 예약 수집은 <strong>DB를 갱신</strong>합니다.</p>
+        <p class="speaker-note" hidden>왼쪽 A는 사용자가 화면을 볼 때의 흐름입니다. Vercel에서 받은 화면이 같은 도메인의 api 경로로 데이터를 요청하면 CDN이 캐시를 확인하고, 필요한 요청을 Render의 FastAPI로 전달합니다. 서버는 Supabase PostgreSQL에서 저장값을 읽고 응답은 역방향으로 돌아옵니다. 오른쪽 B는 방문자가 없어도 실행되는 수집입니다. 1번 GitHub Actions는 정량 매일 09:40 KST, 정책 6시간마다 Render의 관리자 수집 API를 호출합니다. 2번 실제 외부 API 호출과 RSS·웹 크롤링, 자료 가공은 Render가 담당합니다. 3번 가공한 값은 아래의 Supabase DB에 저장합니다. Actions가 외부 기관이나 DB를 직접 호출하는 구조는 아닙니다. 오른쪽 아래는 서비스를 시작할 때 DFMBA 전처리 데이터를 DB에 적재한 보조 경로입니다. 초록색 줄의 로그인과 이용 기록은 브라우저에서 Supabase로 직접 연결됩니다. 홈·대시보드의 기본 조회는 DB와 캐시를 사용하며, 일부 개별 지표 API에는 값이 없거나 오래되었을 때 외부 수집을 보조적으로 실행하는 예외가 있습니다. 지표 캐시의 기본 시간은 브라우저 5분, CDN 1시간, 서버 메모리 10분이며 정책 API 전체에 동일하게 적용되는 것은 아닙니다.</p>
       </section>
 
       <section class="slide" id="business" data-title="비즈니스 모델 · 먼저 축적하고 수요를 확인" data-chapter="사업과 다음 단계" data-page="15">
