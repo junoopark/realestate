@@ -1,72 +1,77 @@
-"""이용 통계 — Supabase 의 activity_logs(로그인·로그아웃·데이터 내려받기, main #15)를 숫자로만 보여 준다.
+"""집계만 공개하는 이용 통계 및 개인정보 없는 관심 이벤트 수신."""
 
-기록은 화면이 supabase-js 로 직접 넣는다(database/migrations/003_activity_logs.sql). 이 API 는 DB 소유자 연결로
-관리자 집계 뷰(v_activity_daily · v_download_by_target)와 사용자 수만 읽는다. 사용자 ID·이메일은 내보내지 않는다.
-테이블이 없는 DB(로컬 SQLite, 003 을 실행하지 않은 Supabase)에서는 available=false 로 응답한다.
-"""
+import os
 
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Query, Response
-from sqlalchemy import text
+from fastapi import APIRouter, HTTPException, Query, Request, Response
+from fastapi.routing import APIRoute
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.db.session import get_engine
+from app.schemas import UsageBatchIn, UsageReceiptOut
 from app.services import cache
+from app.services.usage_analytics import record_events, usage_summary
 
-router = APIRouter(prefix="/usage", tags=["usage"])
-EVENTS = ("login", "logout", "download")
-
-
-def _available(conn) -> bool:
-    if conn.dialect.name != "postgresql":
-        return False
-    row = conn.execute(text("SELECT to_regclass('public.activity_logs') IS NOT NULL AND "
-                            "to_regclass('public.v_activity_daily') IS NOT NULL AND "
-                            "to_regclass('public.v_download_by_target') IS NOT NULL")).scalar()
-    return bool(row)
+MAX_BODY_BYTES = 16 * 1024
 
 
-def usage_summary(days: int = 30, top: int = 10) -> dict:
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    base = {"checked_at": now, "days": days, "source": "activity_logs (Supabase, main #15) · 집계 뷰 v_activity_daily · v_download_by_target"}
-    try:
-        with get_engine().connect() as conn:
-            if not _available(conn):
-                return {**base, "available": False,
-                        "reason": "이 DB 에 이용 기록 테이블(activity_logs)이 없습니다. Supabase SQL Editor 에서 database/migrations/003_activity_logs.sql 을 실행하면 생깁니다."}
-            daily = [dict(r._mapping) for r in conn.execute(text(
-                "SELECT day_kst, event, events, users FROM v_activity_daily "
-                "WHERE day_kst >= (now() AT TIME ZONE 'Asia/Seoul')::date - :days ORDER BY day_kst, event"), {"days": days})]
-            totals = {e: {"events": 0, "users": 0} for e in EVENTS}
-            for r in conn.execute(text(
-                    "SELECT event, count(*) AS events, count(DISTINCT user_id) AS users FROM activity_logs "
-                    "WHERE occurred_at >= now() - make_interval(days => :days) GROUP BY event"), {"days": days}):
-                totals[r.event] = {"events": int(r.events), "users": int(r.users)}
-            users = conn.execute(text("SELECT count(DISTINCT user_id) FROM activity_logs "
-                                      "WHERE occurred_at >= now() - make_interval(days => :days)"), {"days": days}).scalar()
-            all_time = conn.execute(text("SELECT count(*), count(DISTINCT user_id), min(occurred_at) FROM activity_logs")).one()
-            downloads = [dict(r._mapping) for r in conn.execute(text(
-                "SELECT target, format, downloads, users, last_at FROM v_download_by_target "
-                "ORDER BY downloads DESC, last_at DESC NULLS LAST LIMIT :top"), {"top": top})]
-    except SQLAlchemyError as exc:
-        return {**base, "available": False, "reason": f"이용 기록을 읽지 못했습니다: {type(exc).__name__}"}
-    for r in daily:
-        r["day_kst"] = r["day_kst"].isoformat()
-        r["events"], r["users"] = int(r["events"]), int(r["users"])
-    for r in downloads:
-        r["downloads"], r["users"] = int(r["downloads"]), int(r["users"])
-        r["last_at"] = r["last_at"].isoformat() if r["last_at"] else None
-    return {**base, "available": True, "totals": totals, "users": int(users or 0),
-            "all_time": {"events": int(all_time[0]), "users": int(all_time[1]),
-                         "since": all_time[2].isoformat() if all_time[2] else None},
-            "daily": daily, "downloads": downloads}
+class BoundedUsageRoute(APIRoute):
+    def get_route_handler(self):
+        handler = super().get_route_handler()
+
+        async def bounded(request: Request):
+            if request.method == "POST":
+                length = request.headers.get("content-length")
+                if length and (not length.isdigit() or int(length) > MAX_BODY_BYTES):
+                    raise HTTPException(413, "요청 본문은 16KB 이하여야 합니다.")
+                data = bytearray()
+                async for chunk in request.stream():
+                    if len(data) + len(chunk) > MAX_BODY_BYTES:
+                        raise HTTPException(413, "요청 본문은 16KB 이하여야 합니다.")
+                    data.extend(chunk)
+                sent = False
+
+                async def receive():
+                    nonlocal sent
+                    if sent:
+                        return {"type": "http.disconnect"}
+                    sent = True
+                    return {"type": "http.request", "body": bytes(data), "more_body": False}
+
+                request = Request(request.scope, receive)
+            return await handler(request)
+
+        return bounded
+
+
+router = APIRouter(prefix="/usage", tags=["usage"], route_class=BoundedUsageRoute)
 
 
 @router.get("")
-def usage(response: Response, days: int = Query(default=30, ge=1, le=365, description="최근 며칠"),
-          top: int = Query(default=10, ge=1, le=50, description="많이 내려받은 변수 몇 개")):
-    """최근 days 일의 로그인·로그아웃·내려받기 횟수와 사용자 수(일별), 많이 내려받은 변수. 개인 식별 정보는 없다."""
-    response.headers["Cache-Control"] = "public, max-age=300"
-    response.headers["CDN-Cache-Control"] = "public, max-age=600, stale-while-revalidate=3600"
-    return cache.get_or_set(f"usage:{days}:{top}", 300, lambda: usage_summary(days, top))
+def usage(response: Response, days: int = Query(default=30, ge=1, le=365, description="KST 오늘을 포함한 최근 며칠"),
+          top: int = Query(default=10, ge=1, le=50, description="각 순위에 표시할 대상 수")):
+    """기간별 로그인·다운로드, 지표 열람, 정책 상세 열람·원문 클릭 순위. 계정·세션 ID는 응답하지 않습니다."""
+    response.headers["Cache-Control"] = "public, max-age=60"
+    response.headers["CDN-Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    return cache.get_or_set(f"usage:{days}:{top}", 60, lambda: usage_summary(days, top))
+
+
+@router.post("/events", response_model=UsageReceiptOut)
+def collect_usage(batch: UsageBatchIn, request: Request, response: Response):
+    """최대 20건·16KB의 익명 관심 기록. 서버 catalog의 대상만 인정하며 같은 탭·대상·행동은 한 번 집계합니다.
+
+    임의 제목·URL·사용자 ID는 받지 않습니다. DNT/GPC 설정을 존중하며 원문 클릭은 실제 독해를 뜻하지 않습니다.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    origin = request.headers.get("origin")
+    allowed = {"https://www.khmi.kr", "https://khmi.kr",
+               *(o.strip().rstrip("/") for o in os.getenv("ALLOWED_ORIGINS", "http://127.0.0.1:5500,http://localhost:5500").split(","))}
+    if origin and origin.rstrip("/") not in allowed and origin != str(request.base_url).rstrip("/"):
+        raise HTTPException(403, "허용된 사이트에서만 기록할 수 있습니다.")
+    if request.headers.get("dnt") == "1" or request.headers.get("sec-gpc") == "1":
+        return {"accepted": 0, "duplicates": 0, "rejected": 0, "ignored": True}
+    try:
+        result = record_events(batch)
+    except SQLAlchemyError:
+        raise HTTPException(503, "이용 기록을 저장할 수 없습니다.")
+    if result["accepted"]:
+        cache.clear("usage:")
+    return result

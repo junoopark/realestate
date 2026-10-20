@@ -46,7 +46,7 @@ python -m app.collect_policies --export data/policy-monitor.snapshot.json
 1. Supabase Connect → Session pooler의 PostgreSQL URL을 확인합니다.
 2. Render 서버 환경변수 DATABASE_URL에 URL을 저장합니다. 예: postgresql+psycopg://postgres.PROJECT:PASSWORD@HOST.pooler.supabase.com:5432/postgres
 3. 비밀번호의 @, /, # 등은 URL 인코딩합니다. URL·DB 비밀번호·관리자 토큰은 HTML·JS·GitHub에 넣지 않습니다.
-4. 서비스를 재시작합니다. DB 소유자 권한으로 ORM 테이블(정성 5 + 지표·실거래 6)을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다. 이용 기록은 별도 `003_activity_logs.sql`로 만듭니다.
+4. 서비스를 재시작합니다. DB 소유자 권한으로 ORM 테이블(정성 5 + 지표·실거래 6 + 익명 조회 1)을 생성하고 backend/data/knowledge.json, policies.json, policy-history.json을 반영합니다. 먼저 수동 생성하려면 database/schema.sql을 Supabase SQL Editor에서 실행할 수 있습니다. 로그인·다운로드 기록은 별도 `003_activity_logs.sql`로 만듭니다. 익명 조회 테이블의 수동 SQL은 `004_usage_events.sql`입니다.
 5. /policies, /policies/monitor, /policies/history의 storage.type=postgresql, storage.available=true를 확인합니다. CLI 또는 관리자 API를 한 번 실행해 실제 정책 후보를 저장합니다.
 
 서버는 psycopg 3로 TLS 연결합니다. 브라우저에서 Supabase 익명 REST 테이블 접근을 사용하지 않고 RLS를 켭니다. FastAPI의 DB 소유자 연결로 읽고 씁니다. 별도 제한된 DB 역할을 쓰면 팀원이 테이블 권한과 RLS 정책을 설정해야 합니다.

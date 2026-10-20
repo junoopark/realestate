@@ -1,6 +1,8 @@
 """테이블 정의 — 정량 지표(indicator_*)와 정성 자료(content_*·policy_*). 대응 SQL 은 database/schema.sql."""
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.session import Base
@@ -169,3 +171,23 @@ class PolicyBrief(Base):
     last_success_at: Mapped[str | None] = mapped_column(String(40))
     status: Mapped[str] = mapped_column(String(20))
     error: Mapped[str | None] = mapped_column(Text)
+
+
+class UsageEvent(Base):
+    """익명 탭 방문의 관심 신호. 사용자·IP·UA 없이 서버가 검증한 대상만 저장한다."""
+    __tablename__ = "usage_events"
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(36))
+    event: Mapped[str] = mapped_column(String(20))
+    target: Mapped[str] = mapped_column(String(100))
+    page: Mapped[str] = mapped_column(String(20))
+    label: Mapped[str] = mapped_column(Text)
+    scope: Mapped[str] = mapped_column(String(10), default="")
+    agency: Mapped[str] = mapped_column(String(100), default="")
+    source_url: Mapped[str] = mapped_column(Text, default="")
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint("session_id", "event", "target", name="uq_usage_session_event_target"),
+        Index("ix_usage_events_time", "occurred_at"),
+        Index("ix_usage_events_event_target_time", "event", "target", "occurred_at"),
+    )

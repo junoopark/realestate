@@ -253,6 +253,7 @@ function renderMap() {
     li.addEventListener("focus", () => highlight(r, true));
     li.addEventListener("blur", () => highlight(r, false));
   }
+  window.KHMI_TELEMETRY?.observeIndicators(plotBox, [`${m.var}:sido-map`]);
 }
 
 // 지도 내려받기: 순위 순서의 17개 시도 표 (export.js 표 형식)
@@ -328,6 +329,7 @@ function renderGraphOfMonth() {
     subtitle: "연% · 월 · 전국",
     height: 270,
     source: `자료: 한국은행 ECOS, ${dataBase(ms[0])}`,
+    usageTargets: ms.map(m => `${m.var}:${m.scope}`),
   });
   const lasts = ids.map(([, n]) => latestOf(merged, n));
   const [, ktb, mort] = lasts;

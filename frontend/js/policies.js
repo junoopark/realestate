@@ -31,7 +31,11 @@
     if (policy.original_source_url && policy.original_source_url !== policy.source_url) links.append(link("소관 기관 자료 ↗", policy.original_source_url));
     if (automatic && policy.excerpt_url && policy.excerpt_url !== policy.source_url) links.append(link("발췌한 문서 ↗", policy.excerpt_url));
     links.append(el("span", "muted", automatic ? `자동 요약 ${timeText(policy.generated_at)} · 원문 수집 ${timeText(policy.source_checked_at)}` : `원문 검토 ${policy.verified_at || data.verified_at}`)); content.append(links);
-    details.append(summary, content); return details;
+    details.append(summary, content);
+    const telemetry = window.KHMI_TELEMETRY, target = `brief:${policy.id}`;
+    telemetry?.bindPolicy(details, target);
+    links.querySelectorAll("a").forEach(anchor => telemetry?.bindPolicyLink(anchor, target));
+    return details;
   }
   function briefs() {
     container.append(sectionTitle("주요 정책 정리", "공식 발표에서 자동으로 추린 핵심 문장과 검토한 정책 자료입니다. 카드를 열면 요약 방식과 원문을 볼 수 있습니다."));
@@ -93,7 +97,9 @@
         meta.append(el("span", "qual-tag", "원문 확인 필요"), el("span", "", item.agency), el("time", "", item.published_at?.slice(0,10) || "발표일 미확인"));
         article.append(meta, el("h4", "", item.title));
         if (item.summary) article.append(el("p", "", `원문 발췌: ${item.summary}`));
-        article.append(el("p", "coverage-note", `분류 키워드: ${(item.matched_keywords || []).join(" · ") || "없음"}`), link("발표 원문 확인 ↗", item.source_url));
+        const original = link("발표 원문 확인 ↗", item.source_url);
+        window.KHMI_TELEMETRY?.bindPolicyLink(original, `monitor:${item.id}`);
+        article.append(el("p", "coverage-note", `분류 키워드: ${(item.matched_keywords || []).join(" · ") || "없음"}`), original);
         if (item.revision_count > 1) article.append(el("p", "coverage-note", `수집한 제목·개요 변경 ${item.revision_count - 1}회 · 정책 내용 변경 여부는 원문 확인`));
         results.append(article);
       }

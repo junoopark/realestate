@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서비스 이용 통계 · KHMI</title>
+  <meta name="description" content="KHMI의 지표별 다운로드와 차트 열람, 정책 상세 열람 및 원문 클릭 통계를 확인합니다.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/usage.css">
+</head>
+<body class="usage-page">
+  <a class="usage-skip" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <h1><a href="index.html#home" title="Home으로 이동">KHMI</a></h1>
+    <div class="header-right">
+      <nav id="view-nav" class="main-nav" aria-label="주요 메뉴">
+        <a href="index.html#home" data-view="home">Home</a>
+        <div class="nav-item">
+          <a href="index.html#overview" class="nav-top" data-nav="dashboard">부동산 대시보드</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-dashboard"><span class="sr-only">부동산 대시보드 하위 메뉴 열기</span></button>
+          <ul class="nav-menu" id="menu-dashboard">
+            <li><a href="index.html#overview" data-view="overview">Overview</a></li>
+            <li><a href="index.html#demand" data-view="demand">① 임차수요 압력</a></li>
+            <li><a href="index.html#supply" data-view="supply">② 주택공급·재고</a></li>
+            <li><a href="index.html#finance" data-view="finance">③ 매매·전세 시장</a></li>
+            <li><a href="index.html#rental" data-view="rental">④ 임대시장 수급</a></li>
+            <li><a href="index.html#trigger" data-view="trigger">⑤ 시장심리</a></li>
+            <li><a href="index.html#macro" data-view="macro">⑥ 금리·대출·거시경제</a></li>
+          </ul>
+        </div>
+        <div class="nav-item">
+          <a href="policies.html" class="nav-top" data-nav="policy">부동산 정책</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-policy"><span class="sr-only">부동산 정책 하위 메뉴 열기</span></button>
+          <ul class="nav-menu" id="menu-policy">
+            <li><a href="policies.html#briefs" data-section="briefs">주요 정책 정리</a></li>
+            <li><a href="policies.html#monitor" data-section="monitor">새 발표 모니터링</a></li>
+            <li><a href="policies.html#history" data-section="history">정책 히스토리</a></li>
+            <li><a href="policies.html#sources" data-section="sources">수집 출처 · 방법</a></li>
+          </ul>
+        </div>
+        <div class="nav-item">
+          <a href="about.html" class="nav-top" data-nav="about">About</a>
+          <button type="button" class="nav-caret" aria-expanded="false" aria-controls="menu-about"><span class="sr-only">About 하위 메뉴 열기</span></button>
+          <ul class="nav-menu nav-menu-end" id="menu-about">
+            <li><a href="about.html#intro">사이트 소개</a></li>
+            <li><a href="about.html#data">데이터·방법</a></li>
+            <li><a href="learn.html">부동산 기초</a></li>
+            <li><a href="usage.html" aria-current="page">서비스 이용 통계</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="controls"><div id="auth-slot" class="auth-slot"></div><button id="theme-btn" type="button"><span class="ico" aria-hidden="true"></span><span class="lbl"></span></button></div>
+    </div>
+  </header>
+
+  <main id="main" class="container usage-main">
+    <section class="usage-hero" aria-labelledby="usage-title">
+      <p class="usage-eyebrow">KHMI / SERVICE INSIGHTS</p>
+      <h2 id="usage-title">어떤 정보에<br class="usage-mobile-break"> 관심이 모였을까요?</h2>
+      <p class="usage-dek">많이 내려받은 지표, 화면에서 살펴본 차트, 관심을 끈 정책 발표를<br class="usage-desktop-break"> 실제 이용 기록으로 확인합니다.</p>
+      <nav class="usage-jump" aria-label="통계 항목">
+        <a href="#indicators">지표별 순위 <span aria-hidden="true">↗</span></a>
+        <a href="#policies">정책·뉴스 순위 <span aria-hidden="true">↗</span></a>
+        <a href="#method">집계 기준 <span aria-hidden="true">↗</span></a>
+      </nav>
+    </section>
+
+    <div class="usage-toolbar">
+      <div class="usage-periods" role="group" aria-label="통계 기간">
+        <button type="button" data-days="7" aria-pressed="false">최근 7일</button>
+        <button type="button" data-days="30" aria-pressed="true">최근 30일</button>
+        <button type="button" data-days="90" aria-pressed="false">최근 90일</button>
+      </div>
+      <div class="usage-actions">
+        <button type="button" id="usage-refresh" class="usage-button">새로고침 <span aria-hidden="true">↻</span></button>
+        <button type="button" id="usage-export" class="usage-button" disabled>순위 CSV <span aria-hidden="true">↓</span></button>
+      </div>
+    </div>
+    <div class="usage-data-line">
+      <p id="usage-period-label">한국 시간(KST) · 오늘 포함 최근 30일</p>
+      <p id="usage-checked">통계 조회 대기</p>
+    </div>
+    <p id="usage-status" class="usage-status" role="status" aria-live="polite">이용 기록을 불러오고 있습니다.</p>
+    <noscript><p class="usage-status usage-status-error">통계를 보려면 브라우저에서 JavaScript를 켜 주세요.</p></noscript>
+
+    <div id="usage-content" aria-busy="true">
+      <section class="usage-kpis" aria-label="기간별 주요 이용 통계">
+        <article class="usage-kpi" data-kind="download">
+          <p>데이터 다운로드</p><strong id="kpi-download">—</strong><span>회</span>
+          <small id="kpi-download-note">통계 조회 중</small>
+        </article>
+        <article class="usage-kpi" data-kind="indicator_view">
+          <p>차트 열람</p><strong id="kpi-indicator_view">—</strong><span>회</span>
+          <small id="kpi-indicator_view-note">통계 조회 중</small>
+        </article>
+        <article class="usage-kpi" data-kind="policy_view">
+          <p>정책 상세 열람</p><strong id="kpi-policy_view">—</strong><span>회</span>
+          <small id="kpi-policy_view-note">통계 조회 중</small>
+        </article>
+        <article class="usage-kpi" data-kind="policy_open">
+          <p>정책 원문 클릭</p><strong id="kpi-policy_open">—</strong><span>회</span>
+          <small id="kpi-policy_open-note">통계 조회 중</small>
+        </article>
+      </section>
+      <p id="usage-coverage" class="usage-coverage">다운로드와 열람 통계는 기록을 시작한 시점이 서로 다를 수 있습니다.</p>
+
+      <section class="usage-section usage-trend" aria-labelledby="trend-title">
+        <div class="usage-section-head">
+          <div><p class="usage-section-number">01 / ACTIVITY</p><h3 id="trend-title">일별 이용 추이</h3></div>
+          <p class="usage-section-aside">활동 횟수 · KST 기준</p>
+        </div>
+        <div class="usage-legend" aria-label="차트 범례">
+          <span data-kind="download">다운로드</span><span data-kind="indicator_view">차트 열람</span><span data-kind="policy_view">정책 상세</span><span data-kind="policy_open">원문 클릭</span>
+        </div>
+        <div id="usage-trend-chart" class="usage-chart"><p class="usage-empty">통계 조회 중</p></div>
+        <p class="usage-caption">기록이 있는 날짜만 표시합니다. 기록 시작 전 기간이나 조회할 수 없는 통계를 0으로 채우지 않습니다.</p>
+        <details class="usage-details">
+          <summary>일별 수치 보기</summary>
+          <div class="usage-table-wrap">
+            <table class="usage-table usage-daily-table"><caption class="sr-only">기록이 있는 날짜별 활동 횟수</caption><thead><tr><th scope="col">날짜(KST)</th><th scope="col">다운로드</th><th scope="col">차트 열람</th><th scope="col">정책 상세</th><th scope="col">원문 클릭</th></tr></thead><tbody id="usage-daily-body"><tr><td colspan="5">통계 조회 중</td></tr></tbody></table>
+          </div>
+        </details>
+      </section>
+
+      <section id="indicators" class="usage-section" aria-labelledby="indicators-title">
+        <div class="usage-section-head">
+          <div><p class="usage-section-number">02 / INDICATORS</p><h3 id="indicators-title">많이 찾은 부동산 지표</h3></div>
+          <p class="usage-section-aside">각 상위 10개 · 같은 기간으로 비교</p>
+        </div>
+        <div class="usage-ranking-grid">
+          <article class="usage-rank-panel">
+            <div class="usage-panel-head"><h4>많이 내려받은 지표</h4><span>다운로드 횟수</span></div>
+            <p class="usage-panel-note">CSV·XLSX를 합산한 지표별 다운로드입니다.</p>
+            <div id="download-ranking" class="usage-ranking"><p class="usage-empty">통계 조회 중</p></div>
+            <p id="download-ranking-count" class="usage-caption"></p>
+          </article>
+          <article class="usage-rank-panel">
+            <div class="usage-panel-head"><h4>많이 살펴본 지표</h4><span>차트 열람 횟수</span></div>
+            <p class="usage-panel-note">차트 영역의 50% 이상이 화면에 2초 이상 보이면 집계합니다.</p>
+            <div id="indicator-ranking" class="usage-ranking"><p class="usage-empty">통계 조회 중</p></div>
+            <p id="indicator-ranking-count" class="usage-caption"></p>
+          </article>
+        </div>
+      </section>
+
+      <section id="policies" class="usage-section" aria-labelledby="policies-title">
+        <div class="usage-section-head">
+          <div><p class="usage-section-number">03 / POLICY &amp; NEWS</p><h3 id="policies-title">관심을 끈 정책·발표</h3></div>
+          <label class="usage-sort">정렬
+            <select id="policy-sort"><option value="interest">전체 관심순</option><option value="views">상세 열람순</option><option value="opens">원문 클릭순</option></select>
+          </label>
+        </div>
+        <p class="usage-panel-note">공식 기관의 정책·보도자료를 대상으로 합니다. 상세 열람과 원문 클릭의 합산 상위 50개 안에서 정렬합니다.</p>
+        <div class="usage-table-wrap usage-policy-wrap">
+          <table class="usage-table usage-policy-table"><caption class="sr-only">정책·발표별 상세 열람과 원문 클릭 순위</caption><thead><tr><th scope="col" class="usage-rank-col">순위</th><th scope="col">정책·발표 제목</th><th scope="col">상세 열람</th><th scope="col">원문 클릭</th></tr></thead><tbody id="policy-ranking"><tr><td colspan="4" class="usage-empty">통계 조회 중</td></tr></tbody></table>
+        </div>
+        <p id="policy-ranking-count" class="usage-caption"></p>
+        <p class="usage-caption">원문 클릭은 외부 사이트로 이동한 횟수입니다. 원문을 끝까지 읽었는지는 알 수 없습니다. 상세 펼치기 기능이 없는 발표는 원문 클릭만 기록될 수 있습니다.</p>
+      </section>
+
+      <section class="usage-section" aria-labelledby="download-detail-title">
+        <div class="usage-section-head">
+          <div><p class="usage-section-number">04 / DOWNLOADS</p><h3 id="download-detail-title">어떤 형태로 내려받았을까요?</h3></div>
+        </div>
+        <div class="usage-breakdown-grid">
+          <article class="usage-breakdown-panel"><h4>파일 형식</h4><p class="usage-panel-note">다운로드에 선택한 파일 형식</p><div id="format-ranking" class="usage-ranking"><p class="usage-empty">통계 조회 중</p></div></article>
+          <article class="usage-breakdown-panel"><h4>포함된 지역</h4><p class="usage-panel-note">여러 지역을 내려받으면 각 지역에 한 번씩 집계합니다.</p><div id="region-ranking" class="usage-ranking"><p class="usage-empty">통계 조회 중</p></div><p class="usage-caption">지역 합계는 다운로드 횟수보다 클 수 있습니다.</p></article>
+        </div>
+      </section>
+    </div>
+
+    <section id="method" class="usage-method" aria-labelledby="method-title">
+      <div><p class="usage-section-number">READING THE NUMBERS</p><h3 id="method-title">이 숫자를 읽는 방법</h3></div>
+      <dl>
+        <div><dt>다운로드와 열람은 다른 활동입니다</dt><dd>다운로드는 로그인 후 파일을 내려받은 기록입니다. 차트 열람·정책 상세 열람·원문 클릭은 로그인 여부와 관계없이 별도로 집계합니다.</dd></div>
+        <div><dt>열람 횟수는 방문자 수가 아닙니다</dt><dd>브라우저 탭의 세션을 기준으로 중복을 줄입니다. 같은 사람도 여러 탭이나 기기를 사용하면 별도로 집계될 수 있으므로 세션을 사람 수로 해석하지 않습니다.</dd></div>
+        <div><dt>과거의 열람 기록은 소급하지 않습니다</dt><dd id="usage-since-note">차트·정책의 열람 기록은 이 기능을 도입한 이후부터 쌓입니다. 기존 다운로드 기록과 집계 시작일이 다를 수 있습니다.</dd></div>
+        <div><dt>서비스 이용의 일부를 보여줍니다</dt><dd>추적 방지 설정(DNT)·광고 차단·통신 오류 등으로 열람 기록이 누락될 수 있습니다. 페이지 방문 수는 별도의 Vercel Web Analytics와 집계 기준이 다릅니다.</dd></div>
+        <div><dt>집계 숫자만 공개합니다</dt><dd>이 화면과 CSV에는 이메일·이름·개별 사용자 식별자를 담지 않습니다. <a href="about.html#privacy">개인정보 처리 안내</a>에서 이용 기록의 처리 목적을 확인할 수 있습니다.</dd></div>
+      </dl>
+      <p id="usage-extra-notes" class="usage-caption"></p>
+    </section>
+    <footer class="usage-footer"><p>Korea Housing Market Intelligence</p><a href="about.html">사이트 소개 →</a></footer>
+  </main>
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="js/telemetry.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/usage.js"></script>
+</body>
+</html>

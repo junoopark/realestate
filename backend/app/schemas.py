@@ -1,6 +1,9 @@
 """API 입출력의 모양 (Pydantic). Swagger(/docs) 의 응답 예시가 여기서 만들어진다. 저장 방식은 db/models.py 가 맡는다."""
 
-from pydantic import BaseModel, Field
+from typing import Literal
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SourceInfo(BaseModel):
@@ -91,3 +94,24 @@ class RefreshOut(BaseModel):
     checked_at: str | None = None
     changed: int = Field(default=0, description="새로·수정된 값의 합. 0 이면 캐시를 비우지 않는다")
     results: list[RefreshResultItem] = Field(default_factory=list)
+
+
+class UsageEventIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    event_id: UUID = Field(description="재전송해도 같은 UUID를 사용")
+    event: Literal["indicator_view", "policy_view", "policy_open"]
+    target: str = Field(min_length=1, max_length=100, description="V043:nation 또는 brief:/monitor:/history: 뒤에 서버가 제공한 정책 ID")
+    page: Literal["index", "dashboard", "policies", "history"]
+
+
+class UsageBatchIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: UUID = Field(description="sessionStorage에 저장하는 임의 UUID. 로그인 계정과 연결하지 않음")
+    events: list[UsageEventIn] = Field(min_length=1, max_length=20)
+
+
+class UsageReceiptOut(BaseModel):
+    accepted: int
+    duplicates: int
+    rejected: int
+    ignored: bool = False

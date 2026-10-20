@@ -319,6 +319,9 @@ function drawMetric(box, m, regions, opts = {}) {
       release: m.release,
     },
   });
+  if (values.some(series => series.some(value => value != null))) {
+    window.KHMI_TELEMETRY?.observeIndicators(box, opts.usageTargets || [`${m.var}:${m.scope}`]);
+  }
 }
 
 // 대시보드 하위 탭 줄 (Overview + 6개 동인)

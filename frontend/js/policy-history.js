@@ -83,8 +83,11 @@ window.PolicyHistory = (() => {
     const sources = el("div", "history-event-sources"); sources.append(el("span", "", event.agency));
     for (const source of event.sources) {
       const anchor = link(`${source.title} ↗`, source.url); anchor.title = source.organization; sources.append(anchor);
+      window.KHMI_TELEMETRY?.bindPolicyLink(anchor, `history:${event.id}`);
     }
-    content.append(official, context, note, sources); details.append(summary, content); return details;
+    content.append(official, context, note, sources); details.append(summary, content);
+    window.KHMI_TELEMETRY?.bindPolicy(details, `history:${event.id}`);
+    return details;
   }
   function reset() { eraId = "all"; topic = "all"; query = ""; render(); root.querySelector("input[type=search]")?.focus({ preventScroll: true }); }
   function renderResults() {

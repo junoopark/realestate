@@ -98,7 +98,8 @@ KHMI(Korea Housing Market Intelligence)는 흩어져 있는 주택시장 공공 
 | GET | `/indicators/bundle` | 여러 지표 시계열을 한 번에. `set=all`이면 51개 변수 전체(DB 기본 패널 + Open API 실제 수집값) |
 | GET | `/indicators/{var}` | 지표 시계열 (DB에 캐시, 없으면 외부 API 1회 수집) |
 | GET | `/indicators/status` | 지표별 수집 상태 · 최근 수집 기록 |
-| GET | `/usage` | 이용 통계 — 로그인·로그아웃·데이터 내려받기 횟수와 사용자 수(일별), 많이 내려받은 변수. 개인 정보 없음 (`activity_logs` 집계 뷰) |
+| GET | `/usage` | 기간별 다운로드·지표 조회·정책 상세/원문 클릭 순위와 일별 집계. 개인 식별 정보 없음 |
+| POST | `/usage/events` | 지표 조회·정책 상세/원문 클릭을 익명 탭 세션 기준으로 수집. 검증된 대상 ID만 허용 |
 | GET | `/knowledge` | 부동산 기초 학습 자료 |
 | GET | `/policies` | 주요 정책 요약 |
 | GET | `/policies/monitor` | 정책 발표 수집 현황 |
@@ -137,6 +138,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | 항목 | 주소 |
 |---|---|
 | 대시보드 | https://www.khmi.kr |
+| 이용 통계 | https://www.khmi.kr/usage.html |
 | API 연동 실습 페이지 | https://www.khmi.kr/demo.html |
 | CDN 경유 API (화면이 부르는 주소) | https://www.khmi.kr/api/indicators/bundle?set=all |
 | Swagger UI (API 명세) | https://www.khmi.kr/api/docs |
@@ -146,7 +148,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 - 매일 수집은 이 저장소의 GitHub Actions 가 트리거합니다. 09:40 에 API 서버의 수집 API(실거래 건수 → R-ONE·ECOS·KOSIS → 실거래 합계)를, 6시간마다 정책 수집 API 를 부릅니다. 외부 API 호출과 DB 저장은 API 서버가 맡고, 오래 걸리는 실거래 수집은 서버의 백그라운드 작업으로 돌립니다(`POST /indicators/rtms/collect` → `GET /indicators/rtms/job`).
 - 정책 수집은 주요 정책 자동 요약까지 같은 작업에서 처리합니다. 새 요약은 `policy_briefs`에 보관해 재배포에도 유지합니다. 본문을 읽지 못한 후보는 다음 실행에서 재시도하며, `/api/policies`의 `automation`에서 처리 결과를 확인합니다. 선정 기준·처리 한도·배포 절차는 [정성 자료 가이드](docs/qualitative-guide.md#주요-정책-자동-정리)에 있습니다.
 - 저장소 비밀값은 `POLICY_API_BASE_URL`·`POLICY_ADMIN_TOKEN`·`SITE_BASE_URL` 3개뿐입니다. 외부 API 키와 DB 주소(`DATABASE_URL`)는 API 서버(Render) 환경변수에만 둡니다.
-- Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase 를 씁니다. 화면이 supabase-js 공개 키로 직접 기록하고(RLS: 본인 기록 추가만), API 서버가 `/usage` 로 집계합니다.
+- Google 로그인(Supabase Auth)과 이용 기록(`activity_logs`)도 같은 Supabase를 씁니다. 로그인·다운로드는 화면이 supabase-js로 직접 기록하고(RLS: 본인 기록 추가만), 익명 차트·정책 조회는 FastAPI의 `/usage/events`를 거쳐 `usage_events`에 저장합니다. `/usage`는 개인 식별 정보 없이 숫자로 집계합니다. 측정 기준과 한계는 [이용 통계 가이드](docs/usage-analytics.md)를 참고하세요.
 
 ---
 

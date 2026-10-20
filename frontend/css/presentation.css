@@ -331,6 +331,7 @@ th { text-align: left; font-weight: 650; }
 .db-reference th, .db-reference td { padding-top: 11px; padding-bottom: 11px; }
 .db-reference small { margin-top: 1px; }
 .db-reference code { font-size: 16px; }
+#db-policy .db-reference th, #db-policy .db-reference td { padding-top: 7px; padding-bottom: 7px; }
 .appendix .takeaway { font-size: 19px; padding: 14px 18px; }
 .appendix .slide-head h2 { font-size: 38px; }
 .appendix-end { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-top: auto; font-size: 13px; }

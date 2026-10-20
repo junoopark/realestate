@@ -43,7 +43,23 @@ def initialize_storage():
         with engine.begin() as connection:
             for table in Base.metadata.sorted_tables:
                 connection.execute(text(f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY'))
+            # New anonymous telemetry is written only through the bounded FastAPI endpoint.
+            # PostgreSQL installations outside Supabase may not define these roles.
+            connection.execute(text("""
+                DO $$ BEGIN
+                  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+                    REVOKE ALL ON usage_events FROM anon;
+                  END IF;
+                  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+                    REVOKE ALL ON usage_events FROM authenticated;
+                  END IF;
+                END $$;
+            """))
     with Session(engine) as session:
+        if session.get(ContentSnapshot, "usage-measurement") is None:
+            measurement = {"started_at": utc_now(), "version": 1}
+            session.add(ContentSnapshot(key="usage-measurement", content=measurement,
+                                        content_hash=digest(measurement), updated_at=measurement["started_at"]))
         for key in ("knowledge", "policies", "policy-history"):
             value = read_seed(key)
             if value is None:

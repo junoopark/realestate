@@ -1,4 +1,6 @@
--- KHMI 스키마. ORM(backend/app/db/models.py)과 같다. DB 소유자로 실행한다. FastAPI 도 시작 시 없는 테이블만 만든다.
+-- KHMI 정량·정성 스키마. ORM(backend/app/db/models.py)에 대응한다. DB 소유자로 실행한다.
+-- 이용 기록은 migrations/003_activity_logs.sql, migrations/004_usage_events.sql을 함께 참고한다.
+-- FastAPI는 시작 시 activity_logs를 제외한 ORM 테이블 중 없는 테이블만 만든다.
 -- 익명/공개 REST 정책은 없다. 브라우저는 FastAPI 를 통해서만 읽는다.
 
 -- ── 정량 지표: 외부 Open API(R-ONE·ECOS·KOSIS) → DB 캐시 → GET /indicators ──
