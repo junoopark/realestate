@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>설명변수 시계열 보드</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 상단 고정 조작줄 + 종속변수 기준 띠 + 동인별 소형 다중 차트(small multiples) 격자, 호버 시점이 모든 차트에 동기화 */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --fg: #16202b;
+  --muted: #5c6b7a;
+  --line: #dde3ea;
+  --grid: #edf1f5;
+  --accent: #1f5fae;
+  --y: #8a96a3;
+  --d1: #2a7a8c; --d2: #6b8e23; --d3: #b0642a; --d4: #1f5fae; --d5: #9a4f96; --d6: #4a5a6e;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151c; --surface: #161e27; --fg: #e4eaf0; --muted: #91a0b0; --line: #26313d; --grid: #1d2732;
+    --accent: #6ea8ec; --y: #75828f;
+    --d1: #5cb3c4; --d2: #9cc456; --d3: #e09a5f; --d4: #6ea8ec; --d5: #cc8ac8; --d6: #9aaabd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151c; --surface: #161e27; --fg: #e4eaf0; --muted: #91a0b0; --line: #26313d; --grid: #1d2732;
+  --accent: #6ea8ec; --y: #75828f;
+  --d1: #5cb3c4; --d2: #9cc456; --d3: #e09a5f; --d4: #6ea8ec; --d5: #cc8ac8; --d6: #9aaabd;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1440px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { padding-block: 28px 16px; display: grid; gap: 6px; }
+h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 0; color: var(--muted); max-width: 70ch; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
+.stats b { color: var(--fg); font-family: var(--font-data); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-block: 1px solid var(--line); }
+.bar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding-block: 10px; }
+.field { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+select, input[type="search"] { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+input[type="search"] { width: 160px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 0.78rem; border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 999px; padding: 3px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, select:focus-visible, input:focus-visible, .toggle input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--muted); }
+.toggle input { accent-color: var(--accent); }
+.hover-read { margin-left: auto; font-family: var(--font-data); font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.yband { margin-block: 18px 6px; display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 16px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.yband .lbl { font-size: 0.72rem; letter-spacing: 0.06em; color: var(--muted); }
+.yband .name { font-weight: 600; }
+.yband .val { font-family: var(--font-data); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.yband svg { width: 100%; height: auto; display: block; }
+
+section.driver { margin-block: 26px; }
+section.driver > h2 { margin: 0 0 10px; font-size: 1rem; font-weight: 600; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+section.driver > h2 .no { font-family: var(--font-data); color: var(--c); }
+section.driver > h2 small { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px 8px; display: grid; gap: 4px; min-width: 0; }
+.card .head { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+.card .vid { font-family: var(--font-data); font-size: 0.72rem; color: var(--c); flex: none; }
+.card .ttl { font-size: 0.85rem; font-weight: 600; line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
+.card .meta { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.68rem; color: var(--muted); }
+.card .meta span { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.card .meta .lvl-fallback { border-style: dashed; }
+.card .nums { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.card .now { font-size: 1.02rem; }
+.card .now small { font-size: 0.7rem; color: var(--muted); margin-left: 4px; }
+.card .chg { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+.card svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.card .foot { font-size: 0.66rem; color: var(--muted); line-height: 1.35; overflow-wrap: anywhere; }
+.card.empty svg { opacity: 0.4; }
+
+svg text { fill: var(--muted); font-family: var(--font-data); font-size: 9px; }
+svg .gl { stroke: var(--grid); stroke-width: 1; }
+svg .ln { fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+svg .ar { fill: var(--c); opacity: 0.08; stroke: none; }
+svg .yl { fill: none; stroke: var(--y); stroke-width: 1.1; stroke-dasharray: 3 3; }
+svg .pt { fill: var(--c); stroke: var(--surface); stroke-width: 1.5; }
+svg .xh { stroke: var(--fg); stroke-width: 1; opacity: 0.35; }
+svg .hp { fill: var(--surface); stroke: var(--c); stroke-width: 2; }
+
+.empty-note { color: var(--muted); padding: 40px 0; text-align: center; }
+footer { color: var(--muted); font-size: 0.75rem; padding-block: 24px 40px; border-top: 1px solid var(--line); margin-top: 30px; display: grid; gap: 4px; }
+@media (max-width: 640px) {
+  .yband { grid-template-columns: minmax(0, 1fr); }
+  .hover-read { margin-left: 0; width: 100%; }
+  input[type="search"] { width: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>설명변수 시계열 보드</h1>
+    <p class="sub">월세통합가격지수(Y)를 설명하는 후보 변수들의 전처리 계열입니다. 6개 동인별로 묶었고, 차트 위에 마우스를 올리면 모든 차트가 같은 시점을 가리킵니다.</p>
+    <div class="stats" id="stats"></div>
+  </header>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <label class="field" for="region">지역 <select id="region"></select></label>
+    <div class="chips" id="drivers" role="group" aria-label="동인 선택"></div>
+    <label class="field" for="q"><input type="search" id="q" placeholder="변수명·ID 검색"></label>
+    <label class="toggle" for="ov"><input type="checkbox" id="ov"><span>Y 겹쳐 보기</span></label>
+    <span class="hover-read" id="hoverRead">시점: 최근값</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="yband" id="yband"></div>
+  <main id="main"></main>
+  <footer>
+    <div id="srcNote"></div>
+    <div>숫자 옆 변화율: 월별 계열은 전년 동월 대비, 분기·반기·연 계열은 직전 기간 대비입니다. 단위가 %·연%인 계열은 %p 차이로 표시합니다.</div>
+    <div>점선 테두리 지역 표시: 서울 구 화면에서 구 단위 계열이 없어 서울시 값으로 대신 보여 주는 계열입니다. ‘예상 +/−/±’는 데이터사전의 예상 부호입니다.</div>
+    <div id="excluded"></div>
+  </footer>
+</div>
+
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const DRIVERS = D.drivers;                 // [{id,no,name,short}]
+  const DRV = Object.fromEntries(DRIVERS.map((d, i) => [d.id, Object.assign({ c: 'var(--d' + (i + 1) + ')' }, d)]));
+  const M = D.metrics;
+  const SCOPE_LABEL = { sido: '시도', gu: '구', seoul: '서울시', nation: '전국' };
+  const FREQ_LABEL = { M: '월', Q: '분기', H: '반기', A: '연' };
+
+  // 기간 → 월 인덱스 (분기·반기·연은 기간 가운데로)
+  function toT(p) {
+    let m;
+    if ((m = /^(\d{4})-(\d{2})$/.exec(p))) return +m[1] * 12 + (+m[2] - 1);
+    if ((m = /^(\d{4})Q(\d)$/.exec(p))) return +m[1] * 12 + (+m[2] - 1) * 3 + 1;
+    if ((m = /^(\d{4})H(\d)$/.exec(p))) return +m[1] * 12 + (+m[2] - 1) * 6 + 2.5;
+    if ((m = /^(\d{4})$/.exec(p))) return +m[1] * 12 + 5.5;
+    return NaN;
+  }
+  const fromT = t => { const y = Math.floor(t / 12), mo = Math.round(t - y * 12) + 1; return y + '.' + String(mo).padStart(2, '0'); };
+  M.forEach(m => { m.t = m.p.map(toT); });
+
+  const T0 = 2016 * 12;
+  const T1 = Math.max(...M.flatMap(m => m.t.filter(t => t >= T0)));
+
+  const nf = v => {
+    const a = Math.abs(v);
+    const d = a >= 1000 ? 0 : a >= 100 ? 1 : 2;
+    return v.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+  const keyOf = m => m.col.replace(/^서울_/, '');
+  const isRate = u => /%/.test(u);
+
+  // 지역 → 보여 줄 계열 목록
+  function resolve(region) {
+    const isGu = D.regions.gu.includes(region);
+    const out = [];
+    const X = M.filter(m => !m.y && !m.excluded);
+    if (!isGu) {
+      X.filter(m => m.scope === 'sido' && m.s[region]).forEach(m => out.push({ m, vals: m.s[region], lvl: '시도', fallback: false }));
+    } else {
+      const guKeys = new Set(X.filter(m => m.scope === 'gu').map(keyOf));
+      X.filter(m => m.scope === 'gu' && m.s[region]).forEach(m => out.push({ m, vals: m.s[region], lvl: '구', fallback: false }));
+      const seoulByKey = Object.fromEntries(X.filter(m => m.scope === 'seoul').map(m => [keyOf(m), m]));
+      X.filter(m => m.scope === 'sido' && !guKeys.has(keyOf(m))).forEach(m => {
+        const alt = seoulByKey[keyOf(m)];
+        if (alt) out.push({ m: alt, vals: Object.values(alt.s)[0], lvl: '서울시', fallback: true });
+        else out.push({ m, vals: m.s['서울'], lvl: '서울시', fallback: true });
+      });
+    }
+    X.filter(m => m.scope === 'nation').forEach(m => out.push({ m, vals: Object.values(m.s)[0], lvl: '전국', fallback: false }));
+    const ord = Object.fromEntries(DRIVERS.map((d, i) => [d.id, i]));
+    out.sort((a, b) => (ord[a.m.driver] - ord[b.m.driver]) || a.m.v.localeCompare(b.m.v) || a.m.col.localeCompare(b.m.col));
+    return out;
+  }
+  function yFor(region) {
+    const isGu = D.regions.gu.includes(region);
+    const m = M.find(x => x.y && x.scope === (isGu ? 'gu' : 'sido'));
+    return m && m.s[region] ? { m, vals: m.s[region] } : null;
+  }
+
+  // ---------- SVG 차트 ----------
+  const W = 300, H = 92, PL = 34, PR = 6, PT = 6, PB = 14;
+  const sx = t => PL + (t - T0) / (T1 - T0) * (W - PL - PR);
+  const tx = x => T0 + (x - PL) / (W - PL - PR) * (T1 - T0);
+
+  function niceTicks(lo, hi, n) {
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(s => s >= raw);
+    const a = Math.ceil(lo / step) * step, out = [];
+    for (let v = a; v <= hi + step * 1e-9; v += step) out.push(+v.toFixed(10));
+    return out;
+  }
+  const compact = v => {
+    const a = Math.abs(v);
+    if (a >= 1e6) return (v / 1e6).toLocaleString('ko-KR', { maximumFractionDigits: 1 }) + 'M';
+    if (a >= 1e4) return (v / 1e3).toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + 'k';
+    return v.toLocaleString('ko-KR', { maximumFractionDigits: a < 10 ? 2 : 1 });
+  };
+
+  function pts(t, vals) { const o = []; for (let i = 0; i < t.length; i++) if (t[i] >= T0 && vals[i] != null) o.push([t[i], vals[i], i]); return o; }
+  function pathOf(t, vals, sy, sx) {
+    let d = '', pen = false;
+    for (let i = 0; i < t.length; i++) {
+      if (t[i] < T0 || vals[i] == null) { pen = false; continue; }
+      d += (pen ? 'L' : 'M') + sx(t[i]).toFixed(1) + ' ' + sy(vals[i]).toFixed(1);
+      pen = true;
+    }
+    return d;
+  }
+
+  function chartSVG(t, vals, opts) {
+    const P = pts(t, vals);
+    const w = opts.w || W, h = opts.h || H;
+    const sx = t => PL + (t - T0) / (T1 - T0) * (w - PL - PR);
+    if (!P.length) return { svg: `<svg viewBox="0 0 ${w} ${h}"><text x="${w / 2}" y="${h / 2}" text-anchor="middle">2016년 이후 값 없음</text></svg>`, P };
+    let lo = Math.min(...P.map(p => p[1])), hi = Math.max(...P.map(p => p[1]));
+    const ticks = niceTicks(lo, hi, 3);
+    lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const sy = v => PT + (1 - (v - lo) / (hi - lo)) * (h - PT - PB);
+    let s = `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">`;
+    ticks.forEach(v => { const y = sy(v).toFixed(1); s += `<line class="gl" x1="${PL}" x2="${w - PR}" y1="${y}" y2="${y}"/><text x="${PL - 4}" y="${+y + 3}" text-anchor="end">${compact(v)}</text>`; });
+    for (let yr = 2016; yr * 12 <= T1; yr += 2) s += `<text x="${sx(yr * 12)}" y="${h - 3}" text-anchor="${yr === 2016 ? 'start' : 'middle'}">${String(yr).slice(2)}</text>`;
+    if (opts.overlay) {
+      const OP = pts(opts.overlay.t, opts.overlay.vals);
+      if (OP.length) {
+        const olo = Math.min(...OP.map(p => p[1])), ohi = Math.max(...OP.map(p => p[1]));
+        const osy = v => PT + (1 - (v - olo) / ((ohi - olo) || 1)) * (h - PT - PB);
+        s += `<path class="yl" vector-effect="non-scaling-stroke" d="${pathOf(opts.overlay.t, opts.overlay.vals, osy, sx)}"/>`;
+      }
+    }
+    const line = pathOf(t, vals, sy, sx);
+    if (P.length > 1) {
+      const base = (h - PB).toFixed(1);
+      s += `<path class="ar" d="${line.replace(/M([\d.]+) ([\d.]+)/g, (m0, x, y, off) => (off === 0 ? `M${x} ${base}L${x} ${y}` : `L${x} ${y}`))}L${sx(P[P.length - 1][0]).toFixed(1)} ${base}Z"/>`;
+      s += `<path class="ln" vector-effect="non-scaling-stroke" d="${line}"/>`;
+    }
+    if (P.length <= 14) P.forEach(p => { s += `<circle class="pt" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.4"/>`; });
+    else { const L = P[P.length - 1]; s += `<circle class="pt" cx="${sx(L[0]).toFixed(1)}" cy="${sy(L[1]).toFixed(1)}" r="2.8"/>`; }
+    s += `<line class="xh" x1="0" x2="0" y1="${PT}" y2="${h - PB}" visibility="hidden" vector-effect="non-scaling-stroke"/><circle class="hp" r="3" visibility="hidden" vector-effect="non-scaling-stroke"/>`;
+    s += '</svg>';
+    return { svg: s, P, sy };
+  }
+
+  function changeText(m, P) {
+    if (P.length < 2) return '';
+    const L = P[P.length - 1];
+    let prev;
+    if (m.freq === 'M') prev = P.find(p => Math.abs(p[0] - (L[0] - 12)) < 0.01);
+    else prev = P[P.length - 2];
+    if (!prev) return '';
+    const lbl = m.freq === 'M' ? '전년비' : '직전비';
+    if (isRate(m.unit)) { const d = L[1] - prev[1]; return `${lbl} ${d >= 0 ? '+' : ''}${d.toFixed(2)}%p`; }
+    if (prev[1] === 0) return '';
+    const r = (L[1] / prev[1] - 1) * 100;
+    return `${lbl} ${r >= 0 ? '+' : ''}${r.toFixed(1)}%`;
+  }
+
+  // ---------- 상태 ----------
+  const state = { region: '서울', drivers: new Set(DRIVERS.map(d => d.id)), q: '', overlay: false };
+  try { const s = JSON.parse(localStorage.getItem('xvar-board') || '{}'); if (s.region) state.region = s.region; if (typeof s.overlay === 'boolean') state.overlay = s.overlay; } catch (e) {}
+  const save = () => { try { localStorage.setItem('xvar-board', JSON.stringify({ region: state.region, overlay: state.overlay })); } catch (e) {} };
+
+  // 조작줄
+  const sel = document.getElementById('region');
+  sel.innerHTML = `<optgroup label="시도">${D.regions.sido.map(r => `<option>${r}</option>`).join('')}</optgroup><optgroup label="서울 구">${D.regions.gu.map(r => `<option>${r}</option>`).join('')}</optgroup>`;
+  if (![...D.regions.sido, ...D.regions.gu].includes(state.region)) state.region = '서울';
+  sel.value = state.region;
+  sel.addEventListener('change', () => { state.region = sel.value; save(); render(); });
+  const chipsEl = document.getElementById('drivers');
+  chipsEl.innerHTML = `<button class="chip" data-id="all" aria-pressed="true">전체</button>` + DRIVERS.map(d => `<button class="chip" data-id="${d.id}" aria-pressed="false" style="--c:${DRV[d.id].c}"><i></i>${d.no} ${d.short}</button>`).join('');
+  chipsEl.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    const id = b.dataset.id;
+    if (id === 'all') state.drivers = new Set(DRIVERS.map(d => d.id));
+    else if (state.drivers.size === DRIVERS.length) state.drivers = new Set([id]);
+    else { state.drivers.has(id) ? state.drivers.delete(id) : state.drivers.add(id); if (!state.drivers.size) state.drivers = new Set(DRIVERS.map(d => d.id)); }
+    render();
+  });
+  const qEl = document.getElementById('q');
+  qEl.addEventListener('input', () => { state.q = qEl.value.trim().toLowerCase(); render(); });
+  const ov = document.getElementById('ov');
+  ov.checked = state.overlay;
+  ov.addEventListener('change', () => { state.overlay = ov.checked; save(); render(); });
+
+  // 정적 안내
+  const xm = M.filter(m => !m.y && !m.excluded);
+  document.getElementById('stats').innerHTML = [
+    ['설명변수', new Set(xm.map(m => m.v)).size + '개'],
+    ['계열', xm.length + '개'],
+    ['결측 보완 적용', xm.filter(m => m.filled).length + '개 계열'],
+    ['표시 기간', '2016.01 – ' + fromT(T1)],
+    ['자료 생성', D.generated.split('|')[0].trim()],
+  ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('');
+  document.getElementById('srcNote').textContent = '자료: ' + D.source;
+  const ex = M.filter(m => m.excluded);
+  document.getElementById('excluded').textContent = ex.length ? '표시 기간(2016년~) 밖이라 뺀 계열: ' + ex.map(m => m.v + ' ' + m.label).join(', ') : '';
+
+  // ---------- 렌더 ----------
+  let cards = [];   // {el, svg, t, vals, P, sy, m}
+  let yCard = null;
+
+  function render() {
+    chipsEl.querySelectorAll('.chip').forEach(b => {
+      const all = state.drivers.size === DRIVERS.length;
+      b.setAttribute('aria-pressed', b.dataset.id === 'all' ? String(all) : String(!all && state.drivers.has(b.dataset.id)));
+    });
+    const Y = yFor(state.region);
+    // Y 띠
+    const yb = document.getElementById('yband');
+    if (Y) {
+      const c = chartSVG(Y.m.t, Y.vals, { w: 600, h: 110 });
+      const L = c.P[c.P.length - 1];
+      yb.innerHTML = `<div><div class="lbl">종속변수 Y · ${state.region}</div><div class="name">${Y.m.label}</div><div class="val">${nf(L[1])}</div><div class="lbl">${fromT(L[0])} · ${changeText(Y.m, c.P)}</div></div><div style="--c: var(--fg)">${c.svg}</div>`;
+      yCard = { svgEl: yb.querySelector('svg'), t: Y.m.t, vals: Y.vals, P: c.P, sy: c.sy, w: 600, h: 110 };
+    } else { yb.innerHTML = ''; yCard = null; }
+
+    const list = resolve(state.region).filter(r => state.drivers.has(r.m.driver) && (!state.q || (r.m.v + ' ' + r.m.label + ' ' + r.m.col).toLowerCase().includes(state.q)));
+    const main = document.getElementById('main');
+    if (!list.length) { main.innerHTML = '<p class="empty-note">조건에 맞는 계열이 없습니다. 검색어를 지우거나 동인을 ‘전체’로 바꿔 보세요.</p>'; cards = []; return; }
+    const groups = {};
+    list.forEach(r => (groups[r.m.driver] = groups[r.m.driver] || []).push(r));
+    let html = '';
+    const built = [];
+    DRIVERS.forEach(d => {
+      const g = groups[d.id]; if (!g) return;
+      html += `<section class="driver" style="--c:${DRV[d.id].c}"><h2><span class="no">${d.no}</span>${d.name}<small>${new Set(g.map(r => r.m.v)).size}개 변수 · ${g.length}개 계열</small></h2><div class="grid">`;
+      g.forEach(r => {
+        const m = r.m;
+        const c = chartSVG(m.t, r.vals, { overlay: state.overlay && Y ? { t: Y.m.t, vals: Y.vals } : null });
+        const L = c.P[c.P.length - 1];
+        const idx = built.length;
+        built.push({ m, t: m.t, vals: r.vals, P: c.P, sy: c.sy });
+        html += `<article class="card${c.P.length ? '' : ' empty'}" data-i="${idx}" style="--c:${DRV[d.id].c}">
+          <div class="head"><span class="vid">${m.v}</span><span class="ttl">${m.label}</span></div>
+          <div class="meta"><span class="${r.fallback ? 'lvl-fallback' : ''}">${r.lvl}${r.fallback ? '값' : ''}</span><span>${FREQ_LABEL[m.freq]}</span>${m.unit ? `<span>${m.unit}</span>` : ''}${m.sign ? `<span>예상 ${m.sign}</span>` : ''}${m.filled ? `<span title="${m.method}">보완 ${m.filled}칸</span>` : ''}</div>
+          <div class="nums"><span class="now" data-now>${L ? nf(L[1]) : '–'}<small data-when>${L ? fromT(L[0]) : ''}</small></span><span class="chg">${changeText(m, c.P)}</span></div>
+          ${c.svg}
+          <div class="foot">${m.source}${m.filled ? ' · ' + m.method : ''}</div>
+        </article>`;
+      });
+      html += '</div></section>';
+    });
+    main.innerHTML = html;
+    cards = built.map((b, i) => Object.assign(b, { el: main.querySelector(`.card[data-i="${i}"]`), svgEl: main.querySelector(`.card[data-i="${i}"] svg`), w: W, h: H }));
+    setHover(null);
+  }
+
+  // ---------- 호버 동기화 ----------
+  const readEl = document.getElementById('hoverRead');
+  function nearest(P, t) {
+    if (!P.length) return null;
+    let lo = 0, hi = P.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; P[mid][0] <= t ? (lo = mid) : (hi = mid); }
+    const p = Math.abs(P[lo][0] - t) <= Math.abs(P[hi][0] - t) ? P[lo] : P[hi];
+    return p;
+  }
+  function placeMarker(c, t) {
+    const xh = c.svgEl.querySelector('.xh'), hp = c.svgEl.querySelector('.hp');
+    if (!xh) return null;
+    if (t == null || !c.P.length) { xh.setAttribute('visibility', 'hidden'); hp.setAttribute('visibility', 'hidden'); return null; }
+    const p = nearest(c.P, t);
+    const tol = c.m && c.m.freq === 'A' ? 6.5 : c.m && c.m.freq === 'H' ? 3.5 : c.m && c.m.freq === 'Q' ? 2 : 0.6;
+    const scale = c.w === W ? 1 : 1;
+    const x = PL + (t - T0) / (T1 - T0) * (c.w - PL - PR);
+    xh.setAttribute('x1', x); xh.setAttribute('x2', x); xh.setAttribute('visibility', 'visible');
+    if (Math.abs(p[0] - t) > tol) { hp.setAttribute('visibility', 'hidden'); return null; }
+    hp.setAttribute('cx', PL + (p[0] - T0) / (T1 - T0) * (c.w - PL - PR) * scale);
+    hp.setAttribute('cy', c.sy(p[1])); hp.setAttribute('visibility', 'visible');
+    return p;
+  }
+  function setHover(t) {
+    readEl.textContent = t == null ? '시점: 최근값' : '시점: ' + fromT(Math.round(t));
+    if (yCard) {
+      const p = placeMarker(yCard, t);
+      const v = document.querySelector('#yband .val'), w = document.querySelectorAll('#yband .lbl')[1];
+      const P = t == null || !p ? yCard.P[yCard.P.length - 1] : p;
+      if (v && P) { v.textContent = nf(P[1]); }
+      if (w && P && t != null) w.textContent = fromT(P[0]);
+    }
+    cards.forEach(c => {
+      const p = placeMarker(c, t);
+      const now = c.el.querySelector('[data-now]');
+      const P = p || (t == null ? c.P[c.P.length - 1] : null);
+      now.firstChild.nodeValue = P ? nf(P[1]) : '–';
+      now.querySelector('[data-when]').textContent = P ? fromT(P[0]) : '';
+    });
+  }
+  let raf = 0, pend = null;
+  function onMove(e) {
+    const svg = e.target.closest && e.target.closest('.card svg, #yband svg'); if (!svg) return;
+    const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+    const x = (e.clientX - r.left) / r.width * vb.width;
+    const t = T0 + (x - PL) / (vb.width - PL - PR) * (T1 - T0);
+    pend = Math.max(T0, Math.min(T1, t));
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; setHover(pend); });
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerleave', () => setHover(null));
+  document.addEventListener('pointerout', e => { if (e.target.closest && e.target.closest('svg') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.card svg, #yband svg'))) { cancelAnimationFrame(raf); raf = 0; setHover(null); } });
+
+  render();
+})();
+</script>
