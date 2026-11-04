@@ -303,3 +303,6 @@ def run(ctx, log):
         w(f"- {agency}: " + ", ".join(urls))
     (out / "report_ko.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     log("  outputs/report_ko.md")
+    from . import html_report
+
+    html_report.run(ctx, log)
