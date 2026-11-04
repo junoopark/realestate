@@ -1,0 +1,97 @@
+# 기본 표본: 서울 + 해외 10개 도시 (설계서 4절)
+# ubs_sources: UBS Global Real Estate Bubble Index 2026 p.27 'Data sources' 표의 기관 목록 (계열 코드는 원문에 없음)
+#   순서: price_city | rent_city | income_city | price_country | mortgage·construction·GDP·inflation(country)
+# geography: 이 프로젝트가 기본으로 맞추려는 지역 범위. 실제 계열별 범위는 series.yaml 의 geography_* 에 기록한다.
+
+cities:
+  seoul:
+    name_ko: 서울
+    name_en: Seoul
+    country_code: KOR
+    currency: KRW
+    geography: 서울특별시
+    city_equals_country: false
+    ubs_sources: ["Bank of Korea", "Bank of Korea", "Bank of Korea", "Bank of Korea", "Bank of Korea, FISIS"]
+  london:
+    name_ko: 런던
+    name_en: London
+    country_code: GBR
+    currency: GBP
+    geography: Greater London (ONS region E12000007)
+    city_equals_country: false
+    ubs_sources: ["Nationwide", "ONS, UBS P&E", "ONS", "Nationwide", "BoE, ONS, EUKLEMS, Bloomberg"]
+  paris:
+    name_ko: 파리
+    name_en: Paris
+    country_code: FRA
+    currency: EUR
+    geography: Paris commune (75056 / département 75)
+    city_equals_country: false
+    ubs_sources: ["BIS, CGEDD, INSEE", "INSEE", "INSEE, Bloomberg, UBS P&E", "FED Dallas", "Bank of France, INSEE, EUKLEMS, Macrobond, Bloomberg"]
+  tokyo:
+    name_ko: 도쿄
+    name_en: Tokyo
+    country_code: JPN
+    currency: JPY
+    geography: 도쿄도 (23구 자료가 있으면 23구 우선)
+    city_equals_country: false
+    ubs_sources: ["Real Estate Transaction Promotion Center, Haver Analytics, Tokyo Kantei", "Miki Shoji, Official Statistics of Japan, Tokyo Kantei", "INDB, Tokyo Metropolitan Government, UBS P&E", "FED Dallas", "ESRI, EUKLEMS, Bloomberg"]
+  hong_kong:
+    name_ko: 홍콩
+    name_en: Hong Kong
+    country_code: HKG
+    currency: HKD
+    geography: Hong Kong SAR
+    city_equals_country: true
+    ubs_sources: ["RVD", "RVD", "Census and Statistics Department, Bloomberg", "–", "Census and Statistics Department, HKMA, Macrobond, Bloomberg"]
+  singapore:
+    name_ko: 싱가포르
+    name_en: Singapore
+    country_code: SGP
+    currency: SGD
+    geography: Singapore (민간 비토지 주택 우선, HDB 별도)
+    city_equals_country: true
+    ubs_sources: ["Government of Singapore", "Government of Singapore, UBS P&E", "Government of Singapore", "–", "Government of Singapore, Bloomberg"]
+  new_york:
+    name_ko: 뉴욕
+    name_en: New York
+    country_code: USA
+    currency: USD
+    geography: New York-Newark-Jersey City MSA (CBSA 35620) — 가격·임대료·소득 모두 같은 MSA
+    city_equals_country: false
+    ubs_sources: ["FHFA, S&P Dow Jones Indices", "CBRE, CoStar, FED St. Louis", "BEA", "FHFA", "FED, BEA, Bloomberg"]
+  san_francisco:
+    name_ko: 샌프란시스코
+    name_en: San Francisco
+    country_code: USA
+    currency: USD
+    geography: San Francisco-Oakland-Fremont MSA (CBSA 41860) — 시(=카운티) 계열은 보조
+    city_equals_country: false
+    ubs_sources: ["FHFA, S&P Dow Jones Indices", "CBRE, FED St. Louis", "BEA", "FHFA", "FED, BEA, Bloomberg"]
+  toronto:
+    name_ko: 토론토
+    name_en: Toronto
+    country_code: CAN
+    currency: CAD
+    geography: Toronto CMA
+    city_equals_country: false
+    ubs_sources: ["Sauder School of Business UBC, Bloomberg", "Canadian Housing Observer, Sauder School of Business UBC, UBS", "Statistics Canada", "FED Dallas", "Statistics Canada, BoC, Bloomberg"]
+  vancouver:
+    name_ko: 밴쿠버
+    name_en: Vancouver
+    country_code: CAN
+    currency: CAD
+    geography: Vancouver CMA
+    city_equals_country: false
+    ubs_sources: ["Sauder School of Business UBC, Bloomberg", "Canadian Housing Observer, Sauder School of Business UBC, UBS", "Statistics Canada, Government of British Columbia", "FED Dallas", "Statistics Canada, BoC, Bloomberg"]
+  sydney:
+    name_ko: 시드니
+    name_en: Sydney
+    country_code: AUS
+    currency: AUD
+    geography: Greater Sydney (GCCSA 1GSYD)
+    city_equals_country: false
+    ubs_sources: ["REIA, ABS", "REIA, NSW Government, UBS P&E", "ABS, UBS P&E", "FED Dallas", "ABS, RBA, Bloomberg"]
+
+# 예비 도시 (설계서 4절) — 기본 도시의 자료 확보가 막힐 때 검토
+reserve: [amsterdam, madrid, lisbon]

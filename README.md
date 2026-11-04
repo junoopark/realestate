@@ -130,6 +130,7 @@ python -m http.server 5500 -d frontend --bind 127.0.0.1
 | [정량 지표 파이프라인](docs/indicator-pipeline.md) | 지표 레지스트리, Open API 수집 → DB 캐시 → `/indicators`, 매일 자동 수집 |
 | [정성 자료 가이드](docs/qualitative-guide.md) | 부동산 기초 · 정책 자료의 출처와 수집 운영 |
 | [작업 설계서](docs/작업설계서.md) | 설계 결정과 진행 단계 |
+| [글로벌 도시 비교](global_housing/README.md) | 서울과 해외 10개 도시의 렌트 부담·PIR·PTR 비교 분석 (서비스와 독립된 Python 프로젝트) |
 
 ---
 

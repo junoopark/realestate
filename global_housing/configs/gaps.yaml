@@ -1,0 +1,23 @@
+# 미확보 항목과 이유 (source_catalog·coverage·보고서에 그대로 옮긴다)
+# 수동 입력이 가능한 항목은 data/manual_inputs/manual_observations.csv 에 넣으면 정제 단계가 읽는다(README 참고).
+
+gaps:
+  - {city_id: london, variable: hh_income, reason: "런던 가구소득(세전·중위)을 지역 단위로 바로 받을 수 있는 공개 API 계열을 찾지 못함(ONS ETB·HBAI 는 표 파일·등가화 소득). 근로자 소득(ASHE)만 사용", manual: true}
+  - {city_id: tokyo, variable: rent_month, reason: "도쿄 임대료 수준·지수는 e-Stat API(appId 가입 필요)·Tokyo Kantei(유료/PDF). 자동 수집 안 함", manual: true}
+  - {city_id: tokyo, variable: rent_index, reason: "CPI 민영가임(東京都区部)은 e-Stat API(appId) 필요", manual: true}
+  - {city_id: tokyo, variable: price_level, reason: "도쿄 맨션 ㎡단가(REINS·Tokyo Kantei)는 PDF·유료. 국토교통성 거래가격 API 는 키 필요", manual: true}
+  - {city_id: tokyo, variable: hh_income, reason: "가계조사·주택토지통계조사 도쿄 소득은 e-Stat API(appId) 필요", manual: true}
+  - {city_id: tokyo, variable: earnings, reason: "임금구조기본통계조사 도쿄 값은 e-Stat API(appId) 필요", manual: true}
+  - {city_id: toronto, variable: price_level, reason: "기존주택 가격 수준(CREA MLS HPI·Teranet)은 가입/유료. 신규주택가격지수(NHPI)만 지수로 사용", manual: true}
+  - {city_id: vancouver, variable: price_level, reason: "기존주택 가격 수준(CREA·Teranet)은 가입/유료", manual: true}
+  - {city_id: toronto, variable: earnings, reason: "CMA 단위 상근 근로자 소득 계열 미선정(LFS 임금은 주 단위)", manual: true}
+  - {city_id: vancouver, variable: earnings, reason: "CMA 단위 상근 근로자 소득 계열 미선정", manual: true}
+  - {city_id: paris, variable: hh_income, reason: "INSEE Filosofi(코뮌 단위)는 소비단위당 가처분소득(등가화) — 가구 세전소득과 개념이 달라 넣지 않음. 파일 경로 자동 탐색 미구현", manual: true}
+  - {city_id: paris, variable: earnings, reason: "파리 근로자 소득 계열 미선정(INSEE 지역 임금 자료는 API 키 필요)", manual: true}
+  - {city_id: sydney, variable: earnings, reason: "ABS 근로소득(Employee earnings)은 주(州) 단위 위주 — Greater Sydney 계열 미선정", manual: true}
+  - {city_id: sydney, variable: hh_income, reason: "2021 센서스 한 시점만 확보(이후 연도는 SIH 표 파일·격년)", manual: true, partial: true}
+  - {city_id: sydney, variable: rent_month, reason: "2021 센서스 한 시점만 확보(NSW 임대보증금 중위는 표 파일 경로 미구현)", manual: true, partial: true}
+  - {city_id: singapore, variable: price_level, reason: "민간주택 ㎡단가(URA API)는 가입 키 필요 — HDB 공공주택 수준으로 별도 비교", manual: true, partial: true}
+  - {city_id: hong_kong, variable: hh_income, reason: "C&SD API 가 재수집 중 403 을 돌려줌 — 첫 수집분(2026-11-04)으로 분석", manual: false, partial: true}
+  - {city_id: _all, variable: mortgage_to_gdp, reason: "국가별 주택담보대출 잔액 계열을 한 출처에서 받지 못함 — BIS 가계신용/GDP 를 household_credit_to_gdp 로 별도 표시", manual: true}
+  - {city_id: _all, variable: construction_to_gdp, reason: "건설투자/GDP 국가 계열 미수집(OECD 국민계정 연결 미구현)", manual: true}

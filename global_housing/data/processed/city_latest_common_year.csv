@@ -1,0 +1,140 @@
+﻿city_id,country_code,year,metric,value,unit,definition,numerator_series,denominator_series,income_concept,quality_flag,notes,dwelling_type
+seoul,KOR,2024,PIR_hh,10.293053887777743,years,가격 / 가구 연소득,seoul_rtms_price_level,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+seoul,KOR,2024,PIR_earn,15.807252849256855,years,가격 / 근로자 연소득,seoul_rtms_price_level,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+seoul,KOR,2024,PTR,42.30706728608954,years,가격 / (12 × 월 임대료),seoul_rtms_price_level,seoul_rtms_rent_converted,,B,면적기준: 60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60) / 60㎡ 환산 (전용 50~70㎡); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+seoul,KOR,2024,gross_yield,2.3636712827145017,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),seoul_rtms_rent_converted,seoul_rtms_price_level,,B,면적기준: 60㎡ 환산 (전용 50~70㎡) / 60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+seoul,KOR,2024,RTI_hh,24.329395885973103,pct,12 × 월 임대료 / 가구 연소득 × 100,seoul_rtms_rent_converted,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+seoul,KOR,2024,RTI_earn,37.36314961839541,pct,12 × 월 임대료 / 근로자 연소득 × 100,seoul_rtms_rent_converted,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+seoul,KOR,2024,RTI_cash_hh,13.38531561227695,pct,서울: 현금 월세(보증금 환산 전) 기준,seoul_rtms_rent_cash,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+seoul,KOR,2024,RTI_cash_earn,20.556102266365187,pct,서울: 현금 월세 기준,seoul_rtms_rent_cash,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+seoul,KOR,2024,PIR_hh_est,13.096479845911743,years,서울 보조: 가격 / 추정 중위 가구소득,seoul_rtms_price_level,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+seoul,KOR,2024,RTI_hh_est,30.95577331643083,pct,서울 보조: 12 × 월 임대료 / 추정 중위 가구소득,seoul_rtms_rent_converted,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+seoul,KOR,2024,RTI_cash_hh_est,17.03095291821114,pct,서울 보조: 현금 월세 / 추정 중위 가구소득,seoul_rtms_rent_cash,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+seoul,KOR,2024,price_level_local,840320769.5737936,KRW,현지통화,seoul_rtms_price_level,,,A,60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60),
+seoul,KOR,2024,price_level_usd,616353.36541582,USD,시장환율(연평균) USD 환산,seoul_rtms_price_level,wb_fx,,A,,
+seoul,KOR,2024,price_level_ppp,963152.872877033,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",seoul_rtms_price_level,wb_ppp,,A,,
+seoul,KOR,2024,rent_month_local,1655201.7260917719,KRW/month,현지통화,seoul_rtms_rent_converted,,,B,60㎡ 환산 (전용 50~70㎡),
+seoul,KOR,2024,rent_month_usd,1214.0472915315095,USD,시장환율(연평균) USD 환산,seoul_rtms_rent_converted,wb_fx,,B,,
+seoul,KOR,2024,rent_month_ppp,1897.1473220695118,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",seoul_rtms_rent_converted,wb_ppp,,B,,
+seoul,KOR,2024,price_sqm_local,14005346.159563228,KRW/sqm,현지통화,seoul_rtms_price_sqm,,,A,전용 50~70㎡,
+seoul,KOR,2024,price_sqm_usd,10272.556090263668,USD,시장환율(연평균) USD 환산,seoul_rtms_price_sqm,wb_fx,,A,,
+seoul,KOR,2024,price_sqm_ppp,16052.547881283883,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",seoul_rtms_price_sqm,wb_ppp,,A,,
+seoul,KOR,2024,hh_income_local,81639596.832541,KRW/year,현지통화,seoul_hh_income,,household_gross_current_income_mean,B,,
+seoul,KOR,2024,hh_income_usd,59880.51477586211,USD,시장환율(연평균) USD 환산,seoul_hh_income,wb_fx,household_gross_current_income_mean,B,,
+seoul,KOR,2024,hh_income_ppp,93573.09146323496,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",seoul_hh_income,wb_ppp,household_gross_current_income_mean,B,,
+seoul,KOR,2024,earnings_local,53160456.0,KRW/year,현지통화,seoul_earnings,,employee_regular_monthly_wage_mean_x12,B,,
+seoul,KOR,2024,earnings_usd,38991.807829834055,USD,시장환율(연평균) USD 환산,seoul_earnings,wb_fx,employee_regular_monthly_wage_mean_x12,B,,
+seoul,KOR,2024,earnings_ppp,60931.07272098286,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",seoul_earnings,wb_ppp,employee_regular_monthly_wage_mean_x12,B,,
+london,GBR,2024,PIR_earn,10.024081391195642,years,가격 / 근로자 연소득,london_price_flat,london_earnings,employee_fulltime_annual_gross_median,B,,flat_maisonette
+london,GBR,2024,PTR,20.112816895099883,years,가격 / (12 × 월 임대료),london_price_flat,london_rent_flat,,B,매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,flat_maisonette
+london,GBR,2024,gross_yield,4.9719539794728185,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),london_rent_flat,london_price_flat,,B,매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,flat_maisonette
+london,GBR,2024,RTI_earn,49.8392713635146,pct,12 × 월 임대료 / 근로자 연소득 × 100,london_rent_flat,london_earnings,employee_fulltime_annual_gross_median,B,,flat_maisonette
+london,GBR,2024,price_level_local,449038.75,GBP,현지통화,london_price_flat,,,B,면적 미지정(플랫 전체),
+london,GBR,2024,price_level_usd,573914.0871249752,USD,시장환율(연평균) USD 환산,london_price_flat,wb_fx,,B,,
+london,GBR,2024,price_level_ppp,657701.9183026018,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",london_price_flat,wb_ppp,,B,,
+london,GBR,2024,rent_month_local,1860.5,GBP/month,현지통화,london_rent_flat,,,B,면적 미지정(플랫 전체),
+london,GBR,2024,rent_month_usd,2377.8953577971088,USD,시장환율(연평균) USD 환산,london_rent_flat,wb_fx,,B,,
+london,GBR,2024,rent_month_ppp,2725.0530583429395,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",london_rent_flat,wb_ppp,,B,,
+london,GBR,2024,earnings_local,44796.0,GBP/year,현지통화,london_earnings,,employee_fulltime_annual_gross_median,A,,
+london,GBR,2024,earnings_usd,57253.53423696817,USD,시장환율(연평균) USD 환산,london_earnings,wb_fx,employee_fulltime_annual_gross_median,A,,
+london,GBR,2024,earnings_ppp,65612.18855228719,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",london_earnings,wb_ppp,employee_fulltime_annual_gross_median,A,,
+paris,FRA,2024,PTR,25.786072591138133,years,가격 / (12 × 월 임대료),paris_price_level,paris_rent_month,,B,면적기준: 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60) / 60㎡ 환산 (㎡당 광고 임대료 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+paris,FRA,2024,gross_yield,3.878062455868788,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),paris_rent_month,paris_price_level,,B,면적기준: 60㎡ 환산 (㎡당 광고 임대료 × 60) / 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+paris,FRA,2024,price_level_local,581933.9538461539,EUR,현지통화,paris_price_level,,,B,60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60),
+paris,FRA,2024,price_level_usd,629873.9457455408,USD,시장환율(연평균) USD 환산,paris_price_level,wb_fx,,B,,
+paris,FRA,2024,price_level_ppp,811698.0835699715,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",paris_price_level,wb_ppp,,B,,
+paris,FRA,2024,rent_month_local,1880.6468485050416,EUR/month,현지통화,paris_rent_month,,,B,60㎡ 환산 (㎡당 광고 임대료 × 60),
+paris,FRA,2024,rent_month_usd,2035.5754174380968,USD,시장환율(연평균) USD 환산,paris_rent_month,wb_fx,,B,,
+paris,FRA,2024,rent_month_ppp,2623.1798861611273,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",paris_rent_month,wb_ppp,,B,,
+paris,FRA,2024,price_sqm_local,9698.899230769232,EUR/sqm,현지통화,paris_price_sqm,,,B,실면적(surface réelle bâtie) 50~70㎡,
+paris,FRA,2024,price_sqm_usd,10497.899095759014,USD,시장환율(연평균) USD 환산,paris_price_sqm,wb_fx,,B,,
+paris,FRA,2024,price_sqm_ppp,13528.301392832858,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",paris_price_sqm,wb_ppp,,B,,
+paris,FRA,2024,rent_sqm_month_local,31.344114141750694,EUR/sqm/month,현지통화,paris_rent_sqm,,,B,모형 기준 아파트(전용 52㎡ 기준 예측),
+paris,FRA,2024,rent_sqm_month_usd,33.92625695730161,USD,시장환율(연평균) USD 환산,paris_rent_sqm,wb_fx,,B,,
+paris,FRA,2024,rent_sqm_month_ppp,43.71966476935212,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",paris_rent_sqm,wb_ppp,,B,,
+hong_kong,HKG,2024,PIR_hh,20.914055555555557,years,가격 / 가구 연소득,hk_price_level,hk_hh_income,household_gross_cash_income_median,B,,private_domestic_class_B
+hong_kong,HKG,2024,PIR_earn,31.371083333333335,years,가격 / 근로자 연소득,hk_price_level,hk_earnings,employed_persons_monthly_earnings_median_x12,B,,private_domestic_class_B
+hong_kong,HKG,2024,PTR,30.457362459546925,years,가격 / (12 × 월 임대료),hk_price_level,hk_rent_month,,B,면적기준: 60㎡ 환산 (Class B ㎡단가 × 60) / 60㎡ 환산 (Class B ㎡당 월 임대료 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,private_domestic_class_B
+hong_kong,HKG,2024,gross_yield,3.2832783906623133,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),hk_rent_month,hk_price_level,,B,면적기준: 60㎡ 환산 (Class B ㎡당 월 임대료 × 60) / 60㎡ 환산 (Class B ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,private_domestic_class_B
+hong_kong,HKG,2024,RTI_hh,68.66666666666667,pct,12 × 월 임대료 / 가구 연소득 × 100,hk_rent_month,hk_hh_income,household_gross_cash_income_median,B,,private_domestic_class_B
+hong_kong,HKG,2024,RTI_earn,103.0,pct,12 × 월 임대료 / 근로자 연소득 × 100,hk_rent_month,hk_earnings,employed_persons_monthly_earnings_median_x12,B,,private_domestic_class_B
+hong_kong,HKG,2024,price_level_local,7529060.0,HKD,현지통화,hk_price_level,,,B,60㎡ 환산 (Class B ㎡단가 × 60),
+hong_kong,HKG,2024,price_level_usd,964789.9536552554,USD,시장환율(연평균) USD 환산,hk_price_level,wb_fx,,B,,
+hong_kong,HKG,2024,price_level_ppp,1289368.335214302,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",hk_price_level,wb_ppp,,B,,
+hong_kong,HKG,2024,rent_month_local,20600.0,HKD/month,현지통화,hk_rent_month,,,B,60㎡ 환산 (Class B ㎡당 월 임대료 × 60),
+hong_kong,HKG,2024,rent_month_usd,2639.728338636996,USD,시장환율(연평균) USD 환산,hk_rent_month,wb_fx,,B,,
+hong_kong,HKG,2024,rent_month_ppp,3527.795993844467,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",hk_rent_month,wb_ppp,,B,,
+hong_kong,HKG,2024,price_sqm_local,125484.33333333333,HKD/sqm,현지통화,hk_price_sqm,,,B,실용면적 40~69.9㎡ (Class B),
+hong_kong,HKG,2024,price_sqm_usd,16079.832560920922,USD,시장환율(연평균) USD 환산,hk_price_sqm,wb_fx,,B,,
+hong_kong,HKG,2024,price_sqm_ppp,21489.4722535717,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",hk_price_sqm,wb_ppp,,B,,
+hong_kong,HKG,2024,hh_income_local,360000.0,HKD/year,현지통화,hk_hh_income,,household_gross_cash_income_median,A,,
+hong_kong,HKG,2024,hh_income_usd,46131.17484996692,USD,시장환율(연평균) USD 환산,hk_hh_income,wb_fx,household_gross_cash_income_median,A,,
+hong_kong,HKG,2024,hh_income_ppp,61650.80377592272,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",hk_hh_income,wb_ppp,household_gross_cash_income_median,A,,
+hong_kong,HKG,2024,earnings_local,240000.0,HKD/year,현지통화,hk_earnings,,employed_persons_monthly_earnings_median_x12,B,,
+hong_kong,HKG,2024,earnings_usd,30754.11656664461,USD,시장환율(연평균) USD 환산,hk_earnings,wb_fx,employed_persons_monthly_earnings_median_x12,B,,
+hong_kong,HKG,2024,earnings_ppp,41100.535850615146,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",hk_earnings,wb_ppp,employed_persons_monthly_earnings_median_x12,B,,
+singapore,SGP,2024,PIR_hh,2.753287393382213,years,가격 / 가구 연소득,sg_hdb_price_level,sg_hh_income,household_employment_income_incl_employer_cpf_median_employed_households,B,,hdb_flat
+singapore,SGP,2024,PIR_earn,5.663762467041155,years,가격 / 근로자 연소득,sg_hdb_price_level,sg_earnings,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,B,,hdb_flat
+singapore,SGP,2024,PTR,11.276269165149813,years,가격 / (12 × 월 임대료),sg_hdb_price_level,sg_hdb_rent_3rm,,C,면적기준: 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60) / HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,hdb_flat
+singapore,SGP,2024,gross_yield,8.86818135816213,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),sg_hdb_rent_3rm,sg_hdb_price_level,,C,면적기준: HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적) / 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,hdb_flat
+singapore,SGP,2024,RTI_hh,24.41665193565494,pct,12 × 월 임대료 / 가구 연소득 × 100,sg_hdb_rent_3rm,sg_hh_income,household_employment_income_incl_employer_cpf_median_employed_households,C,,hdb_flat
+singapore,SGP,2024,RTI_earn,50.227272727272734,pct,12 × 월 임대료 / 근로자 연소득 × 100,sg_hdb_rent_3rm,sg_earnings,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,C,,hdb_flat
+singapore,SGP,2024,price_level_local,373808.3228247163,SGD,현지통화,sg_hdb_price_level,,,B,60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60),
+singapore,SGP,2024,price_level_usd,279747.79067382234,USD,시장환율(연평균) USD 환산,sg_hdb_price_level,wb_fx,,B,,
+singapore,SGP,2024,price_level_ppp,358730.93331884226,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sg_hdb_price_level,wb_ppp,,B,,
+singapore,SGP,2024,rent_month_local,2762.5,SGD/month,현지통화,sg_hdb_rent_3rm,,,C,HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적),
+singapore,SGP,2024,rent_month_usd,2067.378451867194,USD,시장환율(연평균) USD 환산,sg_hdb_rent_3rm,wb_fx,,C,,
+singapore,SGP,2024,rent_month_ppp,2651.075812878549,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sg_hdb_rent_3rm,wb_ppp,,C,,
+singapore,SGP,2024,hh_income_local,135768.0,SGD/year,현지통화,sg_hh_income,,household_employment_income_incl_employer_cpf_median_employed_households,B,,
+singapore,SGP,2024,hh_income_usd,101605.00910519644,USD,시장환율(연평균) USD 환산,sg_hh_income,wb_fx,household_employment_income_incl_employer_cpf_median_employed_households,B,,
+singapore,SGP,2024,hh_income_ppp,130291.85917208863,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sg_hh_income,wb_ppp,household_employment_income_incl_employer_cpf_median_employed_households,B,,
+singapore,SGP,2024,earnings_local,66000.0,SGD/year,현지통화,sg_earnings,,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,A,,
+singapore,SGP,2024,earnings_usd,49392.571157732054,USD,시장환율(연평균) USD 환산,sg_earnings,wb_fx,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,A,,
+singapore,SGP,2024,earnings_ppp,63337.91987329746,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sg_earnings,wb_ppp,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,A,,
+new_york,USA,2024,PIR_hh,6.660296754957872,years,가격 / 가구 연소득,ny_price_level,ny_hh_income,household_gross_money_income_median,B,,sfr_condo
+new_york,USA,2024,PTR,17.340474709358002,years,가격 / (12 × 월 임대료),ny_price_level,ny_rent_month,,C,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo
+new_york,USA,2024,gross_yield,5.7668548108451585,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),ny_rent_month,ny_price_level,,C,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo_multifamily
+new_york,USA,2024,RTI_hh,38.408964382985204,pct,12 × 월 임대료 / 가구 연소득 × 100,ny_rent_month,ny_hh_income,household_gross_money_income_median,B,,sfr_condo_multifamily
+new_york,USA,2024,RTI_renter_hh,33.16065270292462,pct,미국: 기존 임차가구 중위 총임대료 / 임차가구 중위소득,ny_rent_gross_acs,ny_hh_income_renter,renter_household_gross_money_income_median,A,,
+new_york,USA,2024,price_level_local,665043.9515760534,USD,현지통화,ny_price_level,,,B,면적 미지정(전형적 주택가치),
+new_york,USA,2024,price_level_usd,665043.9515760534,USD,시장환율(연평균) USD 환산,ny_price_level,wb_fx,,B,,
+new_york,USA,2024,price_level_ppp,665043.9515760534,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",ny_price_level,wb_ppp,,B,,
+new_york,USA,2024,rent_month_local,3196.009926308199,USD/month,현지통화,ny_rent_month,,,B,면적 미지정,
+new_york,USA,2024,rent_month_usd,3196.009926308199,USD,시장환율(연평균) USD 환산,ny_rent_month,wb_fx,,B,,
+new_york,USA,2024,rent_month_ppp,3196.009926308199,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",ny_rent_month,wb_ppp,,B,,
+new_york,USA,2024,hh_income_local,99852.0,USD/year,현지통화,ny_hh_income,,household_gross_money_income_median,A,,
+new_york,USA,2024,hh_income_usd,99852.0,USD,시장환율(연평균) USD 환산,ny_hh_income,wb_fx,household_gross_money_income_median,A,,
+new_york,USA,2024,hh_income_ppp,99852.0,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",ny_hh_income,wb_ppp,household_gross_money_income_median,A,,
+new_york,USA,2024,RTI_official,31.1,pct,공식 통계의 임차가구 소득 대비 임대료 비율(중위),ny_rent_burden_acs,,renter_household_gross_money_income,A,,
+san_francisco,USA,2024,PIR_hh,8.265747633581501,years,가격 / 가구 연소득,sf_price_level,sf_hh_income,household_gross_money_income_median,B,,sfr_condo
+san_francisco,USA,2024,PTR,32.22219166514926,years,가격 / (12 × 월 임대료),sf_price_level,sf_rent_month,,C,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo
+san_francisco,USA,2024,gross_yield,3.103451218936097,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),sf_rent_month,sf_price_level,,C,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo_multifamily
+san_francisco,USA,2024,RTI_hh,25.652344568856666,pct,12 × 월 임대료 / 가구 연소득 × 100,sf_rent_month,sf_hh_income,household_gross_money_income_median,B,,sfr_condo_multifamily
+san_francisco,USA,2024,RTI_renter_hh,31.125834869030754,pct,미국: 기존 임차가구 중위 총임대료 / 임차가구 중위소득,sf_rent_gross_acs,sf_hh_income_renter,renter_household_gross_money_income_median,A,,
+san_francisco,USA,2024,price_level_local,1120752.7216373158,USD,현지통화,sf_price_level,,,B,면적 미지정(전형적 주택가치),
+san_francisco,USA,2024,price_level_usd,1120752.7216373158,USD,시장환율(연평균) USD 환산,sf_price_level,wb_fx,,B,,
+san_francisco,USA,2024,price_level_ppp,1120752.7216373158,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sf_price_level,wb_ppp,,B,,
+san_francisco,USA,2024,rent_month_local,2898.5011667427298,USD/month,현지통화,sf_rent_month,,,B,면적 미지정,
+san_francisco,USA,2024,rent_month_usd,2898.5011667427298,USD,시장환율(연평균) USD 환산,sf_rent_month,wb_fx,,B,,
+san_francisco,USA,2024,rent_month_ppp,2898.5011667427298,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sf_rent_month,wb_ppp,,B,,
+san_francisco,USA,2024,hh_income_local,135590.0,USD/year,현지통화,sf_hh_income,,household_gross_money_income_median,A,,
+san_francisco,USA,2024,hh_income_usd,135590.0,USD,시장환율(연평균) USD 환산,sf_hh_income,wb_fx,household_gross_money_income_median,A,,
+san_francisco,USA,2024,hh_income_ppp,135590.0,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sf_hh_income,wb_ppp,household_gross_money_income_median,A,,
+san_francisco,USA,2024,RTI_official,29.1,pct,공식 통계의 임차가구 소득 대비 임대료 비율(중위),sf_rent_burden_acs,,renter_household_gross_money_income,A,,
+toronto,CAN,2024,RTI_hh,25.094379639448565,pct,12 × 월 임대료 / 가구 연소득 × 100,toronto_rent_2br,toronto_hh_income,economic_family_and_unattached_total_income_median,B,,purpose_built_apartment_2br
+toronto,CAN,2024,rent_month_local,1972.0,CAD/month,현지통화,toronto_rent_2br,,,B,침실 2개(면적 미지정),
+toronto,CAN,2024,rent_month_usd,1440.0890466509338,USD,시장환율(연평균) USD 환산,toronto_rent_2br,wb_fx,,B,,
+toronto,CAN,2024,rent_month_ppp,1589.1653094560975,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",toronto_rent_2br,wb_ppp,,B,,
+toronto,CAN,2024,hh_income_local,94300.0,CAD/year,현지통화,toronto_hh_income,,economic_family_and_unattached_total_income_median,B,,
+toronto,CAN,2024,hh_income_usd,68864.29873183726,USD,시장환율(연평균) USD 환산,toronto_hh_income,wb_fx,economic_family_and_unattached_total_income_median,B,,
+toronto,CAN,2024,hh_income_ppp,75993.04699883875,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",toronto_hh_income,wb_ppp,economic_family_and_unattached_total_income_median,B,,
+vancouver,CAN,2024,RTI_hh,30.874304783092327,pct,12 × 월 임대료 / 가구 연소득 × 100,vancouver_rent_2br,vancouver_hh_income,economic_family_and_unattached_total_income_median,B,,purpose_built_apartment_2br
+vancouver,CAN,2024,rent_month_local,2313.0,CAD/month,현지통화,vancouver_rent_2br,,,B,침실 2개(면적 미지정),
+vancouver,CAN,2024,rent_month_usd,1689.110529869985,USD,시장환율(연평균) USD 환산,vancouver_rent_2br,wb_fx,,B,,
+vancouver,CAN,2024,rent_month_ppp,1863.965193089226,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",vancouver_rent_2br,wb_ppp,,B,,
+vancouver,CAN,2024,hh_income_local,89900.0,CAD/year,현지통화,vancouver_hh_income,,economic_family_and_unattached_total_income_median,B,,
+vancouver,CAN,2024,hh_income_usd,65651.11830320433,USD,시장환율(연평균) USD 환산,vancouver_hh_income,wb_fx,economic_family_and_unattached_total_income_median,B,,
+vancouver,CAN,2024,hh_income_ppp,72447.24204873385,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",vancouver_hh_income,wb_ppp,economic_family_and_unattached_total_income_median,B,,
+sydney,AUS,2024,price_level_local,807500.0,AUD,현지통화,sydney_price_units,,,B,면적 미지정(공동주택 거래 중위),
+sydney,AUS,2024,price_level_usd,532877.3659124785,USD,시장환율(연평균) USD 환산,sydney_price_units,wb_fx,,B,,
+sydney,AUS,2024,price_level_ppp,565714.6780365392,intl$,"민간소비 PPP 환산(보조, 도시 주거 구매력 조정 아님)",sydney_price_units,wb_ppp,,B,,

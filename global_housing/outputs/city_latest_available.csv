@@ -1,0 +1,48 @@
+﻿city_id,country_code,year,metric,value,unit,definition,numerator_series,denominator_series,income_concept,quality_flag,notes,dwelling_type
+hong_kong,HKG,2025,PIR_earn,29.65277777777778,years,가격 / 근로자 연소득,hk_price_level,hk_earnings,employed_persons_monthly_earnings_median_x12,B,,private_domestic_class_B
+london,GBR,2025,PIR_earn,9.63309382226627,years,가격 / 근로자 연소득,london_price_flat,london_earnings,employee_fulltime_annual_gross_median,B,,flat_maisonette
+seoul,KOR,2025,PIR_earn,16.394770231677857,years,가격 / 근로자 연소득,seoul_rtms_price_level,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+singapore,SGP,2025,PIR_earn,5.750468437035601,years,가격 / 근로자 연소득,sg_hdb_price_level,sg_earnings,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,B,,hdb_flat
+hong_kong,HKG,2025,PIR_hh,20.163888888888888,years,가격 / 가구 연소득,hk_price_level,hk_hh_income,household_gross_cash_income_median,B,,private_domestic_class_B
+new_york,USA,2025,PIR_hh,6.7941546682918705,years,가격 / 가구 연소득,ny_price_level,ny_hh_income,household_gross_money_income_median,B,,sfr_condo
+san_francisco,USA,2025,PIR_hh,8.128048693846388,years,가격 / 가구 연소득,sf_price_level,sf_hh_income,household_gross_money_income_median,B,,sfr_condo
+seoul,KOR,2024,PIR_hh,10.293053887777743,years,가격 / 가구 연소득,seoul_rtms_price_level,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+singapore,SGP,2025,PIR_hh,2.761200234795094,years,가격 / 가구 연소득,sg_hdb_price_level,sg_hh_income,household_employment_income_incl_employer_cpf_median_employed_households,B,,hdb_flat
+sydney,AUS,2021,PIR_hh,7.270564053183215,years,가격 / 가구 연소득,sydney_price_units,sydney_hh_income,household_gross_total_income_median,B,,attached_dwelling
+seoul,KOR,2024,PIR_hh_est,13.096479845911743,years,서울 보조: 가격 / 추정 중위 가구소득,seoul_rtms_price_level,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+hong_kong,HKG,2025,PTR,28.45327688930699,years,가격 / (12 × 월 임대료),hk_price_level,hk_rent_month,,B,면적기준: 60㎡ 환산 (Class B ㎡단가 × 60) / 60㎡ 환산 (Class B ㎡당 월 임대료 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,private_domestic_class_B
+london,GBR,2025,PTR,18.758565834557025,years,가격 / (12 × 월 임대료),london_price_flat,london_rent_flat,,B,매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,flat_maisonette
+new_york,USA,2025,PTR,17.312109618047494,years,가격 / (12 × 월 임대료),ny_price_level,ny_rent_month,,C,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo
+paris,FRA,2025,PTR,25.4181049756031,years,가격 / (12 × 월 임대료),paris_price_level,paris_rent_month,,B,면적기준: 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60) / 60㎡ 환산 (㎡당 광고 임대료 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+san_francisco,USA,2025,PTR,30.38898528702766,years,가격 / (12 × 월 임대료),sf_price_level,sf_rent_month,,C,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo
+seoul,KOR,2025,PTR,42.70664124710792,years,가격 / (12 × 월 임대료),seoul_rtms_price_level,seoul_rtms_rent_converted,,B,면적기준: 60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60) / 60㎡ 환산 (전용 50~70㎡); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+singapore,SGP,2025,PTR,11.860341151385928,years,가격 / (12 × 월 임대료),sg_hdb_price_level,sg_hdb_rent_3rm,,C,면적기준: 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60) / HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,hdb_flat
+sydney,AUS,2021,PTR,32.04167951312571,years,가격 / (12 × 월 임대료),sydney_price_units,sydney_rent_census,,C,주택유형 불일치: attached_dwelling vs all_renter_occupied; 면적기준: 면적 미지정(공동주택 거래 중위) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,attached_dwelling
+seoul,KOR,2025,RTI_cash_earn,21.987697334015646,pct,서울: 현금 월세 기준,seoul_rtms_rent_cash,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+seoul,KOR,2024,RTI_cash_hh,13.38531561227695,pct,서울: 현금 월세(보증금 환산 전) 기준,seoul_rtms_rent_cash,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+seoul,KOR,2024,RTI_cash_hh_est,17.03095291821114,pct,서울 보조: 현금 월세 / 추정 중위 가구소득,seoul_rtms_rent_cash,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+hong_kong,HKG,2025,RTI_earn,104.2156862745098,pct,12 × 월 임대료 / 근로자 연소득 × 100,hk_rent_month,hk_earnings,employed_persons_monthly_earnings_median_x12,B,,private_domestic_class_B
+london,GBR,2025,RTI_earn,51.353040031025124,pct,12 × 월 임대료 / 근로자 연소득 × 100,london_rent_flat,london_earnings,employee_fulltime_annual_gross_median,B,,flat_maisonette
+seoul,KOR,2025,RTI_earn,38.389275655781304,pct,12 × 월 임대료 / 근로자 연소득 × 100,seoul_rtms_rent_converted,seoul_earnings,employee_regular_monthly_wage_mean_x12,B,,apartment
+singapore,SGP,2025,RTI_earn,48.484848484848484,pct,12 × 월 임대료 / 근로자 연소득 × 100,sg_hdb_rent_3rm,sg_earnings,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,C,,hdb_flat
+hong_kong,HKG,2025,RTI_hh,70.86666666666666,pct,12 × 월 임대료 / 가구 연소득 × 100,hk_rent_month,hk_hh_income,household_gross_cash_income_median,B,,private_domestic_class_B
+new_york,USA,2025,RTI_hh,39.24509963366402,pct,12 × 월 임대료 / 가구 연소득 × 100,ny_rent_month,ny_hh_income,household_gross_money_income_median,B,,sfr_condo_multifamily
+san_francisco,USA,2025,RTI_hh,26.74669330705182,pct,12 × 월 임대료 / 가구 연소득 × 100,sf_rent_month,sf_hh_income,household_gross_money_income_median,B,,sfr_condo_multifamily
+seoul,KOR,2024,RTI_hh,24.329395885973103,pct,12 × 월 임대료 / 가구 연소득 × 100,seoul_rtms_rent_converted,seoul_hh_income,household_gross_current_income_mean,B,,apartment
+singapore,SGP,2025,RTI_hh,23.28095119314875,pct,12 × 월 임대료 / 가구 연소득 × 100,sg_hdb_rent_3rm,sg_hh_income,household_employment_income_incl_employer_cpf_median_employed_households,C,,hdb_flat
+sydney,AUS,2021,RTI_hh,22.690958038591162,pct,12 × 월 임대료 / 가구 연소득 × 100,sydney_rent_census,sydney_hh_income,household_gross_total_income_median,B,,all_renter_occupied
+toronto,CAN,2024,RTI_hh,25.094379639448565,pct,12 × 월 임대료 / 가구 연소득 × 100,toronto_rent_2br,toronto_hh_income,economic_family_and_unattached_total_income_median,B,,purpose_built_apartment_2br
+vancouver,CAN,2024,RTI_hh,30.874304783092327,pct,12 × 월 임대료 / 가구 연소득 × 100,vancouver_rent_2br,vancouver_hh_income,economic_family_and_unattached_total_income_median,B,,purpose_built_apartment_2br
+seoul,KOR,2024,RTI_hh_est,30.95577331643083,pct,서울 보조: 12 × 월 임대료 / 추정 중위 가구소득,seoul_rtms_rent_converted,seoul_hh_income_median_est,household_gross_current_income_median_ESTIMATE,C,,apartment
+new_york,USA,2025,RTI_official,31.6,pct,공식 통계의 임차가구 소득 대비 임대료 비율(중위),ny_rent_burden_acs,,renter_household_gross_money_income,A,,
+san_francisco,USA,2025,RTI_official,28.5,pct,공식 통계의 임차가구 소득 대비 임대료 비율(중위),sf_rent_burden_acs,,renter_household_gross_money_income,A,,
+new_york,USA,2025,RTI_renter_hh,33.540696160412026,pct,미국: 기존 임차가구 중위 총임대료 / 임차가구 중위소득,ny_rent_gross_acs,ny_hh_income_renter,renter_household_gross_money_income_median,A,,
+san_francisco,USA,2025,RTI_renter_hh,30.233148778381675,pct,미국: 기존 임차가구 중위 총임대료 / 임차가구 중위소득,sf_rent_gross_acs,sf_hh_income_renter,renter_household_gross_money_income_median,A,,
+hong_kong,HKG,2025,gross_yield,3.5145336823253897,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),hk_rent_month,hk_price_level,,B,면적기준: 60㎡ 환산 (Class B ㎡당 월 임대료 × 60) / 60㎡ 환산 (Class B ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,private_domestic_class_B
+london,GBR,2025,gross_yield,5.330897941876773,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),london_rent_flat,london_price_flat,,B,매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,flat_maisonette
+new_york,USA,2025,gross_yield,5.77630353586441,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),ny_rent_month,ny_price_level,,C,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo_multifamily
+paris,FRA,2025,gross_yield,3.9342035960580994,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),paris_rent_month,paris_price_level,,B,면적기준: 60㎡ 환산 (㎡당 광고 임대료 × 60) / 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+san_francisco,USA,2025,gross_yield,3.2906659783302357,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),sf_rent_month,sf_price_level,,C,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,sfr_condo_multifamily
+seoul,KOR,2025,gross_yield,2.3415561861065806,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),seoul_rtms_rent_converted,seoul_rtms_price_level,,B,면적기준: 60㎡ 환산 (전용 50~70㎡) / 60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,apartment
+singapore,SGP,2025,gross_yield,8.431460674157304,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),sg_hdb_rent_3rm,sg_hdb_price_level,,C,면적기준: HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적) / 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,hdb_flat
+sydney,AUS,2021,gross_yield,3.120935029608405,pct,12 × 월 임대료 / 가격 × 100 (비용·공실·세금 차감 전),sydney_rent_census,sydney_price_units,,C,주택유형 불일치: all_renter_occupied vs attached_dwelling; 면적기준: 면적 미지정 / 면적 미지정(공동주택 거래 중위); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님,all_renter_occupied

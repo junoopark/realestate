@@ -1,0 +1,47 @@
+# 글로벌 도시 주택시장 비교 — 실행 설정
+# 설계서: docs/설계서_글로벌비교.md (원본: global_housing_replication_prompt.md, 2026-11-04)
+
+project:
+  name: global_housing_comparison
+  as_of: "2026-11-04"          # 분석 기준일. 이 날짜까지 공표된 자료만 쓴다 (재실행 시 바꿀 수 있다)
+  start_year: 2005             # 연간 패널 시작 목표 (실제 공통기간은 수집 결과로 정한다)
+  base_year_candidates: [2015, 2019]   # 상대지수 기준연도 후보 — 앞에서부터, 표본 도시가 모두 관측된 첫 연도
+  min_years_long_run: 10       # 장기 표준화(z-score)·10년 변화에 필요한 최소 연간 관측 수
+  target_area_sqm: 60          # 대표 주택 면적 (UBS 수준 비교와 같은 60㎡)
+  area_band_sqm: [50, 70]      # 60㎡ 를 직접 못 맞출 때 쓰는 면적 구간 (거래·계약 자료)
+
+# HTTP — 재시도·시간제한·호출 간격
+http:
+  user_agent: "global-housing-comparison/0.1 (research; python-requests)"
+  timeout: 90
+  retries: 3
+  pause_seconds: 0.3
+
+# API 키는 환경변수로만 받는다 (.env.example 참고). 키 값은 저장·출력하지 않는다.
+env_keys: [DATA_GO_KR_API_KEY, KOSIS_API_KEY, RONE_API_KEY, ECOS_API_KEY]
+
+# 서울 보증금 환산 (설계서 5.3)
+#   환산 월 임대료 = 계약 월세 + 보증금 × 연 환산율 / 12
+#   기준 환산율 = 한국부동산원이 관측한 서울 아파트 전월세 전환율(R-ONE A_2024_00156)의 해당 연도 평균.
+#   법정 상한(기준금리+2%p)을 시장 전환율로 쓰지 않는다.
+seoul_deposit:
+  base_rate: observed_rone          # observed_rone | 숫자(%)
+  band_pp: 1.0                      # 기준값 ±1%p
+  scenarios_pct: [2.0, 4.0, 6.0]    # 보조 시나리오
+
+# 합성지수 (선택 산출물, 설계서 6.1) — 본 프로젝트의 제안 규칙이며 UBS 원식이 아니다
+composite:
+  enabled: true
+  window_years: 10                  # 도시별 표준화에 쓰는 공통 고정기간 길이
+  change_years: 3                   # 신용·건설 비율 변화 기간(%p)
+  weights:
+    price_to_income_rel: 0.2222
+    price_to_rent_rel: 0.2222
+    city_to_country_rel: 0.2222
+    credit_to_gdp_change: 0.1667
+    construction_to_gdp_change: 0.1667
+
+outputs:
+  excel: outputs/global_housing_comparison.xlsx
+  report: outputs/report_ko.md
+  charts_dir: outputs/charts

@@ -1,0 +1,10 @@
+# 실제 검증 환경: Python 3.12.10 (Windows 11), 2026-11-04
+pandas==3.0.2
+numpy==2.4.4
+openpyxl==3.1.5
+xlrd==2.0.2
+requests==2.33.1
+matplotlib==3.10.9
+PyYAML==6.0.3
+pyarrow==26.0.1
+pytest==9.2.0

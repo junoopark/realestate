@@ -1,0 +1,2 @@
+# 원자료는 바이트 그대로 보존한다 — 줄바꿈 변환을 하면 _manifest.csv 의 sha256 과 달라진다
+data/raw/** -text

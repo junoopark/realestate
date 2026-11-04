@@ -1,0 +1,83 @@
+﻿city_id,city,variable,series_id,frequency,first_year,last_year,last_complete_year,n_years_complete,missing_years_in_span,partial_years,geography,dwelling_type,area_basis,income_concept,quality_flag,source_id
+hong_kong,홍콩,earnings,hk_earnings,A,1985,2025,2025,41,0,,Hong Kong SAR,,,employed_persons_monthly_earnings_median_x12,B,hk_censtatd
+hong_kong,홍콩,hh_income,hk_hh_income,A,1985,2025,2025,41,0,,Hong Kong SAR,,,household_gross_cash_income_median,A,hk_censtatd
+hong_kong,홍콩,price_index,hk_price_index,A,1980,2025,2025,46,0,,Hong Kong SAR,private_domestic_all_classes,,,A,hk_rvd
+hong_kong,홍콩,price_level,hk_price_level,A,1999,2025,2025,27,0,,Hong Kong SAR (3개 지역 단순평균),private_domestic_class_B,60㎡ 환산 (Class B ㎡단가 × 60),,B,hk_rvd
+hong_kong,홍콩,price_sqm,hk_price_sqm,A,1999,2025,2025,27,0,,Hong Kong SAR (홍콩섬·구룡·신계 단순평균),private_domestic_class_B,실용면적 40~69.9㎡ (Class B),,B,hk_rvd
+hong_kong,홍콩,rent_index,hk_rent_index,A,1981,2025,2025,45,0,,Hong Kong SAR,private_domestic_all_classes,,,A,hk_rvd
+hong_kong,홍콩,rent_month,hk_rent_month,A,1999,2025,2025,27,0,,Hong Kong SAR (3개 지역 단순평균),private_domestic_class_B,60㎡ 환산 (Class B ㎡당 월 임대료 × 60),,B,hk_rvd
+london,런던,earnings,london_earnings,A,2005,2025,2025,21,0,,London (거주지 기준),,,employee_fulltime_annual_gross_median,A,uk_nomis_ashe
+london,런던,price_index,london_price_index,M,1968,2026,2025,57,0,"1968, 2026",London (region),all,,,A,uk_hpi
+london,런던,price_index_national,uk_price_index_national,M,1968,2026,2025,57,0,"1968, 2026",United Kingdom,all,,,A,uk_hpi
+london,런던,price_level,london_price_flat,M,1995,2026,2025,31,0,2026,London (region),flat_maisonette,면적 미지정(플랫 전체),,B,uk_hpi
+london,런던,rent_index,london_rent_index,M,2015,2026,2025,11,0,2026,London (region),all,,,A,uk_ons_pipr
+london,런던,rent_month,london_rent_flat,M,2015,2026,2025,11,0,2026,London (region),flat_maisonette,면적 미지정(플랫 전체),,B,uk_ons_pipr
+london,런던,rent_month_alt,london_rent_all,M,2015,2026,2025,11,0,2026,London (region),all,,,B,uk_ons_pipr
+new_york,뉴욕,hh_income,ny_hh_income,A,2021,2025,2025,5,0,,New York-Newark-Jersey City MSA,,,household_gross_money_income_median,A,us_acs
+new_york,뉴욕,hh_income_renter,ny_hh_income_renter,A,2021,2025,2025,5,0,,New York-Newark-Jersey City MSA,,,renter_household_gross_money_income_median,A,us_acs
+new_york,뉴욕,price_index,ny_price_index,M,2000,2026,2025,26,0,2026,New York-Newark-Jersey City MSA,sfr_condo,,,B,us_zillow
+new_york,뉴욕,price_index_national,us_price_index_national_ny,M,2000,2026,2025,26,0,2026,United States,sfr_condo,,,B,us_zillow
+new_york,뉴욕,price_level,ny_price_level,M,2000,2026,2025,26,0,2026,New York-Newark-Jersey City MSA,sfr_condo,면적 미지정(전형적 주택가치),,B,us_zillow
+new_york,뉴욕,price_level_condo,ny_price_level_condo,M,2000,2026,2025,26,0,2026,New York-Newark-Jersey City MSA,condo_coop,면적 미지정,,B,us_zillow
+new_york,뉴욕,rent_index,ny_rent_index,M,2015,2026,2025,11,0,2026,New York-Newark-Jersey City MSA,sfr_condo_multifamily,,,B,us_zillow
+new_york,뉴욕,rent_month,ny_rent_month,M,2015,2026,2025,11,0,2026,New York-Newark-Jersey City MSA,sfr_condo_multifamily,면적 미지정,,B,us_zillow
+new_york,뉴욕,rent_month_stock,ny_rent_gross_acs,A,2021,2025,2025,5,0,,New York-Newark-Jersey City MSA,all_renter_occupied,,,A,us_acs
+new_york,뉴욕,rent_to_income_official,ny_rent_burden_acs,A,2021,2025,2025,5,0,,New York-Newark-Jersey City MSA,,,renter_household_gross_money_income,A,us_acs
+paris,파리,price_index,paris_price_index,Q,1992,2026,2025,34,0,2026,Paris,apartment,,,A,fr_insee
+paris,파리,price_index_national,france_price_index_national,Q,1996,2026,2025,30,0,2026,France métropolitaine,all_existing,,,B,fr_insee
+paris,파리,price_level,paris_price_level,A,2024,2025,2025,2,0,,Paris (20개 구),apartment,60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60),,B,fr_dvf
+paris,파리,price_sqm,paris_price_sqm,A,2024,2025,2025,2,0,,Paris (20개 구),apartment,실면적(surface réelle bâtie) 50~70㎡,,B,fr_dvf
+paris,파리,rent_index,paris_rent_index,Q,1989,2026,2025,36,0,"1989, 2026",Agglomération parisienne,all,,,B,fr_insee
+paris,파리,rent_month,paris_rent_month,A,2023,2025,2025,3,0,,Paris (20개 구,apartment,60㎡ 환산 (㎡당 광고 임대료 × 60),,B,fr_loyers
+paris,파리,rent_sqm_month,paris_rent_sqm,A,2023,2025,2025,3,0,,Paris (20개 구,apartment,모형 기준 아파트(전용 52㎡ 기준 예측),,B,fr_loyers
+san_francisco,샌프란시스코,hh_income,sf_hh_income,A,2021,2025,2025,5,0,,San Francisco-Oakland-Fremont MSA,,,household_gross_money_income_median,A,us_acs
+san_francisco,샌프란시스코,hh_income_renter,sf_hh_income_renter,A,2021,2025,2025,5,0,,San Francisco-Oakland-Fremont MSA,,,renter_household_gross_money_income_median,A,us_acs
+san_francisco,샌프란시스코,price_index,sf_price_index,M,2000,2026,2025,26,0,2026,San Francisco-Oakland-Fremont MSA,sfr_condo,,,B,us_zillow
+san_francisco,샌프란시스코,price_index_national,us_price_index_national_sf,M,2000,2026,2025,26,0,2026,United States,sfr_condo,,,B,us_zillow
+san_francisco,샌프란시스코,price_level,sf_price_level,M,2000,2026,2025,26,0,2026,San Francisco-Oakland-Fremont MSA,sfr_condo,면적 미지정(전형적 주택가치),,B,us_zillow
+san_francisco,샌프란시스코,price_level_condo,sf_price_level_condo,M,2000,2026,2025,25,0,"2009, 2026",San Francisco-Oakland-Fremont MSA,condo_coop,면적 미지정,,B,us_zillow
+san_francisco,샌프란시스코,rent_index,sf_rent_index,M,2015,2026,2025,11,0,2026,San Francisco-Oakland-Fremont MSA,sfr_condo_multifamily,,,B,us_zillow
+san_francisco,샌프란시스코,rent_month,sf_rent_month,M,2015,2026,2025,11,0,2026,San Francisco-Oakland-Fremont MSA,sfr_condo_multifamily,면적 미지정,,B,us_zillow
+san_francisco,샌프란시스코,rent_month_stock,sf_rent_gross_acs,A,2021,2025,2025,5,0,,San Francisco-Oakland-Fremont MSA,all_renter_occupied,,,A,us_acs
+san_francisco,샌프란시스코,rent_to_income_official,sf_rent_burden_acs,A,2021,2025,2025,5,0,,San Francisco-Oakland-Fremont MSA,,,renter_household_gross_money_income,A,us_acs
+seoul,서울,conversion_rate,seoul_conversion_rate,M,2011,2026,2025,15,0,2026,서울특별시,apartment,,,A,kr_rone
+seoul,서울,deposit_level,seoul_rtms_deposit,A,2024,2025,2025,2,0,,서울특별시(25개 구),apartment,60㎡ 환산 (전용 50~70㎡ ㎡당 보증금 중위 × 60),,A,kr_rtms
+seoul,서울,deposit_level_survey,seoul_deposit_mean,M,2015,2026,2025,10,0,"2015, 2026",서울특별시,apartment,전체 면적,,B,kr_rone
+seoul,서울,earnings,seoul_earnings,A,2011,2026,2025,15,0,2026,서울특별시(사업체 소재지),,,employee_regular_monthly_wage_mean_x12,B,kr_kosis
+seoul,서울,hh_income,seoul_hh_income,A,2016,2024,2024,9,0,,서울특별시,,,household_gross_current_income_mean,B,kr_kosis
+seoul,서울,hh_income_median_est,seoul_hh_income_median_est,A,2016,2024,2024,9,0,,서울특별시,,,household_gross_current_income_median_ESTIMATE,C,kr_kosis
+seoul,서울,price_index,seoul_price_index,M,2003,2026,2025,22,0,"2003, 2026",서울특별시,apartment,,,A,kr_rone
+seoul,서울,price_index_national,korea_price_index_national,M,2003,2026,2025,22,0,"2003, 2026",전국,apartment,,,A,kr_rone
+seoul,서울,price_level,seoul_rtms_price_level,A,2024,2025,2025,2,0,,서울특별시(25개 구),apartment,60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60),,A,kr_rtms
+seoul,서울,price_level_alt,seoul_price_level_mean,M,2012,2026,2025,14,0,2026,서울특별시,apartment,전체 면적,,B,kr_rone
+seoul,서울,price_sqm,seoul_rtms_price_sqm,A,2024,2025,2025,2,0,,서울특별시(25개 구),apartment,전용 50~70㎡,,A,kr_rtms
+seoul,서울,price_sqm_survey,seoul_price_sqm_mean,M,2012,2026,2025,14,0,2026,서울특별시,apartment,단위면적(부동산원 평균단위매매가격),,B,kr_rone
+seoul,서울,rent_index,seoul_rent_index,M,2015,2026,2025,10,0,"2015, 2026",서울특별시,apartment,,,A,kr_rone
+seoul,서울,rent_index_alt,seoul_rent_index_combined,M,2015,2026,2025,10,0,"2015, 2026",서울특별시,apartment,,,A,kr_rone
+seoul,서울,rent_month,seoul_rtms_rent_converted,A,2024,2025,2025,2,0,,서울특별시(25개 구),apartment,60㎡ 환산 (전용 50~70㎡),,B,kr_rtms
+seoul,서울,rent_month_cash,seoul_rtms_rent_cash,A,2024,2025,2025,2,0,,서울특별시(25개 구),apartment,60㎡ 환산 (전용 50~70㎡ ㎡당 월세 중위 × 60),,A,kr_rtms
+seoul,서울,rent_month_cash_survey,seoul_rent_month_mean,M,2015,2026,2025,10,0,"2015, 2026",서울특별시,apartment,전체 면적,,B,kr_rone
+singapore,싱가포르,earnings,sg_earnings,A,1996,2025,2025,28,2,,Singapore,,,employee_fulltime_monthly_income_incl_employer_cpf_median_x12,A,sg_datagov
+singapore,싱가포르,hh_income,sg_hh_income,A,2000,2025,2025,26,0,,Singapore,,,household_employment_income_incl_employer_cpf_median_employed_households,B,sg_datagov
+singapore,싱가포르,price_index,sg_price_index,Q,1975,2026,2025,51,0,2026,Singapore,private_non_landed,,,A,sg_datagov
+singapore,싱가포르,price_level,sg_hdb_price_level,A,2019,2026,2025,7,0,2026,Singapore (전 지역 HDB),hdb_flat,60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60),,B,sg_datagov
+singapore,싱가포르,price_sqm_hdb,sg_hdb_price_sqm,A,2019,2026,2025,7,0,2026,Singapore (전 지역 HDB),hdb_flat,바닥면적 50~70㎡,,B,sg_datagov
+singapore,싱가포르,rent_index,sg_rent_index,Q,2004,2026,2025,22,0,2026,Singapore (Whole Island),private_non_landed,,,A,sg_datagov
+singapore,싱가포르,rent_month,sg_hdb_rent_3rm,A,2005,2026,2025,21,0,2026,Singapore (26개 타운 중위값의 중위),hdb_flat,HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적),,C,sg_datagov
+sydney,시드니,hh_income,sydney_hh_income,A,2021,2021,2021,1,0,,Greater Sydney,,,household_gross_total_income_median,B,au_abs
+sydney,시드니,price_index,sydney_price_index,Q,2003,2026,2025,22,0,"2003, 2026",Greater Sydney,attached_dwelling,,,C,au_abs
+sydney,시드니,price_level,sydney_price_units,Q,2003,2026,2025,22,0,"2003, 2026",Greater Sydney,attached_dwelling,면적 미지정(공동주택 거래 중위),,B,au_abs
+sydney,시드니,rent_index,sydney_rent_index,M,2022,2026,2025,3,0,"2022, 2026",Sydney (CPI capital city),all,,,A,au_abs
+sydney,시드니,rent_month,sydney_rent_census,A,2021,2021,2021,1,0,,Greater Sydney,all_renter_occupied,면적 미지정,,B,au_abs
+tokyo,도쿄,price_index,tokyo_price_index,M,2007,2025,2025,18,0,2007,東京都,condominium,,,A,jp_mlit
+tokyo,도쿄,price_index_national,japan_price_index_national,M,2008,2025,2025,17,0,2008,全国,condominium,,,A,jp_mlit
+toronto,토론토,hh_income,toronto_hh_income,A,1976,2024,2024,49,0,,Toronto CMA,,,economic_family_and_unattached_total_income_median,B,ca_statcan
+toronto,토론토,price_index,toronto_price_index,M,1981,2026,2025,45,0,2026,Toronto CMA,new_house_and_land,,,C,ca_statcan
+toronto,토론토,price_index_national,canada_price_index_national_tor,M,1981,2026,2025,45,0,2026,Canada,new_house_and_land,,,C,ca_statcan
+toronto,토론토,rent_index,toronto_rent_index,M,1971,2026,2025,55,0,2026,Toronto CMA,all,,,B,ca_statcan
+toronto,토론토,rent_month,toronto_rent_2br,A,1992,2025,2025,34,0,,Toronto CMA,purpose_built_apartment_2br,침실 2개(면적 미지정),,B,ca_statcan
+vancouver,밴쿠버,hh_income,vancouver_hh_income,A,1976,2024,2024,49,0,,Vancouver CMA,,,economic_family_and_unattached_total_income_median,B,ca_statcan
+vancouver,밴쿠버,price_index,vancouver_price_index,M,1981,2026,2025,45,0,2026,Vancouver CMA,new_house_and_land,,,C,ca_statcan
+vancouver,밴쿠버,price_index_national,canada_price_index_national_van,M,1981,2026,2025,45,0,2026,Canada,new_house_and_land,,,C,ca_statcan
+vancouver,밴쿠버,rent_index,vancouver_rent_index,M,1971,2026,2025,55,0,2026,Vancouver CMA,all,,,B,ca_statcan
+vancouver,밴쿠버,rent_month,vancouver_rent_2br,A,1992,2025,2025,34,0,,Vancouver CMA,purpose_built_apartment_2br,침실 2개(면적 미지정),,B,ca_statcan

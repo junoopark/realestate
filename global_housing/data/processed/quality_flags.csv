@@ -1,0 +1,90 @@
+﻿check,severity,target,detail
+비정상 도약,warning,sg_price_index,"1회, 최대 28% (1981-Q1) — 원자료 대조 필요"
+공표일 미기록,info,bis_hh_credit,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,bis_rpp,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,canada_price_index_national_tor,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,canada_price_index_national_van,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_earnings,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_price_sqm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,hk_rent_month,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,japan_price_index_national,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,korea_price_index_national,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,london_earnings,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,london_price_flat,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,london_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_hh_income_renter,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_price_level_condo,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_rent_burden_acs,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_rent_gross_acs,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,ny_rent_month,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,paris_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,paris_price_sqm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,paris_rent_month,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,paris_rent_sqm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_conversion_rate,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_deposit_mean,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_hh_income_median_est,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_price_level_mean,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_price_sqm_mean,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rent_index_combined,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rent_month_mean,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rtms_deposit,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rtms_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rtms_price_sqm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rtms_rent_cash,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,seoul_rtms_rent_converted,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_hh_income_renter,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_price_level_condo,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_rent_burden_acs,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_rent_gross_acs,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sf_rent_month,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_earnings,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_hdb_price_level,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_hdb_price_sqm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_hdb_rent_3rm,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sg_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sydney_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sydney_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sydney_price_units,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sydney_rent_census,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,sydney_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,tokyo_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,toronto_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,toronto_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,toronto_rent_2br,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,toronto_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,uk_price_index_national,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,us_price_index_national_ny,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,us_price_index_national_sf,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,vancouver_hh_income,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,vancouver_price_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,vancouver_rent_2br,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+공표일 미기록,info,vancouver_rent_index,원자료에 관측별 공표일이 없음 — retrieved_at 으로 시점 통제
+변수 정의,info,bis_hh_credit,가계신용 전체(주택담보대출 아님) — mortgage_to_gdp 로 쓰지 않음
+PTR·수익률 역수,ok,city_level_metrics,72행 일치
+품질 C 지표,info,singapore RTI_hh,nan
+품질 C 지표,info,singapore RTI_earn,nan
+품질 C 지표,info,singapore PTR,면적기준: 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60) / HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,singapore gross_yield,면적기준: HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적) / 60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,new_york PTR,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,new_york gross_yield,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,san_francisco PTR,주택유형 불일치: sfr_condo vs sfr_condo_multifamily; 면적기준: 면적 미지정(전형적 주택가치) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,san_francisco gross_yield,주택유형 불일치: sfr_condo_multifamily vs sfr_condo; 면적기준: 면적 미지정 / 면적 미지정(전형적 주택가치); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,sydney PTR,주택유형 불일치: attached_dwelling vs all_renter_occupied; 면적기준: 면적 미지정(공동주택 거래 중위) / 면적 미지정; 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님
+품질 C 지표,info,sydney gross_yield,주택유형 불일치: all_renter_occupied vs attached_dwelling; 면적기준: 면적 미지정 / 면적 미지정(공동주택 거래 중위); 매매 대표값과 임대 대표값의 비율 — 같은 주택의 수익률이 아님

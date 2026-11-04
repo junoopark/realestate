@@ -1,0 +1,526 @@
+quarter,property_type,locality,index
+2004-Q1,All Residential,Whole Island,64
+2004-Q1,Landed,Whole Island,66.4
+2004-Q1,Non-Landed,Whole Island,63.4
+2004-Q1,Non-Landed,Core Central Region,63.3
+2004-Q1,Non-Landed,Rest of Central Region,65.6
+2004-Q1,Non-Landed,Outside Central Region,63.1
+2004-Q2,All Residential,Whole Island,64
+2004-Q2,Landed,Whole Island,66.1
+2004-Q2,Non-Landed,Whole Island,63.5
+2004-Q2,Non-Landed,Core Central Region,63.5
+2004-Q2,Non-Landed,Rest of Central Region,65
+2004-Q2,Non-Landed,Outside Central Region,63.1
+2004-Q3,All Residential,Whole Island,64.2
+2004-Q3,Landed,Whole Island,66.7
+2004-Q3,Non-Landed,Whole Island,63.6
+2004-Q3,Non-Landed,Core Central Region,62.8
+2004-Q3,Non-Landed,Rest of Central Region,62.8
+2004-Q3,Non-Landed,Outside Central Region,63.8
+2004-Q4,All Residential,Whole Island,64.6
+2004-Q4,Landed,Whole Island,67
+2004-Q4,Non-Landed,Whole Island,64
+2004-Q4,Non-Landed,Core Central Region,62.5
+2004-Q4,Non-Landed,Rest of Central Region,61.5
+2004-Q4,Non-Landed,Outside Central Region,64.3
+2005-Q1,All Residential,Whole Island,65.2
+2005-Q1,Landed,Whole Island,67.3
+2005-Q1,Non-Landed,Whole Island,64.7
+2005-Q1,Non-Landed,Core Central Region,63.3
+2005-Q1,Non-Landed,Rest of Central Region,60.3
+2005-Q1,Non-Landed,Outside Central Region,64.6
+2005-Q2,All Residential,Whole Island,65.6
+2005-Q2,Landed,Whole Island,67.6
+2005-Q2,Non-Landed,Whole Island,65.1
+2005-Q2,Non-Landed,Core Central Region,63.6
+2005-Q2,Non-Landed,Rest of Central Region,60.4
+2005-Q2,Non-Landed,Outside Central Region,65
+2005-Q3,All Residential,Whole Island,66.1
+2005-Q3,Landed,Whole Island,68.4
+2005-Q3,Non-Landed,Whole Island,65.6
+2005-Q3,Non-Landed,Core Central Region,64.1
+2005-Q3,Non-Landed,Rest of Central Region,60.8
+2005-Q3,Non-Landed,Outside Central Region,65.3
+2005-Q4,All Residential,Whole Island,66.5
+2005-Q4,Landed,Whole Island,68.6
+2005-Q4,Non-Landed,Whole Island,66
+2005-Q4,Non-Landed,Core Central Region,65
+2005-Q4,Non-Landed,Rest of Central Region,61
+2005-Q4,Non-Landed,Outside Central Region,65.7
+2006-Q1,All Residential,Whole Island,67.2
+2006-Q1,Landed,Whole Island,69.3
+2006-Q1,Non-Landed,Whole Island,66.7
+2006-Q1,Non-Landed,Core Central Region,66.3
+2006-Q1,Non-Landed,Rest of Central Region,62.3
+2006-Q1,Non-Landed,Outside Central Region,65.8
+2006-Q2,All Residential,Whole Island,68.7
+2006-Q2,Landed,Whole Island,70.1
+2006-Q2,Non-Landed,Whole Island,68.3
+2006-Q2,Non-Landed,Core Central Region,69.3
+2006-Q2,Non-Landed,Rest of Central Region,64.8
+2006-Q2,Non-Landed,Outside Central Region,67.3
+2006-Q3,All Residential,Whole Island,72.1
+2006-Q3,Landed,Whole Island,73.3
+2006-Q3,Non-Landed,Whole Island,71.8
+2006-Q3,Non-Landed,Core Central Region,73.9
+2006-Q3,Non-Landed,Rest of Central Region,68.7
+2006-Q3,Non-Landed,Outside Central Region,69.4
+2006-Q4,All Residential,Whole Island,75.9
+2006-Q4,Landed,Whole Island,75.6
+2006-Q4,Non-Landed,Whole Island,75.9
+2006-Q4,Non-Landed,Core Central Region,77.9
+2006-Q4,Non-Landed,Rest of Central Region,72.7
+2006-Q4,Non-Landed,Outside Central Region,73.7
+2007-Q1,All Residential,Whole Island,81.6
+2007-Q1,Landed,Whole Island,79.4
+2007-Q1,Non-Landed,Whole Island,82.1
+2007-Q1,Non-Landed,Core Central Region,83.8
+2007-Q1,Non-Landed,Rest of Central Region,79.8
+2007-Q1,Non-Landed,Outside Central Region,78.9
+2007-Q2,All Residential,Whole Island,90.1
+2007-Q2,Landed,Whole Island,85.9
+2007-Q2,Non-Landed,Whole Island,91.1
+2007-Q2,Non-Landed,Core Central Region,93.9
+2007-Q2,Non-Landed,Rest of Central Region,87.8
+2007-Q2,Non-Landed,Outside Central Region,86.3
+2007-Q3,All Residential,Whole Island,100.4
+2007-Q3,Landed,Whole Island,93.9
+2007-Q3,Non-Landed,Whole Island,101.9
+2007-Q3,Non-Landed,Core Central Region,105.3
+2007-Q3,Non-Landed,Rest of Central Region,98.3
+2007-Q3,Non-Landed,Outside Central Region,96.5
+2007-Q4,All Residential,Whole Island,107.2
+2007-Q4,Landed,Whole Island,100.7
+2007-Q4,Non-Landed,Whole Island,108.7
+2007-Q4,Non-Landed,Core Central Region,110.9
+2007-Q4,Non-Landed,Rest of Central Region,106.9
+2007-Q4,Non-Landed,Outside Central Region,104.7
+2008-Q1,All Residential,Whole Island,113.6
+2008-Q1,Landed,Whole Island,107.3
+2008-Q1,Non-Landed,Whole Island,115.1
+2008-Q1,Non-Landed,Core Central Region,116.2
+2008-Q1,Non-Landed,Rest of Central Region,114
+2008-Q1,Non-Landed,Outside Central Region,113.4
+2008-Q2,All Residential,Whole Island,116.5
+2008-Q2,Landed,Whole Island,112.2
+2008-Q2,Non-Landed,Whole Island,117.5
+2008-Q2,Non-Landed,Core Central Region,119.5
+2008-Q2,Non-Landed,Rest of Central Region,115.2
+2008-Q2,Non-Landed,Outside Central Region,114.8
+2008-Q3,All Residential,Whole Island,115.5
+2008-Q3,Landed,Whole Island,112.9
+2008-Q3,Non-Landed,Whole Island,116.2
+2008-Q3,Non-Landed,Core Central Region,118.7
+2008-Q3,Non-Landed,Rest of Central Region,114.6
+2008-Q3,Non-Landed,Outside Central Region,111.7
+2008-Q4,All Residential,Whole Island,109.3
+2008-Q4,Landed,Whole Island,108.2
+2008-Q4,Non-Landed,Whole Island,109.6
+2008-Q4,Non-Landed,Core Central Region,111.4
+2008-Q4,Non-Landed,Rest of Central Region,107.8
+2008-Q4,Non-Landed,Outside Central Region,106.9
+2009-Q1,All Residential,Whole Island,100
+2009-Q1,Landed,Whole Island,100
+2009-Q1,Non-Landed,Whole Island,100
+2009-Q1,Non-Landed,Core Central Region,100
+2009-Q1,Non-Landed,Rest of Central Region,100
+2009-Q1,Non-Landed,Outside Central Region,100
+2009-Q2,All Residential,Whole Island,94.8
+2009-Q2,Landed,Whole Island,96.3
+2009-Q2,Non-Landed,Whole Island,94.4
+2009-Q2,Non-Landed,Core Central Region,94.9
+2009-Q2,Non-Landed,Rest of Central Region,93.9
+2009-Q2,Non-Landed,Outside Central Region,94.1
+2009-Q3,All Residential,Whole Island,92.8
+2009-Q3,Landed,Whole Island,94.2
+2009-Q3,Non-Landed,Whole Island,92.4
+2009-Q3,Non-Landed,Core Central Region,92.9
+2009-Q3,Non-Landed,Rest of Central Region,91.7
+2009-Q3,Non-Landed,Outside Central Region,91.9
+2009-Q4,All Residential,Whole Island,93.3
+2009-Q4,Landed,Whole Island,95.6
+2009-Q4,Non-Landed,Whole Island,92.9
+2009-Q4,Non-Landed,Core Central Region,93.7
+2009-Q4,Non-Landed,Rest of Central Region,91.8
+2009-Q4,Non-Landed,Outside Central Region,91.9
+2010-Q1,All Residential,Whole Island,97.7
+2010-Q1,Landed,Whole Island,99.2
+2010-Q1,Non-Landed,Whole Island,97.4
+2010-Q1,Non-Landed,Core Central Region,98.7
+2010-Q1,Non-Landed,Rest of Central Region,95.5
+2010-Q1,Non-Landed,Outside Central Region,96.3
+2010-Q2,All Residential,Whole Island,103.5
+2010-Q2,Landed,Whole Island,104.7
+2010-Q2,Non-Landed,Whole Island,103.2
+2010-Q2,Non-Landed,Core Central Region,104.9
+2010-Q2,Non-Landed,Rest of Central Region,100.3
+2010-Q2,Non-Landed,Outside Central Region,102.3
+2010-Q3,All Residential,Whole Island,107.2
+2010-Q3,Landed,Whole Island,108.6
+2010-Q3,Non-Landed,Whole Island,106.9
+2010-Q3,Non-Landed,Core Central Region,108.7
+2010-Q3,Non-Landed,Rest of Central Region,104
+2010-Q3,Non-Landed,Outside Central Region,105.9
+2010-Q4,All Residential,Whole Island,110
+2010-Q4,Landed,Whole Island,110.1
+2010-Q4,Non-Landed,Whole Island,110
+2010-Q4,Non-Landed,Core Central Region,111.1
+2010-Q4,Non-Landed,Rest of Central Region,108
+2010-Q4,Non-Landed,Outside Central Region,109.4
+2011-Q1,All Residential,Whole Island,111.4
+2011-Q1,Landed,Whole Island,112.4
+2011-Q1,Non-Landed,Whole Island,111.2
+2011-Q1,Non-Landed,Core Central Region,112.5
+2011-Q1,Non-Landed,Rest of Central Region,108.4
+2011-Q1,Non-Landed,Outside Central Region,111.1
+2011-Q2,All Residential,Whole Island,112.8
+2011-Q2,Landed,Whole Island,114.7
+2011-Q2,Non-Landed,Whole Island,112.4
+2011-Q2,Non-Landed,Core Central Region,113.4
+2011-Q2,Non-Landed,Rest of Central Region,109.4
+2011-Q2,Non-Landed,Outside Central Region,112.7
+2011-Q3,All Residential,Whole Island,113.7
+2011-Q3,Landed,Whole Island,115.8
+2011-Q3,Non-Landed,Whole Island,113.2
+2011-Q3,Non-Landed,Core Central Region,113.9
+2011-Q3,Non-Landed,Rest of Central Region,110.4
+2011-Q3,Non-Landed,Outside Central Region,113.9
+2011-Q4,All Residential,Whole Island,114.2
+2011-Q4,Landed,Whole Island,116.3
+2011-Q4,Non-Landed,Whole Island,113.7
+2011-Q4,Non-Landed,Core Central Region,114
+2011-Q4,Non-Landed,Rest of Central Region,111.7
+2011-Q4,Non-Landed,Outside Central Region,114.5
+2012-Q1,All Residential,Whole Island,114.5
+2012-Q1,Landed,Whole Island,115.5
+2012-Q1,Non-Landed,Whole Island,114.3
+2012-Q1,Non-Landed,Core Central Region,114.6
+2012-Q1,Non-Landed,Rest of Central Region,112.1
+2012-Q1,Non-Landed,Outside Central Region,114.8
+2012-Q2,All Residential,Whole Island,114.8
+2012-Q2,Landed,Whole Island,116
+2012-Q2,Non-Landed,Whole Island,114.6
+2012-Q2,Non-Landed,Core Central Region,114.4
+2012-Q2,Non-Landed,Rest of Central Region,112.9
+2012-Q2,Non-Landed,Outside Central Region,115.9
+2012-Q3,All Residential,Whole Island,115.9
+2012-Q3,Landed,Whole Island,117.1
+2012-Q3,Non-Landed,Whole Island,115.6
+2012-Q3,Non-Landed,Core Central Region,115.1
+2012-Q3,Non-Landed,Rest of Central Region,114
+2012-Q3,Non-Landed,Outside Central Region,117.8
+2012-Q4,All Residential,Whole Island,116.6
+2012-Q4,Landed,Whole Island,117.5
+2012-Q4,Non-Landed,Whole Island,116.5
+2012-Q4,Non-Landed,Core Central Region,115.8
+2012-Q4,Non-Landed,Rest of Central Region,114.7
+2012-Q4,Non-Landed,Outside Central Region,119.2
+2013-Q1,All Residential,Whole Island,117.6
+2013-Q1,Landed,Whole Island,119
+2013-Q1,Non-Landed,Whole Island,117.3
+2013-Q1,Non-Landed,Core Central Region,116.8
+2013-Q1,Non-Landed,Rest of Central Region,114.8
+2013-Q1,Non-Landed,Outside Central Region,120.1
+2013-Q2,All Residential,Whole Island,117.9
+2013-Q2,Landed,Whole Island,119.6
+2013-Q2,Non-Landed,Whole Island,117.6
+2013-Q2,Non-Landed,Core Central Region,117.4
+2013-Q2,Non-Landed,Rest of Central Region,114.9
+2013-Q2,Non-Landed,Outside Central Region,120.1
+2013-Q3,All Residential,Whole Island,118.2
+2013-Q3,Landed,Whole Island,120
+2013-Q3,Non-Landed,Whole Island,117.8
+2013-Q3,Non-Landed,Core Central Region,117.8
+2013-Q3,Non-Landed,Rest of Central Region,115.6
+2013-Q3,Non-Landed,Outside Central Region,119.2
+2013-Q4,All Residential,Whole Island,117.6
+2013-Q4,Landed,Whole Island,119.3
+2013-Q4,Non-Landed,Whole Island,117.3
+2013-Q4,Non-Landed,Core Central Region,117.1
+2013-Q4,Non-Landed,Rest of Central Region,115.6
+2013-Q4,Non-Landed,Outside Central Region,118.3
+2014-Q1,All Residential,Whole Island,116.8
+2014-Q1,Landed,Whole Island,116.8
+2014-Q1,Non-Landed,Whole Island,116.8
+2014-Q1,Non-Landed,Core Central Region,116.4
+2014-Q1,Non-Landed,Rest of Central Region,115.9
+2014-Q1,Non-Landed,Outside Central Region,117.3
+2014-Q2,All Residential,Whole Island,116.1
+2014-Q2,Landed,Whole Island,114.4
+2014-Q2,Non-Landed,Whole Island,116.5
+2014-Q2,Non-Landed,Core Central Region,116.3
+2014-Q2,Non-Landed,Rest of Central Region,115.8
+2014-Q2,Non-Landed,Outside Central Region,116.2
+2014-Q3,All Residential,Whole Island,115.2
+2014-Q3,Landed,Whole Island,114.5
+2014-Q3,Non-Landed,Whole Island,115.2
+2014-Q3,Non-Landed,Core Central Region,114.1
+2014-Q3,Non-Landed,Rest of Central Region,115.5
+2014-Q3,Non-Landed,Outside Central Region,116.2
+2014-Q4,All Residential,Whole Island,114.1
+2014-Q4,Landed,Whole Island,112.6
+2014-Q4,Non-Landed,Whole Island,114.3
+2014-Q4,Non-Landed,Core Central Region,112.8
+2014-Q4,Non-Landed,Rest of Central Region,115.3
+2014-Q4,Non-Landed,Outside Central Region,115.3
+2015-Q1,All Residential,Whole Island,112.2
+2015-Q1,Landed,Whole Island,111.2
+2015-Q1,Non-Landed,Whole Island,112.2
+2015-Q1,Non-Landed,Core Central Region,110.7
+2015-Q1,Non-Landed,Rest of Central Region,113.5
+2015-Q1,Non-Landed,Outside Central Region,113.2
+2015-Q2,All Residential,Whole Island,111
+2015-Q2,Landed,Whole Island,110.1
+2015-Q2,Non-Landed,Whole Island,111
+2015-Q2,Non-Landed,Core Central Region,109.3
+2015-Q2,Non-Landed,Rest of Central Region,112.3
+2015-Q2,Non-Landed,Outside Central Region,112.1
+2015-Q3,All Residential,Whole Island,110.3
+2015-Q3,Landed,Whole Island,110
+2015-Q3,Non-Landed,Whole Island,110.2
+2015-Q3,Non-Landed,Core Central Region,108.9
+2015-Q3,Non-Landed,Rest of Central Region,111.4
+2015-Q3,Non-Landed,Outside Central Region,110.9
+2015-Q4,All Residential,Whole Island,108.9
+2015-Q4,Landed,Whole Island,107.5
+2015-Q4,Non-Landed,Whole Island,109
+2015-Q4,Non-Landed,Core Central Region,108.5
+2015-Q4,Non-Landed,Rest of Central Region,109.6
+2015-Q4,Non-Landed,Outside Central Region,108.9
+2016-Q1,All Residential,Whole Island,107.5
+2016-Q1,Landed,Whole Island,105.1
+2016-Q1,Non-Landed,Whole Island,107.7
+2016-Q1,Non-Landed,Core Central Region,106.7
+2016-Q1,Non-Landed,Rest of Central Region,108.9
+2016-Q1,Non-Landed,Outside Central Region,107.6
+2016-Q2,All Residential,Whole Island,106.9
+2016-Q2,Landed,Whole Island,103.4
+2016-Q2,Non-Landed,Whole Island,107.3
+2016-Q2,Non-Landed,Core Central Region,106.8
+2016-Q2,Non-Landed,Rest of Central Region,108.2
+2016-Q2,Non-Landed,Outside Central Region,106.3
+2016-Q3,All Residential,Whole Island,105.6
+2016-Q3,Landed,Whole Island,103.4
+2016-Q3,Non-Landed,Whole Island,105.8
+2016-Q3,Non-Landed,Core Central Region,105.3
+2016-Q3,Non-Landed,Rest of Central Region,107.6
+2016-Q3,Non-Landed,Outside Central Region,103.7
+2016-Q4,All Residential,Whole Island,104.5
+2016-Q4,Landed,Whole Island,100.1
+2016-Q4,Non-Landed,Whole Island,105.1
+2016-Q4,Non-Landed,Core Central Region,104.9
+2016-Q4,Non-Landed,Rest of Central Region,107.5
+2016-Q4,Non-Landed,Outside Central Region,101.6
+2017-Q1,All Residential,Whole Island,103.6
+2017-Q1,Landed,Whole Island,97.8
+2017-Q1,Non-Landed,Whole Island,104.4
+2017-Q1,Non-Landed,Core Central Region,104.2
+2017-Q1,Non-Landed,Rest of Central Region,106.2
+2017-Q1,Non-Landed,Outside Central Region,102
+2017-Q2,All Residential,Whole Island,103.4
+2017-Q2,Landed,Whole Island,97.7
+2017-Q2,Non-Landed,Whole Island,104.2
+2017-Q2,Non-Landed,Core Central Region,104.3
+2017-Q2,Non-Landed,Rest of Central Region,105.8
+2017-Q2,Non-Landed,Outside Central Region,101.4
+2017-Q3,All Residential,Whole Island,103.4
+2017-Q3,Landed,Whole Island,98.3
+2017-Q3,Non-Landed,Whole Island,104.1
+2017-Q3,Non-Landed,Core Central Region,103.5
+2017-Q3,Non-Landed,Rest of Central Region,106.8
+2017-Q3,Non-Landed,Outside Central Region,101.1
+2017-Q4,All Residential,Whole Island,102.5
+2017-Q4,Landed,Whole Island,97
+2017-Q4,Non-Landed,Whole Island,103.3
+2017-Q4,Non-Landed,Core Central Region,102.8
+2017-Q4,Non-Landed,Rest of Central Region,106.1
+2017-Q4,Non-Landed,Outside Central Region,100.1
+2018-Q1,All Residential,Whole Island,102.8
+2018-Q1,Landed,Whole Island,97
+2018-Q1,Non-Landed,Whole Island,103.6
+2018-Q1,Non-Landed,Core Central Region,103.4
+2018-Q1,Non-Landed,Rest of Central Region,105.8
+2018-Q1,Non-Landed,Outside Central Region,100.8
+2018-Q2,All Residential,Whole Island,103.8
+2018-Q2,Landed,Whole Island,100.5
+2018-Q2,Non-Landed,Whole Island,104.2
+2018-Q2,Non-Landed,Core Central Region,104.2
+2018-Q2,Non-Landed,Rest of Central Region,106.2
+2018-Q2,Non-Landed,Outside Central Region,101.6
+2018-Q3,All Residential,Whole Island,104.1
+2018-Q3,Landed,Whole Island,101
+2018-Q3,Non-Landed,Whole Island,104.5
+2018-Q3,Non-Landed,Core Central Region,103.3
+2018-Q3,Non-Landed,Rest of Central Region,107.8
+2018-Q3,Non-Landed,Outside Central Region,102.5
+2018-Q4,All Residential,Whole Island,103.1
+2018-Q4,Landed,Whole Island,98.9
+2018-Q4,Non-Landed,Whole Island,103.7
+2018-Q4,Non-Landed,Core Central Region,102.7
+2018-Q4,Non-Landed,Rest of Central Region,107.3
+2018-Q4,Non-Landed,Outside Central Region,100.8
+2019-Q1,All Residential,Whole Island,104.1
+2019-Q1,Landed,Whole Island,99.1
+2019-Q1,Non-Landed,Whole Island,104.8
+2019-Q1,Non-Landed,Core Central Region,104.3
+2019-Q1,Non-Landed,Rest of Central Region,107
+2019-Q1,Non-Landed,Outside Central Region,102.5
+2019-Q2,All Residential,Whole Island,105.5
+2019-Q2,Landed,Whole Island,99.4
+2019-Q2,Non-Landed,Whole Island,106.3
+2019-Q2,Non-Landed,Core Central Region,105.9
+2019-Q2,Non-Landed,Rest of Central Region,108.5
+2019-Q2,Non-Landed,Outside Central Region,103.7
+2019-Q3,All Residential,Whole Island,105.6
+2019-Q3,Landed,Whole Island,97.1
+2019-Q3,Non-Landed,Whole Island,106.7
+2019-Q3,Non-Landed,Core Central Region,105.2
+2019-Q3,Non-Landed,Rest of Central Region,110.2
+2019-Q3,Non-Landed,Outside Central Region,104.5
+2019-Q4,All Residential,Whole Island,104.5
+2019-Q4,Landed,Whole Island,95.5
+2019-Q4,Non-Landed,Whole Island,105.7
+2019-Q4,Non-Landed,Core Central Region,104.1
+2019-Q4,Non-Landed,Rest of Central Region,109.4
+2019-Q4,Non-Landed,Outside Central Region,103.5
+2020-Q1,All Residential,Whole Island,105.6
+2020-Q1,Landed,Whole Island,94.6
+2020-Q1,Non-Landed,Whole Island,107.1
+2020-Q1,Non-Landed,Core Central Region,105.6
+2020-Q1,Non-Landed,Rest of Central Region,110.1
+2020-Q1,Non-Landed,Outside Central Region,105.5
+2020-Q2,All Residential,Whole Island,104.3
+2020-Q2,Landed,Whole Island,92.4
+2020-Q2,Non-Landed,Whole Island,105.9
+2020-Q2,Non-Landed,Core Central Region,105
+2020-Q2,Non-Landed,Rest of Central Region,108
+2020-Q2,Non-Landed,Outside Central Region,104.6
+2020-Q3,All Residential,Whole Island,103.8
+2020-Q3,Landed,Whole Island,92.3
+2020-Q3,Non-Landed,Whole Island,105.3
+2020-Q3,Non-Landed,Core Central Region,102.8
+2020-Q3,Non-Landed,Rest of Central Region,108.3
+2020-Q3,Non-Landed,Outside Central Region,105.6
+2020-Q4,All Residential,Whole Island,103.9
+2020-Q4,Landed,Whole Island,92.9
+2020-Q4,Non-Landed,Whole Island,105.2
+2020-Q4,Non-Landed,Core Central Region,101.6
+2020-Q4,Non-Landed,Rest of Central Region,109.3
+2020-Q4,Non-Landed,Outside Central Region,106.6
+2021-Q1,All Residential,Whole Island,106.2
+2021-Q1,Landed,Whole Island,93.5
+2021-Q1,Non-Landed,Whole Island,107.7
+2021-Q1,Non-Landed,Core Central Region,104.5
+2021-Q1,Non-Landed,Rest of Central Region,111.5
+2021-Q1,Non-Landed,Outside Central Region,108.8
+2021-Q2,All Residential,Whole Island,109.3
+2021-Q2,Landed,Whole Island,94.8
+2021-Q2,Non-Landed,Whole Island,111
+2021-Q2,Non-Landed,Core Central Region,107.7
+2021-Q2,Non-Landed,Rest of Central Region,114.6
+2021-Q2,Non-Landed,Outside Central Region,112.7
+2021-Q3,Landed,Whole Island,99.3
+2021-Q3,Non-Landed,Whole Island,112.6
+2021-Q3,Non-Landed,Core Central Region,108.5
+2021-Q3,Non-Landed,Rest of Central Region,116.4
+2021-Q3,Non-Landed,Outside Central Region,115.6
+2021-Q4,Landed,Whole Island,100.5
+2021-Q4,Non-Landed,Whole Island,115.6
+2021-Q4,Non-Landed,Core Central Region,111.6
+2021-Q4,Non-Landed,Rest of Central Region,119.7
+2021-Q4,Non-Landed,Outside Central Region,118.4
+2022-Q1,Landed,Whole Island,105.8
+2022-Q1,Non-Landed,Whole Island,120.3
+2022-Q1,Non-Landed,Core Central Region,115.8
+2022-Q1,Non-Landed,Rest of Central Region,125.3
+2022-Q1,Non-Landed,Outside Central Region,123.1
+2022-Q2,Landed,Whole Island,109.2
+2022-Q2,Non-Landed,Whole Island,128.8
+2022-Q2,Non-Landed,Core Central Region,124.7
+2022-Q2,Non-Landed,Rest of Central Region,132.7
+2022-Q2,Non-Landed,Outside Central Region,132.6
+2022-Q3,Landed,Whole Island,121.1
+2022-Q3,Non-Landed,Whole Island,139.5
+2022-Q3,Non-Landed,Core Central Region,133.4
+2022-Q3,Non-Landed,Rest of Central Region,145.4
+2022-Q3,Non-Landed,Outside Central Region,144.3
+2022-Q4,Landed,Whole Island,128.7
+2022-Q4,Non-Landed,Whole Island,150
+2022-Q4,Non-Landed,Core Central Region,143.1
+2022-Q4,Non-Landed,Rest of Central Region,156
+2022-Q4,Non-Landed,Outside Central Region,156.1
+2023-Q1,Landed,Whole Island,147.4
+2023-Q1,Non-Landed,Whole Island,159.3
+2023-Q1,Non-Landed,Core Central Region,152.3
+2023-Q1,Non-Landed,Rest of Central Region,165.7
+2023-Q1,Non-Landed,Outside Central Region,165.6
+2023-Q2,Landed,Whole Island,157.3
+2023-Q2,Non-Landed,Whole Island,163
+2023-Q2,Non-Landed,Core Central Region,155.3
+2023-Q2,Non-Landed,Rest of Central Region,169
+2023-Q2,Non-Landed,Outside Central Region,170.4
+2023-Q3,Landed,Whole Island,164.2
+2023-Q3,Non-Landed,Whole Island,163.3
+2023-Q3,Non-Landed,Core Central Region,152.7
+2023-Q3,Non-Landed,Rest of Central Region,172.2
+2023-Q3,Non-Landed,Outside Central Region,172.6
+2023-Q4,Landed,Whole Island,157.5
+2023-Q4,Non-Landed,Whole Island,160.4
+2023-Q4,Non-Landed,Core Central Region,150.3
+2023-Q4,Non-Landed,Rest of Central Region,170.1
+2023-Q4,Non-Landed,Outside Central Region,167.8
+2024-Q1,Landed,Whole Island,150.9
+2024-Q1,Non-Landed,Whole Island,157.8
+2024-Q1,Non-Landed,Core Central Region,147.9
+2024-Q1,Non-Landed,Rest of Central Region,166.9
+2024-Q1,Non-Landed,Outside Central Region,165.5
+2024-Q2,Landed,Whole Island,149.5
+2024-Q2,Non-Landed,Whole Island,156.5
+2024-Q2,Non-Landed,Core Central Region,147.8
+2024-Q2,Non-Landed,Rest of Central Region,164.6
+2024-Q2,Non-Landed,Outside Central Region,163.3
+2024-Q3,Landed,Whole Island,154.3
+2024-Q3,Non-Landed,Whole Island,157.3
+2024-Q3,Non-Landed,Core Central Region,145.4
+2024-Q3,Non-Landed,Rest of Central Region,167.4
+2024-Q3,Non-Landed,Outside Central Region,166.9
+2024-Q4,Landed,Whole Island,151.5
+2024-Q4,Non-Landed,Whole Island,157.6
+2024-Q4,Non-Landed,Core Central Region,146.7
+2024-Q4,Non-Landed,Rest of Central Region,167.9
+2024-Q4,Non-Landed,Outside Central Region,165.6
+2025-Q1,Landed,Whole Island,152
+2025-Q1,Non-Landed,Whole Island,158.4
+2025-Q1,Non-Landed,Core Central Region,147.3
+2025-Q1,Non-Landed,Rest of Central Region,168.6
+2025-Q1,Non-Landed,Outside Central Region,166.8
+2025-Q2,Landed,Whole Island,153.1
+2025-Q2,Non-Landed,Whole Island,159.7
+2025-Q2,Non-Landed,Core Central Region,150
+2025-Q2,Non-Landed,Rest of Central Region,168.6
+2025-Q2,Non-Landed,Outside Central Region,167
+2025-Q3,Landed,Whole Island,156.8
+2025-Q3,Non-Landed,Whole Island,161.5
+2025-Q3,Non-Landed,Core Central Region,149.3
+2025-Q3,Non-Landed,Rest of Central Region,171.6
+2025-Q3,Non-Landed,Outside Central Region,171.2
+2025-Q4,Landed,Whole Island,152.1
+2025-Q4,Non-Landed,Whole Island,161.3
+2025-Q4,Non-Landed,Core Central Region,150.3
+2025-Q4,Non-Landed,Rest of Central Region,172.6
+2025-Q4,Non-Landed,Outside Central Region,167.8
+2026-Q1,Landed,Whole Island,152.3
+2026-Q1,Non-Landed,Whole Island,161.9
+2026-Q1,Non-Landed,Core Central Region,151.1
+2026-Q1,Non-Landed,Rest of Central Region,172.3
+2026-Q1,Non-Landed,Outside Central Region,169.5
+2026-Q2,Landed,Whole Island,156.4
+2026-Q2,Non-Landed,Whole Island,162.5
+2026-Q2,Non-Landed,Core Central Region,152.9
+2026-Q2,Non-Landed,Rest of Central Region,172.3
+2026-Q2,Non-Landed,Outside Central Region,169.0
+2026-Q3,Landed,Whole Island,159.7
+2026-Q3,Non-Landed,Whole Island,164.5
+2026-Q3,Non-Landed,Core Central Region,152.4
+2026-Q3,Non-Landed,Rest of Central Region,174.9
+2026-Q3,Non-Landed,Outside Central Region,174.2

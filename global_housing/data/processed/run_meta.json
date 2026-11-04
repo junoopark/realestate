@@ -1,0 +1,12 @@
+{
+  "as_of": "2026-11-04",
+  "common_year": 2024,
+  "common_year_scores": {
+    "2024": 9,
+    "2025": 7
+  },
+  "base_year": 2019,
+  "base_year_reason": "2019년: 가격·임대 지수가 있는 9개 도시 모두 완전한 연간 관측 (앞선 후보: 2015년은 seoul 미관측); 지수 이력이 10년 미만이라 판정에서 뺀 도시: sydney",
+  "n_level_rows": 2113,
+  "n_panel_rows": 7316
+}

@@ -1,0 +1,562 @@
+# 계열 정의 — 도시별 자료 선택을 여기서 명시한다 (설계서 8절)
+#
+# variable (표준 변수명)
+#   price_index / price_index_national / rent_index        명목 지수 (원래 기준시점 그대로, 분석 단계에서 재지수화)
+#   price_sqm (현지통화/㎡) · price_level (현지통화/호) · rent_month (현지통화/월) · rent_sqm_month (현지통화/㎡/월)
+#   deposit_level (서울 월세 보증금, 원) · conversion_rate (전월세 전환율, %)
+#   hh_income (가구 연소득) · earnings (근로자 개인 연소득) — income_concept 로 개념을 구분하고 섞지 않는다
+#   rent_to_income_official (공식 통계가 직접 계산한 임대료 부담률, %)
+#   cpi · fx_usd · ppp_private · gdp_nominal · household_credit_to_gdp (국가 단위, city_id: _national)
+# quality_flag: A=정의·범위 일치 원자료 / B=공식이나 일부 불일치 또는 공개 민간 / C=추정·범위 불일치 큼
+# scale: 원자료 단위 → unit 으로 바꾸는 곱수 (예: 천원→원 1000, 월→연 12)
+# parse: 정제 함수가 쓰는 원자료 위치 정보
+
+defaults:
+  geography_type: city
+  price_basis: nominal
+  dwelling_type: ""
+  tenure_type: ""
+  area_basis: ""
+  income_concept: ""
+  quality_flag: B
+  notes: ""
+  method: ""
+
+series:
+  # ════════════════════════════ 서울 ════════════════════════════
+  seoul_price_index:
+    {city_id: seoul, country_code: KOR, variable: price_index, frequency: M, unit: index, currency: KRW,
+     geography_name: 서울특별시, geography_code: "R-ONE 서울", dwelling_type: apartment, tenure_type: owner,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00045,
+     method: "전국주택가격동향조사 아파트 매매가격지수", quality_flag: A,
+     notes: "아파트만(서울 주택 재고의 일부). 기준시점은 원자료 그대로",
+     parse: {table: A_2024_00045, region: 서울}}
+  korea_price_index_national:
+    {city_id: seoul, country_code: KOR, variable: price_index_national, frequency: M, unit: index, currency: KRW,
+     geography_name: 전국, geography_code: "R-ONE 전국", geography_type: country, dwelling_type: apartment, tenure_type: owner,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00045,
+     method: "전국주택가격동향조사 아파트 매매가격지수", quality_flag: A, parse: {table: A_2024_00045, region: 전국}}
+  seoul_rent_index:
+    {city_id: seoul, country_code: KOR, variable: rent_index, frequency: M, unit: index, currency: KRW,
+     geography_name: 서울특별시, geography_code: "R-ONE 서울", dwelling_type: apartment, tenure_type: rent_monthly,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00055,
+     method: "아파트 월세가격지수(2015.06~)", quality_flag: A,
+     notes: "월세 유형만(준월세·준전세 제외, 부동산원 분류). 보증금 조정 여부는 부동산원 지수 산식에 따름 — 재조정하지 않음",
+     parse: {table: A_2024_00055, region: 서울}}
+  seoul_rent_index_combined:
+    {city_id: seoul, country_code: KOR, variable: rent_index_alt, frequency: M, unit: index, currency: KRW,
+     geography_name: 서울특별시, geography_code: "R-ONE 서울", dwelling_type: apartment, tenure_type: rent_monthly_all,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00054,
+     method: "아파트 월세통합가격지수(월세+준월세+준전세)", quality_flag: A, parse: {table: A_2024_00054, region: 서울}}
+  seoul_price_sqm_mean:
+    {city_id: seoul, country_code: KOR, variable: price_sqm_survey, frequency: M, unit: KRW/sqm, currency: KRW, scale: 1000,
+     geography_name: 서울특별시, dwelling_type: apartment, tenure_type: owner, area_basis: "단위면적(부동산원 평균단위매매가격)",
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00061,
+     method: "표본 아파트 평가가격 평균 ㎡단가 (천원/㎡ ×1000)", quality_flag: B,
+     notes: "표본조사 평가가격(거래가 아님). 면적 기준(전용/공급)은 부동산원 통계설명 확인 대상",
+     parse: {table: A_2024_00061, region: 서울}}
+  seoul_price_level_mean:
+    {city_id: seoul, country_code: KOR, variable: price_level_alt, frequency: M, unit: KRW, currency: KRW, scale: 1000,
+     geography_name: 서울특별시, dwelling_type: apartment, tenure_type: owner, area_basis: 전체 면적,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00060,
+     method: "표본 아파트 평균매매가격", quality_flag: B, parse: {table: A_2024_00060, region: 서울}}
+  seoul_rent_month_mean:
+    {city_id: seoul, country_code: KOR, variable: rent_month_cash_survey, frequency: M, unit: KRW/month, currency: KRW, scale: 1000,
+     geography_name: 서울특별시, dwelling_type: apartment, tenure_type: rent_monthly_with_deposit, area_basis: 전체 면적,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00069,
+     method: "표본 아파트 평균 월세가격(보증부 월세의 월 지급액, 보증금 별도)", quality_flag: B,
+     notes: "보증금은 seoul_deposit_mean. 보증금 환산 전 현금 월세", parse: {table: A_2024_00069, region: 서울}}
+  seoul_deposit_mean:
+    {city_id: seoul, country_code: KOR, variable: deposit_level_survey, frequency: M, unit: KRW, currency: KRW, scale: 1000,
+     geography_name: 서울특별시, dwelling_type: apartment, tenure_type: rent_monthly_with_deposit, area_basis: 전체 면적,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00068,
+     method: "표본 아파트 평균 월세보증금", quality_flag: B, parse: {table: A_2024_00068, region: 서울}}
+  seoul_conversion_rate:
+    {city_id: seoul, country_code: KOR, variable: conversion_rate, frequency: M, unit: pct, currency: "",
+     geography_name: 서울특별시, dwelling_type: apartment, tenure_type: rent_monthly_with_deposit,
+     source_id: kr_rone, source_url: "https://www.reb.or.kr/r-one/", series_code: A_2024_00156,
+     method: "아파트 전월세 전환율(관측치)", quality_flag: A,
+     notes: "보증금 환산 기준 환산율로 사용 (법정 상한 아님)", parse: {table: A_2024_00156, region: 서울}}
+  seoul_rtms_price_sqm:
+    {city_id: seoul, country_code: KOR, variable: price_sqm, frequency: A, unit: KRW/sqm, currency: KRW,
+     geography_name: 서울특별시(25개 구), dwelling_type: apartment, tenure_type: owner, area_basis: "전용 50~70㎡",
+     source_id: kr_rtms, source_url: "https://www.data.go.kr/data/15126469/openapi.do", series_code: RTMSDataSvcAptTradeDev,
+     method: "계약일 기준 연간 거래가/전용면적 중위값, 해제 건 제외", quality_flag: A,
+     notes: "거래 구성(지역·면적·연식) 변화가 반영된 단순 중위값 — 순수 가격상승률이 아님",
+     parse: {kind: apt_trade, stat: price_sqm}}
+  seoul_rtms_price_level:
+    {city_id: seoul, country_code: KOR, variable: price_level, frequency: A, unit: KRW, currency: KRW,
+     geography_name: 서울특별시(25개 구), dwelling_type: apartment, tenure_type: owner, area_basis: "60㎡ 환산 (전용 50~70㎡ 중위 ㎡단가 × 60)",
+     source_id: kr_rtms, source_url: "https://www.data.go.kr/data/15126469/openapi.do", series_code: RTMSDataSvcAptTradeDev,
+     method: "중위 ㎡단가 × 60㎡", quality_flag: A, parse: {kind: apt_trade, stat: price_60}}
+  seoul_rtms_rent_cash:
+    {city_id: seoul, country_code: KOR, variable: rent_month_cash, frequency: A, unit: KRW/month, currency: KRW,
+     geography_name: 서울특별시(25개 구), dwelling_type: apartment, tenure_type: rent_monthly_with_deposit, area_basis: "60㎡ 환산 (전용 50~70㎡ ㎡당 월세 중위 × 60)",
+     source_id: kr_rtms, source_url: "https://www.data.go.kr/data/15126496/openapi.do", series_code: RTMSDataSvcAptRent,
+     method: "월세>0 계약(보증부 월세 포함)의 ㎡당 현금 월세 중위 × 60. 보증금 환산 전", quality_flag: A,
+     notes: "신규·갱신 포함. 신규만 집계한 값은 Seoul 보증금 시트 참고", parse: {kind: apt_rent, stat: rent_cash_60}}
+  seoul_rtms_deposit:
+    {city_id: seoul, country_code: KOR, variable: deposit_level, frequency: A, unit: KRW, currency: KRW,
+     geography_name: 서울특별시(25개 구), dwelling_type: apartment, tenure_type: rent_monthly_with_deposit, area_basis: "60㎡ 환산 (전용 50~70㎡ ㎡당 보증금 중위 × 60)",
+     source_id: kr_rtms, source_url: "https://www.data.go.kr/data/15126496/openapi.do", series_code: RTMSDataSvcAptRent,
+     method: "월세>0 계약의 ㎡당 보증금 중위 × 60", quality_flag: A, parse: {kind: apt_rent, stat: deposit_60}}
+  seoul_rtms_rent_converted:
+    {city_id: seoul, country_code: KOR, variable: rent_month, frequency: A, unit: KRW/month, currency: KRW,
+     geography_name: 서울특별시(25개 구), dwelling_type: apartment, tenure_type: rent_monthly_with_deposit, area_basis: "60㎡ 환산 (전용 50~70㎡)",
+     source_id: kr_rtms, source_url: "https://www.data.go.kr/data/15126496/openapi.do", series_code: RTMSDataSvcAptRent,
+     method: "계약별 (월세 + 보증금×기준환산율/12)/전용면적 의 중위 × 60. 기준환산율 = 그 해 R-ONE 서울 아파트 전월세 전환율 평균",
+     quality_flag: B, notes: "환산율은 연구 가정. 민감도는 SeoulDeposit 시트", parse: {kind: apt_rent, stat: rent_converted_60}}
+  seoul_hh_income:
+    {city_id: seoul, country_code: KOR, variable: hh_income, frequency: A, unit: KRW/year, currency: KRW, scale: 10000,
+     geography_name: 서울특별시, geography_type: city, income_concept: household_gross_current_income_mean,
+     source_id: kr_kosis, source_url: "https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=INH_1HD_AAA01_01",
+     series_code: INH_1HD_AAA01_01, method: "가계금융복지조사 전가구 평균 경상소득(전년도). 기간 = 소득연도(조사연도-1)",
+     quality_flag: B, notes: "평균(중위 아님) — 다른 도시의 중위소득과 같은 순위표에 넣지 않는다. 경상소득은 세전",
+     parse: {file: INH_1HD_AAA01_01, region: 서울특별시, item: 경상소득, lag: 1}}
+  seoul_hh_income_median_est:
+    {city_id: seoul, country_code: KOR, variable: hh_income_median_est, frequency: A, unit: KRW/year, currency: KRW, scale: 10000,
+     geography_name: 서울특별시, income_concept: household_gross_current_income_median_ESTIMATE,
+     source_id: kr_kosis, source_url: "https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1HDAAB03",
+     series_code: "INH_1HD_AAA01_01 × DT_1HDAAB03", quality_flag: C,
+     method: "추정: 서울 평균 경상소득 × (전국 소득구간 분포 보간 중위 ÷ 전국 평균). 시도별 중위는 공표되지 않음",
+     notes: "서울의 평균/중위 비율이 전국과 같다는 가정 — 보조표에만 사용",
+     parse: {file: INH_1HD_AAA01_01, region: 서울특별시, item: 경상소득, lag: 1, derive: median_estimate}}
+  seoul_earnings:
+    {city_id: seoul, country_code: KOR, variable: earnings, frequency: A, unit: KRW/year, currency: KRW, scale: 12,
+     geography_name: 서울특별시(사업체 소재지), income_concept: employee_regular_monthly_wage_mean_x12,
+     source_id: kr_kosis, source_url: "https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1YL15006",
+     series_code: DT_1YL15006, method: "사업체노동력조사 상용근로자(5인 이상) 월평균 임금총액 × 12", quality_flag: B,
+     notes: "근무지 기준·평균. 상용근로자만(임시·일용 제외)",
+     parse: {file: DT_1YL15006, region: 서울특별시, item: 상용 월평균 임금}}
+
+  # ════════════════════════════ 런던 ════════════════════════════
+  london_price_index:
+    {city_id: london, country_code: GBR, variable: price_index, frequency: M, unit: index, currency: GBP,
+     geography_name: London (region), geography_code: E12000007, dwelling_type: all, tenure_type: owner,
+     source_id: uk_hpi, source_url: "https://www.gov.uk/government/collections/uk-house-price-index-reports", series_code: "UK HPI London Index",
+     method: "UK HPI (헤도닉, 등기 거래) 전체 유형", quality_flag: A, parse: {region: London, column: Index}}
+  uk_price_index_national:
+    {city_id: london, country_code: GBR, variable: price_index_national, frequency: M, unit: index, currency: GBP,
+     geography_name: United Kingdom, geography_code: K02000001, geography_type: country, dwelling_type: all, tenure_type: owner,
+     source_id: uk_hpi, source_url: "https://www.gov.uk/government/collections/uk-house-price-index-reports", series_code: "UK HPI United Kingdom Index",
+     method: "UK HPI 전체 유형", quality_flag: A, parse: {region: United Kingdom, column: Index}}
+  london_price_flat:
+    {city_id: london, country_code: GBR, variable: price_level, frequency: M, unit: GBP, currency: GBP,
+     geography_name: London (region), geography_code: E12000007, dwelling_type: flat_maisonette, tenure_type: owner, area_basis: "면적 미지정(플랫 전체)",
+     source_id: uk_hpi, source_url: "https://www.gov.uk/government/collections/uk-house-price-index-reports", series_code: "UK HPI London FlatPrice",
+     method: "UK HPI 플랫·메조네트 평균가격(헤도닉 기준가)", quality_flag: B,
+     notes: "면적 정보가 없어 60㎡ 로 맞추지 않음", parse: {region: London, column: FlatPrice}}
+  london_rent_flat:
+    {city_id: london, country_code: GBR, variable: rent_month, frequency: M, unit: GBP/month, currency: GBP,
+     geography_name: London (region), geography_code: E12000007, dwelling_type: flat_maisonette, tenure_type: rent_private, area_basis: "면적 미지정(플랫 전체)",
+     source_id: uk_ons_pipr, source_url: "https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics",
+     series_code: "PIPR London Rental price flat maisonette", method: "ONS PIPR 민간임대 평균 월세(신규·기존 계약 포함), 플랫·메조네트",
+     quality_flag: B, notes: "UK HPI 플랫 가격과 같은 주택유형 — 면적은 맞추지 못함",
+     parse: {area: London, column: Rental price flat maisonette}}
+  london_rent_all:
+    {city_id: london, country_code: GBR, variable: rent_month_alt, frequency: M, unit: GBP/month, currency: GBP,
+     geography_name: London (region), geography_code: E12000007, dwelling_type: all, tenure_type: rent_private,
+     source_id: uk_ons_pipr, source_url: "https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics",
+     series_code: "PIPR London Rental price", method: "ONS PIPR 민간임대 평균 월세, 전체", quality_flag: B,
+     parse: {area: London, column: Rental price}}
+  london_rent_index:
+    {city_id: london, country_code: GBR, variable: rent_index, frequency: M, unit: index, currency: GBP,
+     geography_name: London (region), geography_code: E12000007, dwelling_type: all, tenure_type: rent_private,
+     source_id: uk_ons_pipr, source_url: "https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics",
+     series_code: "PIPR London Index", method: "ONS PIPR (2015.01~, 2023.01=100)", quality_flag: A,
+     parse: {area: London, column: Index}}
+  london_earnings:
+    {city_id: london, country_code: GBR, variable: earnings, frequency: A, unit: GBP/year, currency: GBP,
+     geography_name: London (거주지 기준), geography_code: E12000007, income_concept: employee_fulltime_annual_gross_median,
+     source_id: uk_nomis_ashe, source_url: "https://www.nomisweb.co.uk/datasets/asher", series_code: "NM_30_1 pay=7 item=2 sex=8",
+     method: "ASHE 거주지 분석, 상근 근로자 연간 총급여 중위값", quality_flag: A,
+     parse: {geography: London, sex: Full Time Workers, item: Median}}
+
+  # ════════════════════════════ 홍콩 ════════════════════════════
+  hk_price_index:
+    {city_id: hong_kong, country_code: HKG, variable: price_index, frequency: A, unit: index, currency: HKD,
+     geography_name: Hong Kong SAR, dwelling_type: private_domestic_all_classes, tenure_type: owner,
+     source_id: hk_rvd, source_url: "https://www.rvd.gov.hk/en/publications/property_market_statistics.html", series_code: "his_data_4 All Classes",
+     method: "RVD 민간주택 가격지수(전 등급, 1999=100) 연간", quality_flag: A, parse: {file: 4, kind: index, col: 26}}
+  hk_rent_index:
+    {city_id: hong_kong, country_code: HKG, variable: rent_index, frequency: A, unit: index, currency: HKD,
+     geography_name: Hong Kong SAR, dwelling_type: private_domestic_all_classes, tenure_type: rent_private,
+     source_id: hk_rvd, source_url: "https://www.rvd.gov.hk/en/publications/property_market_statistics.html", series_code: "his_data_3 All Classes",
+     method: "RVD 민간주택 임대지수(전 등급, 1999=100) 연간", quality_flag: A, parse: {file: 3, kind: index, col: 26}}
+  hk_price_sqm:
+    {city_id: hong_kong, country_code: HKG, variable: price_sqm, frequency: A, unit: HKD/sqm, currency: HKD,
+     geography_name: Hong Kong SAR (홍콩섬·구룡·신계 단순평균), dwelling_type: private_domestic_class_B, tenure_type: owner,
+     area_basis: "실용면적 40~69.9㎡ (Class B)",
+     source_id: hk_rvd, source_url: "https://www.rvd.gov.hk/en/publications/property_market_statistics.html", series_code: "his_data_2 Class B",
+     method: "RVD Class B 평균 ㎡단가(실용면적)의 3개 지역 단순평균", quality_flag: B,
+     notes: "지역별 거래 비중 가중치가 없어 단순평균. 실용면적(saleable) 기준 — 한국 전용면적과 유사한 개념",
+     parse: {file: 2, kind: level, cols: [14, 17, 20]}}
+  hk_price_level:
+    {city_id: hong_kong, country_code: HKG, variable: price_level, frequency: A, unit: HKD, currency: HKD, scale: 60,
+     geography_name: Hong Kong SAR (3개 지역 단순평균), dwelling_type: private_domestic_class_B, tenure_type: owner,
+     area_basis: "60㎡ 환산 (Class B ㎡단가 × 60)",
+     source_id: hk_rvd, source_url: "https://www.rvd.gov.hk/en/publications/property_market_statistics.html", series_code: "his_data_2 Class B",
+     method: "Class B 평균 ㎡단가 × 60㎡", quality_flag: B, parse: {file: 2, kind: level, cols: [14, 17, 20]}}
+  hk_rent_month:
+    {city_id: hong_kong, country_code: HKG, variable: rent_month, frequency: A, unit: HKD/month, currency: HKD, scale: 60,
+     geography_name: Hong Kong SAR (3개 지역 단순평균), dwelling_type: private_domestic_class_B, tenure_type: rent_private,
+     area_basis: "60㎡ 환산 (Class B ㎡당 월 임대료 × 60)",
+     source_id: hk_rvd, source_url: "https://www.rvd.gov.hk/en/publications/property_market_statistics.html", series_code: "his_data_1 Class B",
+     method: "Class B 평균 ㎡당 월 임대료 × 60㎡", quality_flag: B,
+     notes: "RVD 임대료는 관리비·세금 제외 신규 임대 계약", parse: {file: 1, kind: level, cols: [14, 17, 20]}}
+  hk_hh_income:
+    {city_id: hong_kong, country_code: HKG, variable: hh_income, frequency: A, unit: HKD/year, currency: HKD, scale: 12,
+     geography_name: Hong Kong SAR, income_concept: household_gross_cash_income_median,
+     source_id: hk_censtatd, source_url: "https://www.censtatd.gov.hk/en/web_table.html?id=130-06606", series_code: "130-06606 Total",
+     method: "종합가구조사 가구 월소득 중위값 × 12 (외국인 가사도우미 소득 포함 여부는 C&SD 정의 따름)", quality_flag: A,
+     notes: "세전 현금소득(근로소득+기타 현금소득, 정부 보조 포함)", parse: {table: 130-06606, filters: {HHSIZEDesc: Total}}}
+  hk_earnings:
+    {city_id: hong_kong, country_code: HKG, variable: earnings, frequency: A, unit: HKD/year, currency: HKD, scale: 12,
+     geography_name: Hong Kong SAR, income_concept: employed_persons_monthly_earnings_median_x12,
+     source_id: hk_censtatd, source_url: "https://www.censtatd.gov.hk/en/web_table.html?id=210-06315", series_code: "210-06315 Total",
+     method: "취업자 월 취업소득 중위값 × 12 (상근·비상근 포함)", quality_flag: B,
+     notes: "상근 근로자 한정이 아님 — 다른 도시의 상근 소득보다 낮게 나올 수 있음",
+     parse: {table: 210-06315, filters: {EDUDesc: Total, SEXDesc: Total}}}
+
+  # ════════════════════════════ 싱가포르 ════════════════════════════
+  sg_price_index:
+    {city_id: singapore, country_code: SGP, variable: price_index, frequency: Q, unit: index, currency: SGD,
+     geography_name: Singapore, dwelling_type: private_non_landed, tenure_type: owner,
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_97f8a2e995022d311c6c68cfda6d034c/view", series_code: "URA PPI Non-Landed",
+     method: "URA 민간주택 가격지수 비토지(2009Q1=100)", quality_flag: A,
+     parse: {file: ura_private_price_index.csv, filters: {property_type: Non-Landed}}}
+  sg_rent_index:
+    {city_id: singapore, country_code: SGP, variable: rent_index, frequency: Q, unit: index, currency: SGD,
+     geography_name: Singapore (Whole Island), dwelling_type: private_non_landed, tenure_type: rent_private,
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_8e4c50283fb7052a391dfb746a05c853/view", series_code: "URA Rental Index Non-Landed Whole Island",
+     method: "URA 민간주택 임대지수 비토지(2009Q1=100)", quality_flag: A,
+     parse: {file: ura_private_rental_index.csv, filters: {property_type: Non-Landed, locality: Whole Island}}}
+  sg_hdb_price_sqm:
+    {city_id: singapore, country_code: SGP, variable: price_sqm_hdb, frequency: A, unit: SGD/sqm, currency: SGD,
+     geography_name: Singapore (전 지역 HDB), dwelling_type: hdb_flat, tenure_type: owner, area_basis: "바닥면적 50~70㎡",
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view", series_code: "HDB resale prices",
+     method: "HDB 재판매 거래(등록월 기준) 50~70㎡ ㎡단가 중위", quality_flag: B,
+     notes: "공공주택(99년 리스) — 민간주택과 다른 시장. 민간 수준 자료는 URA API 키 필요로 미확보",
+     parse: {stat: price_sqm}}
+  sg_hdb_price_level:
+    {city_id: singapore, country_code: SGP, variable: price_level, frequency: A, unit: SGD, currency: SGD,
+     geography_name: Singapore (전 지역 HDB), dwelling_type: hdb_flat, tenure_type: owner, area_basis: "60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60)",
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view", series_code: "HDB resale prices",
+     method: "HDB 50~70㎡ 중위 ㎡단가 × 60", quality_flag: B, notes: "HDB 공공주택", parse: {stat: price_60}}
+  sg_hdb_rent_3rm:
+    {city_id: singapore, country_code: SGP, variable: rent_month, frequency: A, unit: SGD/month, currency: SGD,
+     geography_name: Singapore (26개 타운 중위값의 중위), dwelling_type: hdb_flat, tenure_type: rent_private,
+     area_basis: "HDB 3-room (재판매 자료상 3-room 바닥면적 중위로 확인한 대표 면적)",
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_23000a00c52996c55106084ed0339566/view", series_code: "HDB median rent 3-RM",
+     method: "타운별 3-room 분기 임대료 중위값의 연간 평균 → 타운 간 중위", quality_flag: C,
+     notes: "섬 전체 중위가 아니라 타운 중위의 중위. 계약 건수 가중 불가",
+     parse: {file: hdb_median_rent_town_flat_type.csv, flat_type: 3-RM}}
+  sg_hh_income:
+    {city_id: singapore, country_code: SGP, variable: hh_income, frequency: A, unit: SGD/year, currency: SGD, scale: 12,
+     geography_name: Singapore, income_concept: household_employment_income_incl_employer_cpf_median_employed_households,
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_6d878eb9c5a47f54fee7ce496f681e8d/view", series_code: "Key Indicators row 1",
+     method: "거주민 취업가구 월 가구 근로소득(고용주 CPF 포함) 중위 × 12", quality_flag: B,
+     notes: "근로소득만(이전·자산소득 제외), 취업자 없는 가구 제외 — 다른 도시의 가구 총소득과 개념이 다름",
+     parse: {file: household_employment_income_key_indicators.csv,
+             row: "Median Monthly Household Employment Income Including Employer CPF Contributions"}}
+  sg_earnings:
+    {city_id: singapore, country_code: SGP, variable: earnings, frequency: A, unit: SGD/year, currency: SGD, scale: 12,
+     geography_name: Singapore, income_concept: employee_fulltime_monthly_income_incl_employer_cpf_median_x12,
+     source_id: sg_datagov, source_url: "https://data.gov.sg/datasets/d_52760e82e8786bac11cca40eb29d1a93/view", series_code: "MOM median FT incl CPF",
+     method: "상근 취업 거주민 월 근로소득(고용주 CPF 포함) 중위 × 12", quality_flag: A,
+     parse: {file: ft_employed_income_from_employment_incl_cpf.csv, row: "Median (50th Percentile)"}}
+
+  # ════════════════════════════ 뉴욕 · 샌프란시스코 ════════════════════════════
+  ny_price_index:
+    {city_id: new_york, country_code: USA, variable: price_index, frequency: M, unit: index, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: sfr_condo, tenure_type: owner,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro mid-tier SA (RegionID 394913)",
+     method: "Zillow Home Value Index(전체 주택, 35~65% 계층) — 달러 수준을 지수로도 사용", quality_flag: B,
+     notes: "민간 공개자료(평가모형)", parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 394913}}
+  ny_price_level:
+    {city_id: new_york, country_code: USA, variable: price_level, frequency: M, unit: USD, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: sfr_condo, tenure_type: owner, area_basis: "면적 미지정(전형적 주택가치)",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro mid-tier SA (RegionID 394913)",
+     method: "ZHVI 전형적 주택가치(USD)", quality_flag: B, notes: "단독주택 포함 — 60㎡ 아파트와 다름",
+     parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 394913}}
+  ny_price_level_condo:
+    {city_id: new_york, country_code: USA, variable: price_level_condo, frequency: M, unit: USD, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: condo_coop, tenure_type: owner, area_basis: "면적 미지정",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro condo mid-tier (RegionID 394913)",
+     method: "ZHVI 콘도·코업 전형적 가치(USD)", quality_flag: B,
+     parse: {file: Metro_zhvi_uc_condo_tier_0.33_0.67_sm_sa_month.csv, region_id: 394913}}
+  ny_rent_month:
+    {city_id: new_york, country_code: USA, variable: rent_month, frequency: M, unit: USD/month, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: sfr_condo_multifamily, tenure_type: rent_private_asking, area_basis: "면적 미지정",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZORI Metro (RegionID 394913)",
+     method: "Zillow Observed Rent Index(호가 임대료, 35~65% 계층)", quality_flag: B,
+     notes: "신규 호가 — 기존 계약 포함 임대료보다 높음. ZHVI 와 주택구성이 완전히 같지는 않음",
+     parse: {file: Metro_zori_uc_sfrcondomfr_sm_month.csv, region_id: 394913}}
+  ny_rent_index:
+    {city_id: new_york, country_code: USA, variable: rent_index, frequency: M, unit: index, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: sfr_condo_multifamily, tenure_type: rent_private_asking,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZORI Metro (RegionID 394913)",
+     method: "ZORI 달러 수준을 지수로 사용(2015~)", quality_flag: B,
+     parse: {file: Metro_zori_uc_sfrcondomfr_sm_month.csv, region_id: 394913}}
+  sf_price_index:
+    {city_id: san_francisco, country_code: USA, variable: price_index, frequency: M, unit: index, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: sfr_condo, tenure_type: owner,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro mid-tier SA (RegionID 395057)",
+     method: "Zillow Home Value Index — 달러 수준을 지수로도 사용", quality_flag: B,
+     parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 395057}}
+  sf_price_level:
+    {city_id: san_francisco, country_code: USA, variable: price_level, frequency: M, unit: USD, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: sfr_condo, tenure_type: owner, area_basis: "면적 미지정(전형적 주택가치)",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro mid-tier SA (RegionID 395057)",
+     method: "ZHVI 전형적 주택가치(USD)", quality_flag: B, notes: "단독주택 포함",
+     parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 395057}}
+  sf_price_level_condo:
+    {city_id: san_francisco, country_code: USA, variable: price_level_condo, frequency: M, unit: USD, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: condo_coop, tenure_type: owner, area_basis: "면적 미지정",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI Metro condo mid-tier (RegionID 395057)",
+     method: "ZHVI 콘도·코업", quality_flag: B, parse: {file: Metro_zhvi_uc_condo_tier_0.33_0.67_sm_sa_month.csv, region_id: 395057}}
+  sf_rent_month:
+    {city_id: san_francisco, country_code: USA, variable: rent_month, frequency: M, unit: USD/month, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: sfr_condo_multifamily, tenure_type: rent_private_asking, area_basis: "면적 미지정",
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZORI Metro (RegionID 395057)",
+     method: "Zillow Observed Rent Index(호가)", quality_flag: B, parse: {file: Metro_zori_uc_sfrcondomfr_sm_month.csv, region_id: 395057}}
+  sf_rent_index:
+    {city_id: san_francisco, country_code: USA, variable: rent_index, frequency: M, unit: index, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: sfr_condo_multifamily, tenure_type: rent_private_asking,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZORI Metro (RegionID 395057)",
+     method: "ZORI 달러 수준을 지수로 사용(2015~)", quality_flag: B, parse: {file: Metro_zori_uc_sfrcondomfr_sm_month.csv, region_id: 395057}}
+  us_price_index_national_ny:
+    {city_id: new_york, country_code: USA, variable: price_index_national, frequency: M, unit: index, currency: USD,
+     geography_name: United States, geography_type: country, dwelling_type: sfr_condo, tenure_type: owner,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI United States (RegionID 102001)",
+     method: "ZHVI 미국 전체", quality_flag: B, parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 102001}}
+  us_price_index_national_sf:
+    {city_id: san_francisco, country_code: USA, variable: price_index_national, frequency: M, unit: index, currency: USD,
+     geography_name: United States, geography_type: country, dwelling_type: sfr_condo, tenure_type: owner,
+     source_id: us_zillow, source_url: "https://www.zillow.com/research/data/", series_code: "ZHVI United States (RegionID 102001)",
+     method: "ZHVI 미국 전체", quality_flag: B, parse: {file: Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv, region_id: 102001}}
+  ny_hh_income:
+    {city_id: new_york, country_code: USA, variable: hh_income, frequency: A, unit: USD/year, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, income_concept: household_gross_money_income_median,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B19013_E001,
+     method: "ACS 1-year 가구소득 중위(해당 연도 달러)", quality_flag: A, parse: {table: b19013, cbsa: "35620", col: B19013_E001}}
+  ny_hh_income_renter:
+    {city_id: new_york, country_code: USA, variable: hh_income_renter, frequency: A, unit: USD/year, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, income_concept: renter_household_gross_money_income_median,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25119_E003,
+     method: "ACS 1-year 임차가구 소득 중위", quality_flag: A, parse: {table: b25119, cbsa: "35620", col: B25119_E003}}
+  ny_rent_gross_acs:
+    {city_id: new_york, country_code: USA, variable: rent_month_stock, frequency: A, unit: USD/month, currency: USD,
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, dwelling_type: all_renter_occupied, tenure_type: rent_all_contracts,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25064_E001,
+     method: "ACS 중위 총임대료(계약 임대료+공과금), 모든 기존 임차가구", quality_flag: A, parse: {table: b25064, cbsa: "35620", col: B25064_E001}}
+  ny_rent_burden_acs:
+    {city_id: new_york, country_code: USA, variable: rent_to_income_official, frequency: A, unit: pct, currency: "",
+     geography_name: New York-Newark-Jersey City MSA, geography_code: "CBSA 35620", geography_type: metro, tenure_type: rent_all_contracts,
+     income_concept: renter_household_gross_money_income,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25071_E001,
+     method: "ACS 임차가구 소득 대비 총임대료 비율의 중위값", quality_flag: A, parse: {table: b25071, cbsa: "35620", col: B25071_E001}}
+  sf_hh_income:
+    {city_id: san_francisco, country_code: USA, variable: hh_income, frequency: A, unit: USD/year, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, income_concept: household_gross_money_income_median,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B19013_E001,
+     method: "ACS 1-year 가구소득 중위", quality_flag: A, parse: {table: b19013, cbsa: "41860", col: B19013_E001}}
+  sf_hh_income_renter:
+    {city_id: san_francisco, country_code: USA, variable: hh_income_renter, frequency: A, unit: USD/year, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, income_concept: renter_household_gross_money_income_median,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25119_E003,
+     method: "ACS 1-year 임차가구 소득 중위", quality_flag: A, parse: {table: b25119, cbsa: "41860", col: B25119_E003}}
+  sf_rent_gross_acs:
+    {city_id: san_francisco, country_code: USA, variable: rent_month_stock, frequency: A, unit: USD/month, currency: USD,
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, dwelling_type: all_renter_occupied, tenure_type: rent_all_contracts,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25064_E001,
+     method: "ACS 중위 총임대료", quality_flag: A, parse: {table: b25064, cbsa: "41860", col: B25064_E001}}
+  sf_rent_burden_acs:
+    {city_id: san_francisco, country_code: USA, variable: rent_to_income_official, frequency: A, unit: pct, currency: "",
+     geography_name: San Francisco-Oakland-Fremont MSA, geography_code: "CBSA 41860", geography_type: metro, tenure_type: rent_all_contracts,
+     income_concept: renter_household_gross_money_income,
+     source_id: us_acs, source_url: "https://www2.census.gov/programs-surveys/acs/summary_file/", series_code: B25071_E001,
+     method: "ACS 임차가구 소득 대비 총임대료 비율의 중위값", quality_flag: A, parse: {table: b25071, cbsa: "41860", col: B25071_E001}}
+
+  # ════════════════════════════ 토론토 · 밴쿠버 ════════════════════════════
+  toronto_rent_2br:
+    {city_id: toronto, country_code: CAN, variable: rent_month, frequency: A, unit: CAD/month, currency: CAD,
+     geography_name: Toronto CMA, geography_type: metro, dwelling_type: purpose_built_apartment_2br, tenure_type: rent_private_all_contracts, area_basis: "침실 2개(면적 미지정)",
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013301", series_code: "34-10-0133 Toronto, Row and apartment 3+ units, Two bedroom",
+     method: "CMHC 임대시장조사(10월) 목적형 임대주택 2침실 평균 임대료", quality_flag: B,
+     notes: "기존 계약 포함·목적형 임대만(콘도 임대 제외) — 신규 호가보다 낮음",
+     parse: {table: "34100133", geo: "Toronto, Ontario", filters: {"Type of structure": "Row and apartment structures of three units and over", "Type of unit": "Two bedroom units"}}}
+  vancouver_rent_2br:
+    {city_id: vancouver, country_code: CAN, variable: rent_month, frequency: A, unit: CAD/month, currency: CAD,
+     geography_name: Vancouver CMA, geography_type: metro, dwelling_type: purpose_built_apartment_2br, tenure_type: rent_private_all_contracts, area_basis: "침실 2개(면적 미지정)",
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013301", series_code: "34-10-0133 Vancouver, Row and apartment 3+ units, Two bedroom",
+     method: "CMHC 임대시장조사(10월) 목적형 임대주택 2침실 평균 임대료", quality_flag: B,
+     notes: "기존 계약 포함·목적형 임대만",
+     parse: {table: "34100133", geo: "Vancouver, British Columbia", filters: {"Type of structure": "Row and apartment structures of three units and over", "Type of unit": "Two bedroom units"}}}
+  toronto_rent_index:
+    {city_id: toronto, country_code: CAN, variable: rent_index, frequency: M, unit: index, currency: CAD,
+     geography_name: Toronto CMA, geography_type: metro, dwelling_type: all, tenure_type: rent_private_all_contracts,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401", series_code: "18-10-0004 Toronto Rented accommodation",
+     method: "CPI 임차주거 항목(2002=100) — CMA 단위에는 순수 임대료 항목이 없어 임차주거(임대료·임차인 보험·수선) 사용", quality_flag: B,
+     parse: {table: "18100004", geo: "Toronto, Ontario", filters: {"Products and product groups": Rented accommodation}}}
+  vancouver_rent_index:
+    {city_id: vancouver, country_code: CAN, variable: rent_index, frequency: M, unit: index, currency: CAD,
+     geography_name: Vancouver CMA, geography_type: metro, dwelling_type: all, tenure_type: rent_private_all_contracts,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401", series_code: "18-10-0004 Vancouver Rented accommodation",
+     method: "CPI 임차주거 항목(2002=100) — CMA 단위에는 순수 임대료 항목이 없음", quality_flag: B,
+     parse: {table: "18100004", geo: "Vancouver, British Columbia", filters: {"Products and product groups": Rented accommodation}}}
+  toronto_price_index:
+    {city_id: toronto, country_code: CAN, variable: price_index, frequency: M, unit: index, currency: CAD,
+     geography_name: Toronto CMA, geography_type: metro, dwelling_type: new_house_and_land, tenure_type: owner,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501", series_code: "18-10-0205 Toronto Total",
+     method: "신규주택가격지수(신규 단독·연립, 주택+토지)", quality_flag: C,
+     notes: "기존주택·콘도 미포함 — 가격 경로 대용. 기존주택 지수(Teranet·CREA)는 미확보",
+     parse: {table: "18100205", geo: "Toronto, Ontario", filters: {"New housing price indexes": "Total (house and land)"}}}
+  vancouver_price_index:
+    {city_id: vancouver, country_code: CAN, variable: price_index, frequency: M, unit: index, currency: CAD,
+     geography_name: Vancouver CMA, geography_type: metro, dwelling_type: new_house_and_land, tenure_type: owner,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501", series_code: "18-10-0205 Vancouver Total",
+     method: "신규주택가격지수", quality_flag: C, notes: "기존주택·콘도 미포함",
+     parse: {table: "18100205", geo: "Vancouver, British Columbia", filters: {"New housing price indexes": "Total (house and land)"}}}
+  toronto_hh_income:
+    {city_id: toronto, country_code: CAN, variable: hh_income, frequency: A, unit: CAD/year, currency: CAD,
+     geography_name: Toronto CMA, geography_type: metro, income_concept: economic_family_and_unattached_total_income_median,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110019001", series_code: "11-10-0190 Toronto Median total income",
+     method: "캐나다 소득조사 경제가족·비가족 개인 총소득(세전) 중위. 원자료 2024년 불변달러 → 캐나다 CPI 로 명목 환산",
+     quality_flag: B, notes: "가구가 아니라 경제가족+독신 단위(가구와 유사하나 동일하지 않음)",
+     parse: {table: "11100190", geo: "Toronto, Ontario", filters: {"Income concept": Median total income, "Economic family type": "Economic families and persons not in an economic family"}, real_base: 2024}}
+  vancouver_hh_income:
+    {city_id: vancouver, country_code: CAN, variable: hh_income, frequency: A, unit: CAD/year, currency: CAD,
+     geography_name: Vancouver CMA, geography_type: metro, income_concept: economic_family_and_unattached_total_income_median,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110019001", series_code: "11-10-0190 Vancouver Median total income",
+     method: "경제가족·비가족 개인 총소득 중위, 2024년 불변달러 → 명목 환산", quality_flag: B,
+     notes: "가구가 아니라 경제가족+독신 단위",
+     parse: {table: "11100190", geo: "Vancouver, British Columbia", filters: {"Income concept": Median total income, "Economic family type": "Economic families and persons not in an economic family"}, real_base: 2024}}
+  canada_price_index_national_tor:
+    {city_id: toronto, country_code: CAN, variable: price_index_national, frequency: M, unit: index, currency: CAD,
+     geography_name: Canada, geography_type: country, dwelling_type: new_house_and_land, tenure_type: owner,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501", series_code: "18-10-0205 Canada Total",
+     method: "신규주택가격지수 캐나다", quality_flag: C, parse: {table: "18100205", geo: Canada, filters: {"New housing price indexes": "Total (house and land)"}}}
+  canada_price_index_national_van:
+    {city_id: vancouver, country_code: CAN, variable: price_index_national, frequency: M, unit: index, currency: CAD,
+     geography_name: Canada, geography_type: country, dwelling_type: new_house_and_land, tenure_type: owner,
+     source_id: ca_statcan, source_url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501", series_code: "18-10-0205 Canada Total",
+     method: "신규주택가격지수 캐나다", quality_flag: C, parse: {table: "18100205", geo: Canada, filters: {"New housing price indexes": "Total (house and land)"}}}
+
+  # ════════════════════════════ 시드니 ════════════════════════════
+  sydney_price_units:
+    {city_id: sydney, country_code: AUS, variable: price_level, frequency: Q, unit: AUD, currency: AUD, scale: 1000,
+     geography_name: Greater Sydney, geography_code: 1GSYD, geography_type: metro, dwelling_type: attached_dwelling, tenure_type: owner, area_basis: "면적 미지정(공동주택 거래 중위)",
+     source_id: au_abs, source_url: "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/residential-property-price-indexes-eight-capital-cities", series_code: "RES_DWELL Median Price of Attached Dwelling Transfers",
+     method: "공동주택(아파트·타운하우스) 거래 비층화 중위가격", quality_flag: B,
+     parse: {file: RES_DWELL.csv, filters: {Measure: Median Price of Attached Dwelling Transfers, Region: Greater Sydney}}}
+  sydney_price_index:
+    {city_id: sydney, country_code: AUS, variable: price_index, frequency: Q, unit: index, currency: AUD, scale: 1000,
+     geography_name: Greater Sydney, geography_code: 1GSYD, geography_type: metro, dwelling_type: attached_dwelling, tenure_type: owner,
+     source_id: au_abs, source_url: "https://www.abs.gov.au/", series_code: "RES_DWELL Median Price of Attached Dwelling Transfers",
+     method: "공동주택 거래 중위가격을 지수로 사용(RPPI 2021 중단 이후 공식 대체 지수 없음)", quality_flag: C,
+     notes: "비층화 중위 — 거래 구성 변화가 섞임", parse: {file: RES_DWELL.csv, filters: {Measure: Median Price of Attached Dwelling Transfers, Region: Greater Sydney}}}
+  sydney_rent_index:
+    {city_id: sydney, country_code: AUS, variable: rent_index, frequency: M, unit: index, currency: AUD,
+     geography_name: Sydney (CPI capital city), geography_type: metro, dwelling_type: all, tenure_type: rent_private_all_contracts,
+     source_id: au_abs, source_url: "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia", series_code: "CPI Rents Sydney",
+     method: "CPI 임대료(월간, 원계열)", quality_flag: A,
+     notes: "ABS API 의 시드니 임대료 계열은 2022-07 이후 월간만 — 장기 경로·2019 기준 상대지수 불가",
+     parse: {file: CPI_sydney_rents.csv.gz, filters: {Index: Rents, Measure: Index numbers, Region: Sydney, Frequency: Monthly}}}
+  sydney_rent_census:
+    {city_id: sydney, country_code: AUS, variable: rent_month, frequency: A, unit: AUD/month, currency: AUD, scale: 4.345238,
+     geography_name: Greater Sydney, geography_code: 1GSYD, geography_type: metro, dwelling_type: all_renter_occupied, tenure_type: rent_all_contracts, area_basis: "면적 미지정",
+     source_id: au_abs, source_url: "https://www.abs.gov.au/census", series_code: "Census 2021 G02 Median rent ($/weekly)",
+     method: "2021 센서스 주간 임대료 중위 × 52/12", quality_flag: B, notes: "2021년 한 시점. 기존 계약 포함",
+     parse: {file: C21_G02_greater_sydney.csv, region: 1GSYD, measure_contains: "Median rent"}}
+  sydney_hh_income:
+    {city_id: sydney, country_code: AUS, variable: hh_income, frequency: A, unit: AUD/year, currency: AUD, scale: 52,
+     geography_name: Greater Sydney, geography_code: 1GSYD, geography_type: metro, income_concept: household_gross_total_income_median,
+     source_id: au_abs, source_url: "https://www.abs.gov.au/census", series_code: "Census 2021 G02 Median total household income ($/weekly)",
+     method: "2021 센서스 가구 주간 총소득 중위 × 52", quality_flag: B, notes: "2021년 한 시점. 센서스 소득은 구간 응답 기반",
+     parse: {file: C21_G02_greater_sydney.csv, region: 1GSYD, measure_contains: "Median total household income"}}
+
+  # ════════════════════════════ 파리 ════════════════════════════
+  paris_price_index:
+    {city_id: paris, country_code: FRA, variable: price_index, frequency: Q, unit: index, currency: EUR,
+     geography_name: Paris, geography_code: "75", dwelling_type: apartment, tenure_type: owner,
+     source_id: fr_insee, source_url: "https://www.insee.fr/fr/statistiques/serie/010567012", series_code: "010567012",
+     method: "Notaires-INSEE 기존주택 가격지수 파리 아파트(2015=100, 원계열)", quality_flag: A, parse: {idbank: "010567012"}}
+  france_price_index_national:
+    {city_id: paris, country_code: FRA, variable: price_index_national, frequency: Q, unit: index, currency: EUR,
+     geography_name: France métropolitaine, geography_type: country, dwelling_type: all_existing, tenure_type: owner,
+     source_id: fr_insee, source_url: "https://www.insee.fr/fr/statistiques/serie/010567059", series_code: "010567059",
+     method: "Notaires-INSEE 기존주택 가격지수 프랑스 본토 전체(CVS)", quality_flag: B,
+     notes: "계절조정 계열(파리는 원계열) — 연평균에서는 차이가 작다", parse: {idbank: "010567059"}}
+  paris_rent_index:
+    {city_id: paris, country_code: FRA, variable: rent_index, frequency: Q, unit: index, currency: EUR,
+     geography_name: Agglomération parisienne, geography_type: metro, dwelling_type: all, tenure_type: rent_private_all_contracts,
+     source_id: fr_insee, source_url: "https://www.insee.fr/fr/statistiques/serie/010600352", series_code: "010600352",
+     method: "INSEE 임대료 지수 민간부문(파리 광역권, 2019.01=100)", quality_flag: B,
+     notes: "파리 코뮌이 아니라 파리 광역권 — 가격지수와 지역 범위 불일치", parse: {idbank: "010600352"}}
+  paris_price_sqm:
+    {city_id: paris, country_code: FRA, variable: price_sqm, frequency: A, unit: EUR/sqm, currency: EUR,
+     geography_name: Paris (20개 구), geography_code: "75", dwelling_type: apartment, tenure_type: owner, area_basis: "실면적(surface réelle bâtie) 50~70㎡",
+     source_id: fr_dvf, source_url: "https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres-geolocalisees/", series_code: "DVF geo-dvf 75",
+     method: "아파트 1채만 거래된 매매(mutation) 의 거래가/실면적 중위, 50~70㎡", quality_flag: B,
+     notes: "여러 부동산이 묶인 거래·주차장 포함 거래는 제외. 신축 분양(VEFA) 제외 안 함",
+     parse: {stat: price_sqm}}
+  paris_price_level:
+    {city_id: paris, country_code: FRA, variable: price_level, frequency: A, unit: EUR, currency: EUR,
+     geography_name: Paris (20개 구), geography_code: "75", dwelling_type: apartment, tenure_type: owner, area_basis: "60㎡ 환산 (50~70㎡ 중위 ㎡단가 × 60)",
+     source_id: fr_dvf, source_url: "https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres-geolocalisees/", series_code: "DVF geo-dvf 75",
+     method: "중위 ㎡단가 × 60", quality_flag: B, parse: {stat: price_60}}
+  paris_rent_sqm:
+    {city_id: paris, country_code: FRA, variable: rent_sqm_month, frequency: A, unit: EUR/sqm/month, currency: EUR,
+     geography_name: Paris (20개 구, 관측수 가중), geography_code: "75", dwelling_type: apartment, tenure_type: rent_private_asking,
+     area_basis: "모형 기준 아파트(전용 52㎡ 기준 예측)",
+     source_id: fr_loyers, source_url: "https://www.data.gouv.fr/fr/datasets/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/", series_code: "loypredm2",
+     method: "Carte des loyers 광고 임대료 예측 ㎡단가(관리비 포함)의 구별 관측수 가중평균. 기간 = 자료 연도", quality_flag: B,
+     notes: "광고(호가) 기반·관리비(charges) 포함 — 순임대료보다 높음", parse: {stat: rent_sqm}}
+  paris_rent_month:
+    {city_id: paris, country_code: FRA, variable: rent_month, frequency: A, unit: EUR/month, currency: EUR, scale: 60,
+     geography_name: Paris (20개 구, 관측수 가중), geography_code: "75", dwelling_type: apartment, tenure_type: rent_private_asking,
+     area_basis: "60㎡ 환산 (㎡당 광고 임대료 × 60)",
+     source_id: fr_loyers, source_url: "https://www.data.gouv.fr/fr/datasets/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/", series_code: "loypredm2",
+     method: "㎡당 광고 임대료 × 60", quality_flag: B, notes: "광고(호가)·관리비 포함", parse: {stat: rent_sqm}}
+
+  # ════════════════════════════ 도쿄 ════════════════════════════
+  tokyo_price_index:
+    {city_id: tokyo, country_code: JPN, variable: price_index, frequency: M, unit: index, currency: JPY,
+     geography_name: 東京都, geography_type: city, dwelling_type: condominium, tenure_type: owner,
+     source_id: jp_mlit, source_url: "https://www.mlit.go.jp/totikensangyo/totikensangyo_tk5_000085.html", series_code: "不動産価格指数(住宅) 東京都 マンション 原系列",
+     method: "국토교통성 부동산가격지수 맨션(구분소유), 2010=100, 원계열", quality_flag: A,
+     notes: "23구가 아니라 도쿄도 전체", parse: {sheet: 東京都Tokyo原系列, col: 10}}
+  japan_price_index_national:
+    {city_id: tokyo, country_code: JPN, variable: price_index_national, frequency: M, unit: index, currency: JPY,
+     geography_name: 全国, geography_type: country, dwelling_type: condominium, tenure_type: owner,
+     source_id: jp_mlit, source_url: "https://www.mlit.go.jp/totikensangyo/totikensangyo_tk5_000085.html", series_code: "不動産価格指数(住宅) 全国 マンション 原系列",
+     method: "국토교통성 부동산가격지수 맨션, 전국", quality_flag: A, parse: {sheet: 全国Japan原系列, col: 10}}
+
+  # ════════════════════════════ 국가 단위 (국제기구) ════════════════════════════
+  wb_cpi:
+    {city_id: _national, country_code: ALL, variable: cpi, frequency: A, unit: index, currency: "", geography_type: country,
+     source_id: wb_wdi, source_url: "https://data.worldbank.org/indicator/FP.CPI.TOTL", series_code: FP.CPI.TOTL,
+     method: "World Bank WDI 소비자물가지수(2010=100)", quality_flag: A, parse: {indicator: FP.CPI.TOTL}}
+  wb_fx:
+    {city_id: _national, country_code: ALL, variable: fx_usd, frequency: A, unit: LCU/USD, currency: "", geography_type: country,
+     source_id: wb_wdi, source_url: "https://data.worldbank.org/indicator/PA.NUS.FCRF", series_code: PA.NUS.FCRF,
+     method: "World Bank 공식 환율 연평균", quality_flag: A, parse: {indicator: PA.NUS.FCRF}}
+  wb_ppp:
+    {city_id: _national, country_code: ALL, variable: ppp_private, frequency: A, unit: LCU/intl$, currency: "", geography_type: country,
+     source_id: wb_wdi, source_url: "https://data.worldbank.org/indicator/PA.NUS.PRVT.PP", series_code: PA.NUS.PRVT.PP,
+     method: "민간소비 PPP 환산계수 — 생활비 관점 보조 비교, 도시 주거 구매력 조정치 아님", quality_flag: B, parse: {indicator: PA.NUS.PRVT.PP}}
+  wb_gdp:
+    {city_id: _national, country_code: ALL, variable: gdp_nominal, frequency: A, unit: LCU, currency: "", geography_type: country,
+     source_id: wb_wdi, source_url: "https://data.worldbank.org/indicator/NY.GDP.MKTP.CN", series_code: NY.GDP.MKTP.CN,
+     method: "명목 GDP(현지통화)", quality_flag: A, parse: {indicator: NY.GDP.MKTP.CN}}
+  bis_hh_credit:
+    {city_id: _national, country_code: ALL, variable: household_credit_to_gdp, frequency: Q, unit: pct, currency: "", geography_type: country,
+     source_id: bis, source_url: "https://data.bis.org/topics/TOTAL_CREDIT", series_code: "WS_TC Q.{cc}.H.A.M.770.A",
+     method: "BIS 가계·비영리 신용/GDP(%) — 주택담보대출이 아님", quality_flag: B,
+     notes: "mortgage_to_gdp 와 섞지 않는다", parse: {file: ws_tc_household_credit_pct_gdp.csv}}
+  bis_rpp:
+    {city_id: _national, country_code: ALL, variable: price_index_national_bis, frequency: Q, unit: index, currency: "", geography_type: country,
+     source_id: bis, source_url: "https://data.bis.org/topics/RPP", series_code: "WS_SPP Q.{cc}.N.628",
+     method: "BIS 선별 주거용 부동산 가격(명목, 2010=100) — 국가 대표계열", quality_flag: B,
+     notes: "홍콩·싱가포르는 도시=국가라 도시/전국 비교에 쓰지 않음", parse: {file: ws_spp_nominal_index.csv}}
