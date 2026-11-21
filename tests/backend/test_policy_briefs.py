@@ -44,6 +44,7 @@ def unavailable(_):
     "2026년 9월 가계대출 동향(잠정) 및 가계부채 점검회의 개최", "정비사업 조합 특별현장점검 실시",
     "[설명] 전세계약 보증금 의혹에 대한 설명", "9월중 전세사기피해자 623건 추가 결정",
     "[장관동정] 장관, 공공에 이어 민간까지 주택공급 현장 직접 챙긴다",
+    "「2025년도 주거실태조사」 결과", "‘26년 9월 주택통계", "부정청약 관계부처 합동점검 결과",
 ])
 def test_selection_keeps_nonpolicy_updates_in_monitor(title):
     # A generic mention of welfare/housing is not enough; the title must contain
@@ -51,7 +52,12 @@ def test_selection_keeps_nonpolicy_updates_in_monitor(title):
     assert briefs.selection_reason(title) is None
 
 
-@pytest.mark.parametrize("title", ["청년주택드림 청약통장 가입 대상 확대", "주택담보대출 규제 완화 방안", "전세사기 피해자 지원 대책 개정"])
+@pytest.mark.parametrize("title", ["청년주택드림 청약통장 가입 대상 확대", "주택담보대출 규제 완화 방안", "전세사기 피해자 지원 대책 개정",
+                                   # v1 rules missed these real 2026-11 MOLIT releases
+                                   "공공재개발 사업수수료 3%→1% 한시 인하",
+                                   "더 나은 주거환경, 더 든든한 주거안정 “최저주거기준 높이고 공공임대 선택 넓힌다”",
+                                   "분양가의 25%로 입주하는 LH 공공분양주택, 금년 12월 고양창릉서 첫 분양",
+                                   "[참고] ’27년 부동산 공시가격 시세반영률은 전년 수준 유지"])
 def test_selection_accepts_direct_policy_changes(title):
     assert briefs.selection_reason(title)
 
@@ -105,8 +111,14 @@ def test_failed_changed_release_is_not_published_with_old_summary(local_database
 def test_missing_body_never_becomes_title_only_summary_and_retries(local_database):
     store(document())
     assert briefs.refresh_briefs(unavailable, now=NOW)["failed"] == 1
-    assert briefs.merge_briefs(read_seed("policies"))["automation"]["count"] == 0
+    merged = briefs.merge_briefs(read_seed("policies"))
+    assert merged["automation"]["count"] == 0
+    # The unread release is listed by title and link only, never as a summary.
+    assert [p["title"] for p in merged["pending"]] == ["청년 주택 공급 확대 계획"]
+    assert all("summary" not in p for p in merged["pending"])
+    assert not any(p.get("review_status") == "automatic" for p in merged["policies"])
     assert briefs.refresh_briefs(article, now=NOW + timedelta(hours=6))["generated"] == 1
+    assert briefs.merge_briefs(read_seed("policies"))["pending"] == []
 
 
 def test_rss_fallback_is_explicit(local_database):
@@ -238,3 +250,38 @@ def test_pdf_attachment_reader_uses_official_text(monkeypatch):
     assert calls == [("https://www.fsc.go.kr/no010101/1", False), ("https://www.fsc.go.kr/comm/getFile?fileNo=2", True)]
     with pytest.raises(ValueError, match="not a PDF"):
         policy_text.pdf_text(b"<html>Login</html>")
+
+
+def test_molit_viewer_frame_falls_back_to_official_pdf(monkeypatch):
+    # MOLIT shows the release in a JavaScript viewer iframe whose HTML has no text;
+    # the reader must skip it and use the official PDF attachment instead.
+    calls = []
+    page = ('<html><div class="bd_view_cont"></div>'
+            '<iframe id="iframebirisingo" src="https://www.molit.go.kr/USR/viewer.do?mode=mb&type=NEWS&id=298172&num=1"></iframe>'
+            '<a href="/portal/common/download/DownloadMltm2.jsp?FilePath=/upload/a.hwpx">release.hwpx</a>'
+            '<a href="/LCMS/DWN.jsp?fold=koreaNews/mobile/file&fileName=release.pdf" target="hiddenframe">release.pdf</a></html>').encode()
+    def download(url, source, *, pdf=False):
+        calls.append((url, pdf))
+        return (b"%PDF-stub", url) if pdf else (page, url)
+    monkeypatch.setattr(policy_text, "download", download)
+    monkeypatch.setattr(policy_text, "pdf_text", lambda body: BODY)
+    result = policy_text.fetch_document({"source_id": "molit", "source_url": "https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95092589"})
+    assert result["kind"] == "official_pdf" and result["text"] == BODY
+    assert calls == [("https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95092589", False),
+                     ("https://www.molit.go.kr/LCMS/DWN.jsp?fold=koreaNews/mobile/file&fileName=release.pdf", True)]
+
+
+def test_empty_same_site_frame_falls_back_to_pdf(monkeypatch):
+    calls = []
+    def download(url, source, *, pdf=False):
+        calls.append((url, pdf))
+        if pdf:
+            return b"%PDF-stub", url
+        if "frame" in url:
+            return b"<html><title>news</title><body></body></html>", url
+        return b'<html><iframe src="/USR/frame.jsp?id=1"></iframe><a href="/file/1.pdf">release.pdf</a></html>', url
+    monkeypatch.setattr(policy_text, "download", download)
+    monkeypatch.setattr(policy_text, "pdf_text", lambda body: BODY)
+    result = policy_text.fetch_document({"source_id": "molit", "source_url": "https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=1"})
+    assert result["kind"] == "official_pdf"
+    assert [pdf for _, pdf in calls] == [False, False, True]

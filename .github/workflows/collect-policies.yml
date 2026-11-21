@@ -57,9 +57,15 @@ jobs:
                   print(f"Source {source.get('id')}: {source.get('status')}, matched={source.get('matched', 'unknown')}")
               briefs = result.get('briefs', {})
               print(f"Policy briefs: generated={briefs.get('generated', 0)}, unchanged={briefs.get('unchanged', 0)}, failed={briefs.get('failed', 0)}, deferred={briefs.get('deferred', 0)}")
-              if result.get('status') != 'ok':
-                  print('::error::Collection or brief extraction partially failed. Inspect /policies/monitor and /policies automation status; pending documents retry on the next run.')
+              # A source that cannot be collected is a real failure. Unreadable release
+              # text is retried on the next run, so it is a warning: marking every run
+              # failed for it hid the real source errors (all runs were red since 10-20).
+              failed_sources = [s.get('id', '?') for s in result.get('sources', []) if s.get('status') != 'ok']
+              if failed_sources:
+                  print(f"::error::Source collection failed: {', '.join(failed_sources)}. Inspect /policies/monitor; previous items are kept.")
                   sys.exit(1)
+              if briefs.get('failed'):
+                  print(f"::warning::{briefs.get('failed')} selected release(s) had no readable official text yet; they are listed by title and retried on the next run.")
               print('Official policy collection completed.')
           except (requests.RequestException, ValueError):
               print('::error::Collection request failed or returned invalid JSON. No credentials or raw network errors are logged.')

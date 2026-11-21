@@ -60,6 +60,18 @@
     }
     select.addEventListener("change", () => { category = select.value; draw(); }); label.append(select); filters.append(label);
     container.append(filters, count, results); draw();
+    if (data.pending?.length) {
+      // 선별 기준에는 맞지만 원문 문장을 아직 읽지 못한 발표: 요약 없이 제목과 원문 링크만 보여 준다.
+      const box = el("section", "pending-briefs"), items = el("ul", "pending-list");
+      box.append(el("h4", "", `원문 요약을 기다리는 발표 ${data.pending.length}건`),
+        el("p", "coverage-note", "자동 선별 기준에는 맞지만 아직 원문 문장을 읽지 못한 발표입니다. 요약 없이 제목과 원문 링크만 보여 드리며, 다음 수집에서 다시 확인합니다."));
+      for (const item of data.pending) {
+        const row = el("li");
+        row.append(el("span", "muted", `${item.published_at} · ${item.agency}`), link(`${item.title} ↗`, item.source_url));
+        items.append(row);
+      }
+      box.append(items); container.append(box);
+    }
   }
   const timeText = (value, short = false) => {
     if (!value) return "아직 없음";

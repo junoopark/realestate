@@ -17,11 +17,15 @@ from app.db.session import get_engine
 from app.services.content_store import digest
 from app.services.policy_text import fetch_document
 
-VERSION = "extractive-v1"
+# v2: wider wording rules (fee cuts, public rental, sale, assessed value) and the
+# MOLIT viewer→PDF fallback. Bumping the version re-checks releases excluded by v1.
+VERSION = "extractive-v2"
 STATE_KEY = "policy-briefs-state"
-TOPICS = re.compile(r"주택|부동산|전세|월세|임대차|임차인|재개발|재건축|정비사업|청약|가계대출|가계부채|주담대|토지거래|종합부동산세|양도소득세|(?<![a-z])(?:dsr|ltv|dti)(?![a-z])", re.I)
-ACTIONS = re.compile(r"대책|방안|계획|개편|개정|개선|도입|확대|완화|강화|지원|시행|추진|공급|모집|신청|접수|조성|지정|낮춘|높인")
-CHANGES = re.compile(r"대책|방안|개편|개정|개선|도입|확대|완화|강화|시행|모집|신청|접수|낮춘|높인")
+TOPICS = re.compile(r"주택|부동산|전세|월세|임대차|임차인|재개발|재건축|정비사업|청약|가계대출|가계부채|주담대|토지거래|종합부동산세|양도소득세|"
+                    r"공공임대|임대주택|공공분양|분양가|공시가격|주거기준|주거급여|주거안정|(?<![a-z])(?:dsr|ltv|dti)(?![a-z])", re.I)
+ACTIONS = re.compile(r"대책|방안|계획|개편|개정|개선|도입|확대|완화|강화|지원|시행|추진|공급|모집|신청|접수|조성|지정|낮춘|높인|"
+                     r"낮추|높이|넓힌|넓히|인하|인상|상향|하향|폐지|신설|유지|분양")
+CHANGES = re.compile(r"대책|방안|개편|개정|개선|도입|확대|완화|강화|시행|모집|신청|접수|낮춘|높인|낮추|높이|인하|인상|상향|하향|폐지|신설")
 NOISE = re.compile(r"담당자|담당부서|연락처|전화번호|누리집|다운로드|보도시점|배포일시|사진제공|이전글|다음글")
 
 
@@ -196,6 +200,12 @@ def merge_briefs(reviewed):
         automation = dict(state.content) if state else {}
         automatic = [{**row.content, "source_stale": row.status == "error"} for row, doc in pairs
                      if row.content and row.document_hash == doc.content_hash]
+        # Selected releases whose official text could not be read yet. Listed by
+        # title and link only, separately from summaries (never a title-only summary).
+        # JSON columns may store None as JSON null, so filter the content in Python.
+        waiting = [(row, doc) for row, doc in session.execute(
+            select(PolicyBrief, PolicyDocument).join(PolicyDocument).where(PolicyBrief.status == "error")
+            .order_by(PolicyDocument.published_at.desc()).limit(40)).all() if not row.content]
     policies = [{**p, "review_status": "reviewed", "verified_at": p.get("verified_at") or reviewed.get("verified_at")} for p in reviewed.get("policies", [])]
     urls = {identity_url(p[k]) for p in policies for k in ("source_url", "original_source_url") if p.get(k)}
     titles = {(p["published_at"], re.sub(r"\W", "", compact(p["title"]))) for p in policies}
@@ -210,9 +220,22 @@ def merge_briefs(reviewed):
         titles.add(title_key)
         added += 1
     policies.sort(key=lambda p: p["published_at"], reverse=True)
+    pending = []
+    for row, doc in waiting:
+        published = timestamp(doc.published_at)
+        if published is None or row.document_hash != doc.content_hash or selection_reason(doc.title) is None:
+            continue
+        day = published.astimezone(timezone(timedelta(hours=9))).date().isoformat()
+        if identity_url(doc.source_url) in urls or (day, re.sub(r"\W", "", compact(doc.title))) in titles:
+            continue
+        pending.append({"title": doc.title, "agency": doc.agency, "published_at": day, "source_url": doc.source_url,
+                        "category": doc.category, "last_attempt_at": row.last_attempt_at})
+        if len(pending) >= 10:
+            break
     generated = [p["generated_at"] for p in policies if p.get("generated_at")]
     return {**reviewed, "policies": policies, "reviewed_at": reviewed.get("verified_at"),
             "generated_at": max(generated) if generated else None, "last_checked_at": automation.get("checked_at"),
             "automation": {**automation, "enabled": True, "count": added, "method": "공식 원문 문장 추출 · 별도 AI API 사용 없음"},
+            "pending": pending,
             "reviewed_coverage_note": reviewed.get("coverage_note"),
             "coverage_note": "공식 발표를 6시간 주기로 수집해 주택·임대차·대출 등의 정책을 자동 선별하고 원문 핵심 문장을 발췌합니다. 자동 요약과 사람이 검토한 자료를 구분하며, 전체 정책을 빠짐없이 수록한 목록은 아닙니다."}

@@ -19,6 +19,8 @@ MAX_HTML_BYTES = 3_000_000
 MAX_PDF_BYTES = 8_000_000
 MAX_TEXT_CHARS = 60_000
 USER_AGENT = "KHMI-PolicyBriefs/1.0 (bounded official press-release reader)"
+# JavaScript document viewers render the release client-side; their HTML has no text.
+VIEWER_FRAME = re.compile(r"/viewer\.do\b|docviewer|synap", re.I)
 SELECTORS = {
     "fsc": (".board-view-wrap .cont",),
     "mois": ("#desc_pc", ".table_detail_area .desc"),
@@ -106,8 +108,13 @@ def fetch_document(document):
     soup = BeautifulSoup(body, "html.parser")
     # Some MOLIT releases embed the public article in an iframe. At most one
     # extra document request, never an off-site viewer or executable javascript.
+    # MOLIT now shows the body only in a JavaScript document viewer
+    # (/USR/viewer.do, empty HTML), so a viewer frame is skipped and an empty
+    # frame falls through to the official PDF attachment below.
     for frame in soup.select("iframe[src]"):
         target = urljoin(url, frame["src"])
+        if VIEWER_FRAME.search(target):
+            continue
         try:
             official_url(target, source)
         except ValueError:
@@ -119,7 +126,7 @@ def fetch_document(document):
         text = article_text(embedded, source) or node_text(embedded_soup.body or embedded_soup)
         if len(text) >= 100:
             return {"text": text, "url": target, "kind": "official_html"}
-        raise ValueError("Embedded article has no readable text")
+        break
     for link in soup.select("a[href]"):
         if ".pdf" not in (link.get_text(" ", strip=True) + link["href"]).lower():
             continue
