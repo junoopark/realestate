@@ -370,6 +370,7 @@ function renderHome() {
   renderFeature();
   renderGraphOfMonth();
   renderPolicies();
+  renderOutlook(); // 부동산 시장 동향 및 전망 (home-outlook.js, mock)
   mapTools();
   renderMap();
 }
