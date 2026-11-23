@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700;900&display=swap">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home-ai.css">
 </head>
 <body>
   <header class="site-header">
@@ -66,11 +67,41 @@
 
   <!--
     Home (#home, 기본 화면): home.js 가 채운다
-    첫째 단락 KHMI Dashboard: 주택시장 가격 동향(월세가격지수) · 이달의 차트(금리 3종) · 주요 정책 동향(data/policies.json 최근 4건)
-    둘째 단락: 시도별 가격 상승률 지도 (17개 시도, 매매·전세·월세 / 전년동월·전월 대비)
+    첫째 단락 Overview: 시장 동향 및 전망 (mock, 지역·기간 선택)
+    둘째 단락 KHMI Dashboard: 주택시장 가격 동향(월세가격지수) · 이달의 차트(금리 3종) · 주요 정책 동향(data/policies.json 최근 4건)
+    셋째 단락: 시도별 가격 상승률 지도 (17개 시도, 매매·전세·월세 / 전년동월·전월 대비)
   -->
   <main class="overview" id="view-home">
     <div class="container">
+
+      <!-- KHMI에게 물어보세요 (mock): home-ask.js. 홈페이지 안 자료로 답하는 질문창 -->
+      <div class="ask-bar">
+        <div class="ask-wrap" id="ask-wrap">
+          <form class="ask-form" id="ask-form" role="search" autocomplete="off">
+            <span class="ask-spark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/><path d="M19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z" opacity=".7"/></svg></span>
+            <label class="sr-only" for="ask-input">KHMI에게 질문하기</label>
+            <input class="ask-input" id="ask-input" type="search" name="q" placeholder="KHMI에게 물어보세요" maxlength="120" enterkeyhint="send" aria-controls="ask-panel" aria-expanded="false">
+            <span class="ask-kbd" aria-hidden="true">/</span>
+            <button class="ask-send" id="ask-send" type="submit" aria-label="질문 보내기" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          </form>
+          <div class="ask-panel" id="ask-panel" hidden role="region" aria-label="KHMI 답변">
+            <div class="ask-panel-head"><strong>KHMI 도우미</strong><span class="ask-badge">mock</span><button class="ask-close" id="ask-close" type="button" aria-label="답변 닫기">×</button></div>
+            <div id="ask-body" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overview (부동산 시장 동향 및 전망, mock): home-outlook.js. 지역·기간을 고르면 다시 '생성'한다 (기본: 서울 · 최근 3개월) -->
+      <section id="home-outlook" aria-labelledby="home-outlook-title">
+        <div class="sec-head">
+          <h2 class="sec-title" id="home-outlook-title">Overview</h2>
+          <span class="sec-sub">시장 동향 및 전망 · 대시보드 지표 기반 · AI 자동 생성(mock)</span>
+          <div class="sec-tools filter-inline" id="home-outlook-tools"></div>
+        </div>
+        <div id="home-outlook-body"><p class="tile-placeholder">내용 준비 중</p></div>
+      </section>
+
+      <hr class="rule">
 
       <section aria-labelledby="home-dash-title">
         <div class="sec-head">
@@ -123,6 +154,8 @@
   <script src="js/notes.js"></script>
   <script src="js/factors.js"></script>
   <script src="js/qualitative-common.js"></script>
+  <script src="js/home-outlook.js"></script>
+  <script src="js/home-ask.js"></script>
   <script src="js/home.js"></script>
 </body>
 </html>

@@ -104,7 +104,8 @@
   }
 
   async function flush(leaving = false) {
-    if (optedOut()) { pending.length = 0; return; }
+    // 로컬에서 배포 API 를 쓰는 중이면 실서비스 이용 통계에 섞이지 않도록 보내지 않는다(config.js).
+    if (optedOut() || (typeof USE_DEPLOYED_API !== "undefined" && USE_DEPLOYED_API)) { pending.length = 0; return; }
     if (!pending.length || (inFlight && !leaving) || typeof API_BASE_URL !== "string") return;
     const batch = pending.splice(0, 20);
     if (!leaving) inFlight = true;

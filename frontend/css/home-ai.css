@@ -1,0 +1,313 @@
+/* Home 의 AI 기능 두 가지 (mock): 부동산 시장 동향 및 전망 카드 + 'KHMI에게 물어보세요' 질문창
+   js/home-outlook.js · js/home-ask.js 가 그린다. 색은 style.css 의 토큰만 쓴다(라이트/다크 공통). */
+
+/* ══ KHMI에게 물어보세요 (우측 상단) ═══════════════════════════════ */
+.ask-bar { display: flex; justify-content: flex-end; margin: -8px 0 22px; }
+.ask-wrap { position: relative; width: min(100%, 400px); }
+.ask-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 5px 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--input-bg);
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ask-form:hover { border-color: var(--brand); }
+.ask-form:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+.ask-spark { flex: none; display: inline-flex; color: var(--brand); }
+.ask-spark svg { width: 16px; height: 16px; }
+.ask-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14.5px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ask-input:focus-visible { outline: none; }   /* 전역 input 포커스 테두리 대신 폼(.ask-form:focus-within)이 링을 그린다 */
+.ask-input::placeholder { color: var(--ink-soft); opacity: 0.55; }   /* 희미한 안내 문구 */
+.ask-input::-webkit-search-cancel-button { display: none; }
+.ask-kbd {
+  flex: none;
+  padding: 0 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  opacity: 0.7;
+}
+.ask-form:focus-within .ask-kbd,
+.ask-form.has-text .ask-kbd { display: none; }
+.ask-send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+.ask-send:hover { background: var(--brand-hover); }
+.ask-send:disabled { opacity: 0.35; cursor: default; }
+.ask-send svg { width: 15px; height: 15px; }
+
+.ask-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 9;
+  width: min(560px, calc(100vw - 48px));
+  max-height: min(72vh, 600px);
+  overflow-y: auto;
+  padding: 14px 18px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--masthead-btn);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.4);
+}
+.ask-panel-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: var(--ink-soft); }
+.ask-panel-head strong { color: var(--title-ink); font-size: 13px; }
+.ask-badge,
+.ol-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.ask-close {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ask-close:hover { background: var(--chip-bg); color: var(--ink); }
+.ask-q {
+  width: fit-content;
+  max-width: 88%;
+  margin: 0 0 12px auto;
+  padding: 7px 13px;
+  border-radius: 14px 14px 3px 14px;
+  background: var(--brand-soft);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ask-a { font-size: 14.5px; line-height: 1.7; }
+.ask-a p { margin: 0 0 8px; }
+.ask-a p:last-child { margin-bottom: 0; }
+.ask-a strong { color: var(--title-ink); }
+.ask-a ul { margin: 4px 0 8px; padding-left: 18px; }
+.ask-a li { margin-bottom: 4px; }
+.ask-a .ask-src { font-size: 12px; color: var(--ink-soft); }
+.ask-typing { display: inline-flex; gap: 4px; padding: 6px 0; }
+.ask-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  opacity: 0.4;
+  animation: ask-dot 1s ease-in-out infinite;
+}
+.ask-typing i:nth-child(2) { animation-delay: 0.15s; }
+.ask-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ask-dot { 0%, 100% { opacity: 0.25; transform: none; } 50% { opacity: 0.9; transform: translateY(-3px); } }
+.ask-links,
+.ask-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.ask-links a,
+.ask-links button,
+.ask-chips button {
+  padding: 4px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--brand);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ask-links a:hover,
+.ask-links button:hover,
+.ask-chips button:hover { background: var(--brand-soft); border-color: var(--brand); }
+.ask-chips button { color: var(--ink); font-weight: 500; }
+.ask-hint { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+.ask-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-soft); }
+
+/* ══ 부동산 시장 동향 및 전망 카드 ═══════════════════════════════════ */
+#home-outlook { scroll-margin-top: calc(var(--header-h, 80px) + 16px); }
+.ol-select {
+  height: 30px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--chip-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23888' stroke-width='1.6'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ol-select:hover { border-color: var(--brand); }
+.ol-select:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+.ol-card { border: 1px solid var(--line-strong); border-radius: 8px; background: var(--card-bg); box-shadow: 0 1px 2px var(--shadow); }
+.ol-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 14px 22px; border-bottom: 1px solid var(--line); }
+.ol-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--title-ink); }
+.ol-asof { font-size: 13px; color: var(--ink-soft); }
+.ol-regen {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ol-regen:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+.ol-regen:disabled { opacity: 0.5; cursor: default; }
+.ol-regen svg { width: 13px; height: 13px; }
+.ol-regen.is-busy svg { animation: ol-spin 0.9s linear infinite; }
+@keyframes ol-spin { to { transform: rotate(360deg); } }
+
+.ol-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.ol-left { padding: 20px 24px 22px; }
+.ol-right { padding: 20px 24px 22px; border-left: 1px solid var(--line); min-width: 0; }
+
+.ol-verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.ol-verdict { padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.ol-vlabel { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.ol-vmain { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.ol-vmain strong { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.ol-vsub { margin-top: 2px; font-size: 12.5px; color: var(--ink-soft); }
+.tone-up strong { color: var(--div-p3); }
+.tone-down strong { color: var(--div-n3); }
+.tone-flat strong { color: var(--ink-soft); }
+:root[data-theme="dark"] .tone-up strong { color: var(--div-p4); }
+:root[data-theme="dark"] .tone-down strong { color: var(--div-n4); }
+
+.ol-text h4 { margin: 16px 0 6px; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; color: var(--title-ink); }
+.ol-text h4:first-child { margin-top: 0; }
+.ol-text p { margin: 0 0 8px; font-size: 15px; line-height: 1.75; }
+.ol-text ul { margin: 0; padding-left: 18px; }
+.ol-text li { margin-bottom: 5px; font-size: 14.5px; line-height: 1.65; }
+.ol-text li::marker { color: var(--ink-soft); }
+
+.ol-chart-title { margin-bottom: 2px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.ol-chart-sub { margin-bottom: 6px; font-size: 12px; color: var(--ink-soft); }
+.ol-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.ol-chart text { fill: var(--ink-soft); font-size: 11px; font-family: inherit; }
+.ol-chart .ol-grid-line { stroke: var(--line); stroke-width: 1; }
+.ol-chart .ol-split { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.ol-chart .ol-hist { fill: none; stroke: var(--series-1); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.ol-chart .ol-fc { fill: none; stroke: var(--series-1); stroke-width: 2.2; stroke-dasharray: 5 4; stroke-linecap: round; }
+.ol-chart .ol-band { fill: var(--series-1); opacity: 0.16; stroke: none; }
+.ol-chart .ol-dot { fill: var(--card-bg); stroke: var(--series-1); stroke-width: 2; }
+.ol-chart .ol-dot-fc { fill: var(--series-1); stroke: var(--card-bg); stroke-width: 2; }
+.ol-chart .ol-end { fill: var(--ink); font-weight: 700; font-size: 11.5px; }
+.ol-chart .ol-fclabel { fill: var(--series-1); font-weight: 700; }
+.ol-chart .ol-cursor { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.5; }
+.ol-chart .ol-readout { fill: var(--ink); font-weight: 600; font-size: 12px; }
+.ol-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; font-size: 12px; color: var(--ink-soft); }
+.ol-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ol-legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--series-1); }
+.ol-legend i.dash { border-top-style: dashed; }
+.ol-legend i.band { height: 8px; border: 0; background: color-mix(in srgb, var(--series-1) 20%, transparent); }
+
+.ol-evidence { margin-top: 14px; }
+.ol-evidence summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--brand); }
+.ol-table-wrap { margin-top: 8px; overflow-x: auto; }
+.ol-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ol-table th,
+.ol-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.ol-table th:first-child,
+.ol-table td:first-child { text-align: left; }
+.ol-table th { font-weight: 600; color: var(--ink-soft); }
+.ol-table .up { color: var(--div-p3); font-weight: 700; }
+.ol-table .down { color: var(--div-n3); font-weight: 700; }
+:root[data-theme="dark"] .ol-table .up { color: var(--div-p4); }
+:root[data-theme="dark"] .ol-table .down { color: var(--div-n4); }
+.ol-table .src { font-size: 11px; color: var(--ink-soft); }
+
+.ol-foot { padding: 11px 22px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.6; color: var(--ink-soft); }
+
+/* 분석 중(생성 중) 상태와 결과가 나타나는 모션 */
+.ol-loading { padding: 22px 24px 26px; }
+.ol-loading-msg { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.ol-loading-msg::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--loading-line);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.ol-skel { height: 13px; margin-bottom: 11px; border-radius: 4px; background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-hi) 50%, var(--skeleton) 75%); background-size: 200% 100%; animation: ol-shimmer 1.3s linear infinite; }
+.ol-skel.w90 { width: 90%; } .ol-skel.w75 { width: 75%; } .ol-skel.w60 { width: 60%; } .ol-skel.w40 { width: 40%; }
+@keyframes ol-shimmer { to { background-position: -200% 0; } }
+.ol-reveal > * { opacity: 0; animation: ol-in 0.45s ease forwards; animation-delay: calc(var(--i, 0) * 90ms); }
+@keyframes ol-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .ol-grid { grid-template-columns: 1fr; }
+  .ol-right { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 640px) {
+  .ask-bar { margin-top: 0; }
+  .ask-wrap { width: 100%; }
+  .ask-panel { width: 100%; }
+  .ol-head { padding: 12px 16px; }
+  .ol-left,
+  .ol-right { padding: 16px; }
+  .ol-verdicts { grid-template-columns: 1fr; }
+  .ol-foot { padding: 10px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ol-reveal > *,
+  .ol-skel,
+  .ask-typing i,
+  .ol-regen.is-busy svg { animation: none; opacity: 1; }
+}
