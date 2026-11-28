@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230b2447%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2216%22 font-family=%22sans-serif%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%23f59e0b%22%3EK%3C/text%3E%3C/svg%3E">
+<title>KHMI AI 아이디어 공유</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Noto+Serif+KR:wght@600;700;900&display=swap">
+<style>
+/* VOICE: 팀 발표 — 권태혁 초안(PDF)의 구성과 화면 배치를 그대로 잇는다
+   IDEA: 왼쪽 남색 판에 결론 한 줄, 오른쪽에 실제 화면과 번호 표시
+   PICTURE: 프로토타입 화면 캡처 + 주황 번호 테두리, 정책 기조 지수 계단 그래프
+   COLOUR and TYPE: 남색 #1c2f5e · 주황 #f1a23c · 파랑 #2f5aa8 · Noto Serif KR 제목 + Noto Sans KR 본문
+   LAYOUT: 1280×720 고정 슬라이드, 화면에 맞춰 확대·축소, N 발표 메모 */
+:root { color-scheme: light; --navy: #1c2f5e; --navy2: #233a70; --or: #f1a23c; --blue: #2f5aa8; --soft: #f5f7fa; --ink: #111827; --ink2: #5b6475; --line: #e3e6eb; --pale: #eaf0fa;
+  --serif: "Noto Serif KR", Georgia, serif; --sans: "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body { font-family: var(--sans); background: #c9ced8; color: var(--ink); line-height: 1.5; overflow: hidden; word-break: keep-all; -webkit-font-smoothing: antialiased; }
+a { color: var(--blue); font-weight: 700; }
+#stage { position: fixed; inset: 0; display: grid; place-items: center; }
+#deck { width: 1280px; height: 720px; position: relative; transform-origin: center center; }
+.slide { position: absolute; inset: 0; background: #fff; display: none; overflow: hidden; box-shadow: 0 20px 60px -20px rgba(16,24,40,.45); }
+.slide.active { display: block; }
+.pg { position: absolute; right: 24px; bottom: 14px; font-size: 12px; color: var(--ink2); }
+.brand { font-family: var(--serif); font-size: 20px; font-weight: 700; letter-spacing: .1em; color: #fff; }
+.brand i { font-style: normal; color: #9db8ef; }
+.brand.dk { color: var(--navy); }
+em { font-style: normal; color: var(--or); }
+
+/* 왼쪽 남색 판 + 오른쪽 화면 */
+.split { grid-template-columns: 470px 1fr; }
+.slide.split.active { display: grid; }
+.lp { background: var(--navy); color: #fff; padding: 38px 40px 40px; display: flex; flex-direction: column; min-height: 0; }
+.kick { margin-top: 40px; font-size: 17px; font-weight: 700; color: var(--or); }
+.lp h2 { font-family: var(--serif); font-size: 56px; font-weight: 700; line-height: 1.2; margin-top: 12px; letter-spacing: -.01em; }
+.lead { margin-top: 18px; font-size: 18px; line-height: 1.6; color: rgba(255,255,255,.74); }
+.big { margin-top: 26px; font-size: 64px; font-weight: 800; color: var(--or); line-height: 1; letter-spacing: -.02em; }
+.big small { font-size: 32px; }
+.bigc { margin-top: 8px; font-size: 16px; color: rgba(255,255,255,.85); }
+.pts { list-style: none; padding: 0; margin-top: auto; display: flex; flex-direction: column; gap: 22px; }
+.pts li { display: flex; gap: 14px; align-items: flex-start; }
+.n { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--or); color: #fff; font-size: 14px; font-weight: 800; margin-top: 2px; }
+.pts b { display: block; font-size: 23px; font-weight: 700; }
+.pts span:not(.n) { display: block; font-size: 16px; color: rgba(255,255,255,.7); margin-top: 2px; }
+.lk { margin-top: 26px; } .lk a { color: var(--or); font-size: 17px; }
+.rp { position: relative; padding: 22px 30px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+figure.shot { position: relative; margin: 0; flex: none; }
+figure.shot img { display: block; width: 100%; height: auto; border-radius: 6px; box-shadow: 0 10px 30px rgba(16,24,40,.18), 0 0 0 1px rgba(16,24,40,.06); }
+.co { position: absolute; border: 3px solid var(--or); border-radius: 6px; }
+.co b { position: absolute; left: -15px; top: -15px; width: 28px; height: 28px; border-radius: 50%; background: var(--or); color: #fff; font-style: normal; font-size: 14px; font-weight: 800; display: grid; place-items: center; }
+.cap { margin-top: 14px; font-size: 18px; color: var(--ink); }
+.cap b { font-size: 21px; color: var(--navy); }
+
+/* 2쪽 */
+.why { align-items: stretch; justify-content: space-between; padding: 34px 44px 34px; }
+.rh { font-size: 21px; color: var(--ink); } .rh b { color: var(--blue); }
+.rh.sm { margin-top: 4px; font-size: 17px; color: var(--ink2); font-weight: 700; }
+.three > div { display: grid; grid-template-columns: 150px 1fr; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.three .w { font-family: var(--serif); font-size: 56px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+.three p b { display: block; font-size: 23px; } .three p span { display: block; font-size: 16px; color: var(--blue); margin-top: 2px; }
+.sits { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sits div { background: var(--soft); border-radius: 8px; padding: 11px 16px; }
+.sits b { display: block; font-size: 18px; color: var(--navy); } .sits span { font-size: 14.5px; color: var(--ink2); }
+.band { background: var(--pale); border-radius: 8px; padding: 16px 22px; font-size: 21px; color: var(--navy); font-weight: 500; }
+.band b { color: var(--blue); }
+
+/* 흰 바탕 장 */
+.wb { padding: 34px 48px 0; height: 100%; display: flex; flex-direction: column; }
+.kick.b { color: var(--blue); margin-top: 26px; font-size: 15px; }
+h2.wt { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--navy); margin-top: 8px; letter-spacing: -.01em; }
+.svc { margin-top: 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.svc > div { background: var(--soft); border-radius: 10px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+.svc .w { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--navy); line-height: 1.15; }
+.svc .nm { font-size: 15px; font-weight: 700; color: var(--ink); } .svc .nm small { font-size: 11px; color: var(--blue); font-weight: 700; } .svc .nm small.o { color: #b5701f; }
+.svc img { display: block; width: 100%; height: 210px; object-fit: cover; object-position: top left; border-radius: 6px; box-shadow: 0 0 0 1px rgba(16,24,40,.08); }
+.svc .cp { font-size: 14px; color: var(--ink); margin-top: 2px; }
+.svc .on { background: var(--navy); } .svc .on .w, .svc .on .nm, .svc .on .cp { color: #fff; } .svc .on .nm small { color: #9db8ef; }
+.nums { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); }
+.nums > div { display: flex; align-items: baseline; gap: 6px; padding: 0 18px; border-left: 1px solid var(--line); }
+.nums > div:first-child { border-left: 0; }
+.nums b { font-size: 54px; font-weight: 800; color: var(--blue); line-height: 1; } .nums > div > span { font-size: 18px; font-weight: 700; color: var(--navy); }
+.nums p { margin-left: 8px; font-size: 16px; font-weight: 700; color: var(--ink); } .nums small { display: block; font-size: 12px; font-weight: 500; color: var(--ink2); }
+.data { margin-top: 18px; display: grid; grid-template-columns: 130px repeat(4, minmax(0, 1fr)); align-items: center; background: var(--soft); border-radius: 10px; padding: 16px 20px; }
+.data .dh { font-size: 16px; font-weight: 800; color: var(--navy); }
+.data > div { display: flex; align-items: center; gap: 12px; padding: 0 18px; border-left: 1px solid #dde2ea; white-space: nowrap; }
+.data .num { display: inline-flex; align-items: baseline; gap: 3px; } .data .num b { font-size: 46px; font-weight: 800; color: var(--blue); line-height: 1; } .data .num i { font-style: normal; font-size: 16px; font-weight: 700; color: var(--navy); }
+.data p { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.35; } .data small { display: block; font-size: 12px; font-weight: 500; color: var(--ink2); }
+.rp.home { padding: 20px 30px; }
+.hrow { display: flex; gap: 26px; align-items: stretch; }
+.hflow { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.hflow .ht { font-size: 15px; font-weight: 700; color: var(--ink2); margin-bottom: 8px; }
+.hflow div { background: var(--soft); border-radius: 10px; padding: 16px 18px; } .hflow b { display: block; font-family: var(--serif); font-size: 30px; color: var(--navy); } .hflow span { font-size: 15px; color: var(--ink2); }
+.hflow i { font-style: normal; text-align: center; font-size: 22px; font-weight: 800; color: var(--or); }
+.inp { margin-top: 18px; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.85); border-left: 3px solid var(--or); padding-left: 12px; }
+.inp b { color: var(--or); margin-right: 6px; }
+.demo1 { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 30px; padding: 60px 70px; }
+.demo1 .it { display: flex; gap: 16px; align-items: flex-start; }
+.demo1 .it p { font-size: 16px; } .demo1 .it p b { font-size: 22px; margin-bottom: 2px; }
+.demo1 .n { width: 34px; height: 34px; font-size: 17px; }
+.wb .sh { margin-top: 16px; font-size: 14px; font-weight: 800; color: var(--navy); }
+.wb .sh + .svc { margin-top: 8px; }
+.fn { margin-top: auto; padding-bottom: 16px; font-size: 11.5px; color: var(--ink2); }
+
+/* 10쪽 구조 */
+.badge { position: absolute; right: 48px; top: 30px; border: 1.5px solid var(--or); border-radius: 8px; padding: 8px 18px; font-size: 15px; color: var(--ink); background: #fff8ec; }
+.badge b { color: var(--navy); }
+.arch { position: relative; height: 230px; margin-top: 26px; }
+.ln { position: absolute; left: 0; font-family: var(--serif); font-size: 32px; font-weight: 700; color: var(--navy); }
+.ln.l1 { top: 22px; } .ln.l2 { top: 146px; }
+.bx { position: absolute; width: 240px; height: 96px; background: var(--soft); border-radius: 10px; padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; }
+.bx b { display: block; font-size: 22px; color: var(--navy); } .bx span { font-size: 14px; color: var(--ink2); }
+.bx.b2 { background: var(--pale); }
+.bx.vf { width: 132px; height: 96px; background: var(--pale); text-align: center; align-items: center; }
+.ag { position: absolute; left: 690px; top: 12px; width: 190px; height: 190px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; }
+.ag b { font-family: var(--serif); font-size: 28px; line-height: 1.2; } .ag span { font-size: 13.5px; color: rgba(255,255,255,.8); }
+.out { position: absolute; left: 1092px; top: 66px; font-size: 18px; font-weight: 800; color: var(--navy); line-height: 1.35; }
+svg.ar { position: absolute; inset: 0; width: 1184px; height: 230px; pointer-events: none; }
+.mid { margin-top: 18px; text-align: center; font-size: 17px; color: var(--ink); } .mid b { color: var(--blue); }
+.call { margin-top: 20px; display: grid; grid-template-columns: 120px repeat(4, 1fr); gap: 8px; align-items: stretch; }
+.call .ch { font-size: 17px; font-weight: 800; color: var(--navy); display: flex; align-items: center; }
+.call > div { border: 1.5px solid var(--or); border-radius: 8px; padding: 12px 14px; background: #fffaf2; }
+.call b { display: block; font-size: 17px; color: var(--navy); } .call span { font-size: 13.5px; color: var(--ink2); }
+.stk { margin-top: auto; margin-bottom: 28px; display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); padding-top: 12px; }
+.stk small { display: block; font-size: 13px; color: var(--ink2); } .stk b { font-size: 18px; color: var(--blue); }
+
+/* 8쪽 지수 */
+.st { align-items: stretch; justify-content: space-between; padding: 26px 34px 28px; gap: 12px; }
+.ct { font-size: 15px; font-weight: 700; color: var(--ink2); margin-bottom: 4px; }
+.lg { font-size: 12.5px; color: var(--ink2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lg span { display: inline-block; width: 14px; height: 10px; }
+.zrow { display: flex; gap: 18px; align-items: center; background: var(--soft); border-radius: 10px; padding: 12px 14px; }
+.zrow p { font-size: 15px; color: var(--ink2); line-height: 1.55; } .zrow p b { display: block; font-size: 17px; color: var(--navy); margin-bottom: 3px; }
+
+/* 9쪽 챗봇 */
+.rp.ask { justify-content: flex-start; padding-top: 40px; }
+.ins { position: absolute; right: 28px; bottom: 76px; width: 330px; background: #fff; border-radius: 8px; box-shadow: 0 12px 32px rgba(16,24,40,.25); padding: 8px; border: 2px solid var(--or); }
+.ins .tag { position: absolute; left: -2px; top: -26px; background: var(--or); color: #fff; font-size: 12.5px; font-weight: 800; padding: 3px 10px; border-radius: 6px 6px 0 0; }
+.ins img { display: block; width: 100%; height: auto; }
+.rp.ask .cap { position: absolute; left: 36px; bottom: 30px; }
+
+/* 11쪽 계획 */
+.plan { align-items: stretch; justify-content: flex-start; padding: 40px 44px 40px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; gap: 0 26px; }
+.grp { display: flex; flex-direction: column; gap: 14px; }
+.gh { font-size: 17px; font-weight: 800; color: var(--blue); padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.it { display: flex; gap: 12px; align-items: flex-start; }
+.it .n { background: var(--navy); }
+.it p { font-size: 14px; color: var(--ink2); line-height: 1.5; } .it p b { display: block; font-size: 18px; color: var(--navy); }
+.demo { grid-column: 1 / -1; align-self: end; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.demo p { font-size: 15px; font-weight: 800; color: var(--navy); margin-right: 4px; }
+.demo span { font-size: 13px; font-weight: 700; color: var(--blue); background: var(--pale); border-radius: 999px; padding: 4px 12px; }
+.end { grid-column: 1 / -1; background: var(--pale); border-radius: 8px; padding: 14px 20px; font-size: 19px; color: var(--navy); } .end b { color: var(--blue); }
+
+/* 표지 */
+.cover { background: var(--navy); color: #fff; }
+.navy { background: var(--navy); color: #fff; }
+.slide.navy.active { display: grid; grid-template-columns: 420px 1fr; }
+.nl { padding: 40px 30px 38px 56px; display: flex; flex-direction: column; }
+.nl h2 { margin-top: 70px; font-family: var(--serif); font-size: 54px; font-weight: 700; line-height: 1.2; }
+.now { margin-top: 44px; border: 1.5px solid rgba(255,255,255,.35); border-radius: 10px; padding: 14px 18px; display: flex; flex-direction: column; gap: 4px; }
+.now span { font-size: 14px; color: #9db8ef; } .now b { font-size: 19px; } .now em { font-weight: 700; }
+.tag2 { margin-top: auto; font-size: 18px; color: #9db8ef; line-height: 1.5; } .tag2 b { color: #fff; font-size: 22px; }
+.nl .lk { margin-top: 14px; }
+.nr { padding: 40px 56px 34px 20px; display: flex; flex-direction: column; }
+.gh2 { font-size: 15px; font-weight: 800; color: var(--or); margin-bottom: 4px; }
+.gh2 + .big4 { margin-bottom: 20px; }
+.big4 > div { display: flex; gap: 26px; align-items: flex-start; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,.16); }
+.big4 .no { font-size: 32px; font-weight: 800; color: var(--or); width: 24px; line-height: 1.1; }
+.big4 p { font-size: 14.5px; color: #9db8ef; } .big4 b { display: block; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.sm4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 30px; margin-top: 8px; }
+.sm4 > div { display: flex; gap: 16px; align-items: flex-start; }
+.sm4 .no { font-size: 22px; font-weight: 800; color: var(--or); width: 18px; line-height: 1.2; }
+.sm4 p { font-size: 13.5px; color: #9db8ef; } .sm4 b { display: block; font-size: 19px; color: #fff; margin-bottom: 2px; }
+.cv { position: absolute; left: 64px; top: 58px; width: 560px; }
+.brand.bigb { font-size: 32px; color: #fff; }
+.kmi { margin-top: 6px; display: inline-block; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.75); border-top: 2px solid #5b8ce6; padding-top: 4px; letter-spacing: .03em; }
+.cv h1 { margin-top: 64px; font-family: var(--serif); font-size: 56px; font-weight: 700; line-height: 1.22; letter-spacing: -.01em; }
+.for { margin-top: 48px; font-size: 18px; color: rgba(255,255,255,.75); }
+.rag { margin-top: 6px; font-size: 27px; font-weight: 700; } .rag b { color: #9db8ef; font-weight: 800; }
+.mem { margin-top: 52px; font-size: 16px; color: rgba(255,255,255,.75); }
+.mem .team { color: #fff; font-weight: 800; margin-right: 12px; padding-right: 12px; border-right: 1px solid rgba(255,255,255,.35); }
+.cvshot { position: absolute; left: 690px; top: 120px; }
+
+#nav { position: fixed; right: 18px; bottom: 14px; transition: opacity .4s; display: flex; gap: 6px; align-items: center; z-index: 5; font-size: 13px; color: #24304a; }
+#nav button { border: 0; background: var(--navy); color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+#nav button:hover { background: var(--blue); }
+#nav button:focus-visible { outline: 3px solid #5b8ce6; outline-offset: 2px; }
+#pageno { min-width: 54px; text-align: center; font-weight: 700; }
+#notes { position: fixed; left: 18px; bottom: 14px; max-width: 560px; background: rgba(17,24,39,.92); color: #e8eaee; font-size: 14px; line-height: 1.6; padding: 12px 16px; border-radius: 6px; display: none; z-index: 6; }
+#notes.show { display: block; }
+#help { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); font-size: 13px; color: #fff; background: rgba(17,24,39,.8); padding: 6px 14px; border-radius: 999px; z-index: 5; transition: opacity .6s; }
+body.idle #nav, body.idle #help { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #nav, #help { transition: none; } }
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { background: #fff; overflow: visible; }
+  #stage { position: static; display: block; }
+  #deck { transform: none !important; width: 1280px; height: auto; }
+  .slide { position: relative; display: block !important; width: 1280px; height: 720px; box-shadow: none; break-after: page; }
+  .slide.split, .slide.navy { display: grid !important; }
+  #nav, #notes, #help { display: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="help">← → 이동 · F 전체 화면</div>
+<div id="stage"><div id="deck">
+
+<section class="slide cover">
+<div class="cv"><div class="brand bigb">KHMI <i>AI</i></div><p class="kmi">Korea Housing Market Intelligence</p>
+<h1>먼저 분석하고,<br>물으면 답하는 <em>AI</em></h1>
+<p class="for">정책입안자와 부동산 투자자를 위한</p><p class="rag"><b>RAG</b> 기반 주거시장 분석과 답변</p>
+<p class="mem"><b class="team">4조</b>권태혁 · 노경수 · 박민영 · 박준우</p></div>
+<div class="cvshot"><figure class="shot" style="width:620px"><img src="/pitch/img/s_cover.png" alt="KHMI AI 홈 화면" width="1280" height="1000"></figure></div></section>
+
+<section class="slide split">
+<div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">왜 필요한가</p><h2>넘치는 정보,<br>보이지 않는<br><em>포인트</em></h2>
+<p class="lead" style="margin-top:auto">기관마다 흩어진 통계,<br>매주 쏟아지는 정책,<br>끊어진 앞뒤 맥락</p></div>
+<div class="rp why">
+<p class="rh">판단하는 사람에게 필요한 것은 <b>세 가지</b></p>
+<div class="three">
+<div><span class="w">전체</span><p><b>지금 시장은 어떤 상태인가</b><span>지표와 정책을 한 장에</span></p></div>
+<div><span class="w">변화</span><p><b>무엇이 달라졌는가</b><span>바뀐 점과 주의사항을 두세 줄로</span></p></div>
+<div><span class="w">연결</span><p><b>정책과 어떻게 이어지는가</b><span>앞뒤 정책, 관련 지표, 근거까지</span></p></div>
+</div>
+<p class="rh sm">이런 상황에 필요한 정보를</p>
+<div class="sits">
+<div><b>집을 살 때</b><span>대출 한도 · 규제지역 · 지역 가격 흐름</span></div>
+<div><b>전월세로 살 때</b><span>월세·전세 흐름과 전망 · 임차인 지원</span></div>
+<div><b>집을 짓거나 공급할 때</b><span>공급 대책 · PF·정비사업 지원 · 미분양</span></div>
+<div><b>정책 흐름을 볼 때</b><span>정책 기조 · 앞뒤 대책의 연결</span></div>
+</div>
+<p class="band"><b>정책입안자</b>와 <b>부동산 투자자</b>, 같은 근거로 판단</p>
+</div><span class="pg">2</span></section>
+
+<section class="slide white">
+<div class="wb"><div class="brand dk">KHMI <i>AI</i></div>
+<p class="kick b">AI의 분석, RAG의 근거</p><h2 class="wt">흩어진 정보를 <em>판단의 근거</em>로</h2>
+<div class="data"><p class="dh">확보한 데이터</p>
+<div><span class="num"><b>51</b><i>개</i></span><p>수집 지표<small>6개 동인 · 매일 수집</small></p></div>
+<div><span class="num"><b>17</b><i>곳</i></span><p>시도 비교<small>같은 기준으로</small></p></div>
+<div><span class="num"><b>28</b><i>건+α</i></span><p>2016년 이후<small>발표 정책</small></p></div>
+<div><span class="num"><b>24</b><i>번</i></span><p>규제지역 변경<small>시군구 월 패널</small></p></div>
+</div>
+<p class="sh">이 데이터로 하는 네 가지</p>
+<div class="svc">
+<div><p class="w">분석</p><p class="nm">지역 브리핑 <small>with AI</small></p><img src="/pitch/img/m_region.png" alt="지역 브리핑 화면 일부" width="1200" height="800"><p class="cp">요약부터 변화 분석까지</p></div>
+<div><p class="w">예측</p><p class="nm">예측 지표 <small>지역 브리핑 안</small> <small class="o">예시값</small></p><img src="/pitch/img/m_forecast.png" alt="예측 지표 화면 일부" width="1200" height="700"><p class="cp">급등·급락 조기경보</p></div>
+<div><p class="w">연결</p><p class="nm">정책 브리핑 <small>with AI</small></p><img src="/pitch/img/m_brief.png" alt="정책 브리핑 화면 일부" width="1200" height="820"><p class="cp">요약부터 흐름 분석까지</p></div>
+<div><p class="w">답변</p><p class="nm">AI 챗봇</p><img src="/pitch/img/m_ask.png" alt="AI 챗봇 화면 일부" width="1200" height="480"><p class="cp">질문부터 근거 확인까지</p></div>
+</div>
+<p class="fn">자료: 한국부동산원 R-ONE · 한국은행 ECOS · 통계청 KOSIS · 국토부 실거래, 정책브리핑·국토교통부·금융위원회 보도자료 · 현재는 실제 자료로 만든 화면 프로토타입, AI 연결은 구축 예정</p>
+</div><span class="pg">3</span></section>
+
+<section class="slide white">
+<div class="wb"><div class="brand dk">KHMI <i>AI</i></div><p class="badge">현재는 화면까지, <b>AI 연결 전</b></p>
+<p class="kick b">앞으로 구축할 구조</p><h2 class="wt">계산은 코드, 분석은 <em>AI</em>, 마지막은 검증</h2>
+<div class="arch">
+<p class="ln l1">숫자</p><div class="bx" style="left:90px;top:0"><b>매일 수집</b><span>부동산원·한국은행·통계청·국토부</span></div><div class="bx b2" style="left:380px;top:0"><b>변화 계산</b><span>전환·최고·연속 감지</span></div>
+<p class="ln l2">정책</p><div class="bx" style="left:90px;top:124px"><b>매일 수집</b><span>정부 발표와 원문</span></div><div class="bx b2" style="left:380px;top:124px"><b>RAG 근거 검색</b><span>원문 검색 · 날짜순 정책 연결</span></div>
+<div class="ag"><b>AI<br>에이전트</b><span>지표·원문·예측 조회<br>요약·분석·답변</span></div>
+<div class="bx vf" style="left:930px;top:62px"><b>검증</b><span>날짜·숫자<br>출처 대조</span></div>
+<p class="out">브리핑<br>체크포인트<br>답변 + 근거</p>
+<svg class="ar" viewBox="0 0 1184 230" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1c2f5e"/></marker></defs>
+<path d="M330 48H376" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/><path d="M330 172H376" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/><path d="M620 48L686 92" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/><path d="M620 172L686 132" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/><path d="M882 110H926" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/><path d="M1062 110H1086" stroke="#1c2f5e" stroke-width="1.8" fill="none" marker-end="url(#ah)"/></svg>
+</div>
+<p class="mid">수집은 매일, AI 분석은 <b>바뀐 것이 있을 때만</b> · 정책 원장 에이전트: 새 발표 선별 → 수단·방향 코딩 → 규칙 검사 → 확정</p>
+<div class="call"><p class="ch">챗봇 API 호출</p>
+<div><b>시스템 지시</b><span>역할 · 답변 규칙 · 하지 않을 것</span></div>
+<div><b>자료 구획</b><span>[질문] [지표 값] [원문 근거] [예측 결과]</span></div>
+<div><b>응답 스키마</b><span>구조화 출력: 종류 · 답변 · 근거 번호 · 숫자</span></div>
+<div><b>반환 전 검사</b><span>숫자·근거 대조, 틀리면 1회 재요청</span></div></div>
+<div class="stk"><div><small>화면</small><b>React</b></div><div><small>서버</small><b>FastAPI</b></div><div><small>저장·검색</small><b>Supabase pgvector</b></div><div><small>LLM (후보)</small><b>Gemini Flash-Lite</b></div><div><small>임베딩</small><b>한국어 모델 vs API 비교</b></div><div><small>배포</small><b>Vercel · Render</b></div></div>
+</div><span class="pg">4</span></section>
+
+<section class="slide navy">
+<div class="nl"><div class="brand">KHMI <i>AI</i></div>
+<h2>화면 너머,<br><em>진짜 AI로</em></h2>
+<div class="now"><span>지금은</span><b>화면 프로토타입까지</b><span>AI와 서버는 <em>연결 전</em></span></div>
+<p class="tag2">보여 주는 대시보드에서<br><b>분석하고 답하는 AI로</b></p>
+<p class="lk"><a href="/" target="_blank" rel="noopener">프로토타입 시연 ↗</a></p></div>
+<div class="nr">
+<p class="gh2">먼저, AI 연결</p>
+<div class="big4">
+<div><span class="no">1</span><p><b><em>AI</em> 모델 연결</b>LLM API로 예시 문장을 실제 AI 문장으로</p></div>
+<div><span class="no">2</span><p><b><em>RAG</em> 근거 검색 구축</b>정책 원문 수집, 문단 분할, 임베딩, 출처 표시</p></div>
+<div><span class="no">3</span><p><b><em>AI</em> 분석과 답변 구현</b>같은 근거로 지표·정책 요약과 분석, 챗봇 답변</p></div>
+<div><span class="no">4</span><p><b><em>AI 에이전트</em>와 답변 검증</b>질문에 맞는 도구 선택, 날짜·숫자·출처 대조</p></div>
+</div>
+<p class="gh2">그리고, 서비스로 완성</p>
+<div class="sm4">
+<div><span class="no">5</span><p><b>서버·DB·자동 수집</b>FastAPI, Supabase, 매일 갱신</p></div>
+<div><span class="no">6</span><p><b>React 전환과 배포</b>Vercel, Render, 누구나 열리는 주소</p></div>
+<div><span class="no">7</span><p><b>품질 검증</b>오답·보안·속도 점검과 개선</p></div>
+<div><span class="no">8</span><p><b>예측 지표 반영</b>기준 모델 대비 검증을 통과한 값만</p></div>
+</div></div><span class="pg">5</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">홈</p><h2>한 장으로<br><em>전체 파악</em></h2><p class="lead">찾는 시간은 줄이고,<br>판단하는 시간은 확보</p><ol class="pts"><li><span class="n">1</span><div><b>질문창은 하나</b><span>지표·정책 구분 없이 챗봇 하나로</span></div></li><li><span class="n">2</span><div><b>상황을 고르면</b><span>맞는 화면과 질문을 추천</span></div></li><li><span class="n">3</span><div><b>포인트는 세 줄</b><span>지도를 누르면 그 지역 숫자와 AI 체크</span></div></li><li><span class="n">4</span><div><b>흐름은 한 줄</b><span>분야별 이전 → 전환점 → 지금</span></div></li></ol></div><div class="rp home"><div class="hrow"><figure class="shot" style="width:440px"><img src="/pitch/img/s_home.png" alt="홈 화면 전체: 위쪽 질문창과 추천 질문, 어떤 상황이세요? 선택 버튼, 이달의 지역 브리핑 지도와 AI 체크, 아래 분야별 정책 흐름(이전·전환점·지금)과 최근 발표" width="1280" height="1830"><i class="co" style="left:49.06%;top:6.99%;width:47.50%;height:9.67%"><b>1</b></i><i class="co" style="left:3.12%;top:19.40%;width:56.64%;height:2.73%"><b>2</b></i><i class="co" style="left:3.12%;top:30.60%;width:93.44%;height:26.23%"><b>3</b></i><i class="co" style="left:3.12%;top:64.48%;width:93.44%;height:18.85%"><b>4</b></i></figure><div class="hflow"><p class="ht">위에서 아래로</p><div><b>질문</b><span>질문창 하나 · 상황 선택</span></div><i>↓</i><div><b>지역</b><span>지도 · 숫자 · AI 체크 세 줄</span></div><i>↓</i><div><b>정책</b><span>분야별 흐름 · 최근 발표</span></div></div></div></div><span class="pg">부록 · 6</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">지역 브리핑 with AI</p><h2>숫자에서<br><em>변화까지</em></h2><p class="lead">지역은 넓게, 지표는 깊게</p><div class="big">+10.0<small>%</small></div><p class="bigc">서울 아파트 월세 1년, 17개 시도 평균의 3배</p><ol class="pts"><li><span class="n">1</span><div><b>지역 전체를 먼저</b><span>지도를 눌러 지역을 바꾸고, 지표 8개 순위</span></div></li><li><span class="n">2</span><div><b>변화는 정책과 함께</b><span>그래프 위에 대책 시점·규제지역 기간</span></div></li><li><span class="n">3</span><div><b>동향·전망은 AI가 요약</b><span>숫자는 코드가, 문장만 AI가</span></div></li></ol></div><div class="rp"><figure class="shot" style="width:700px"><img src="/pitch/img/s_region.png" alt="지역 브리핑 화면: 위쪽 AI 동향·전망 카드, 왼쪽 서울 전체 브리핑 지도와 지표 표, 오른쪽 가격 흐름 그래프와 정책 시점" width="1280" height="1112"><i class="co" style="left:3.75%;top:65.65%;width:32.66%;height:34.35%"><b>1</b></i><i class="co" style="left:38.12%;top:80.49%;width:58.28%;height:19.06%"><b>2</b></i><i class="co" style="left:3.75%;top:22.75%;width:92.66%;height:41.19%"><b>3</b></i></figure><p class="cap">왼쪽은 <b>지역 전체</b>, 오른쪽은 <b>지표 하나</b></p></div><span class="pg">부록 · 7</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">지역 브리핑 › 예측 지표</p><h2>점 하나 대신<br><em>범위와 경보</em></h2><p class="lead">아파트 월세 향후 3개월, 모델 결과만 그대로</p><p class="inp"><b>입력</b> 월세 관련 지표 + 정책 기조 지수 + 규제지역 비중<br><b>모델</b> 기준 모델과 비교 검증 후 확정</p><ol class="pts"><li><span class="n">1</span><div><b>경보는 3단계</b><span>+1.5% 이상 급등 경계 · −1.0% 이하 급락 경계</span></div></li><li><span class="n">2</span><div><b>범위와 신뢰도를 함께</b><span>80% 범위 · 신뢰도 높음·보통·낮음</span></div></li><li><span class="n">3</span><div><b>검증을 통과한 값만</b><span>직전 값 유지보다 오차가 작을 때 공개</span></div></li></ol></div><div class="rp"><figure class="shot" style="width:740px"><img src="/pitch/img/s_forecast.png" alt="예측 지표 화면: 원칙 세 가지, 급등 경계 2곳·보통 15곳·급락 경계 0곳, 서울 아파트 월세 3개월 전망과 80% 범위" width="1280" height="1045"><i class="co" style="left:3.59%;top:35.12%;width:92.81%;height:12.63%"><b>1</b></i><i class="co" style="left:35.94%;top:48.52%;width:60.47%;height:41.15%"><b>2</b></i><i class="co" style="left:3.59%;top:24.21%;width:92.81%;height:7.27%"><b>3</b></i></figure><p class="cap">사고팔 시점은 <b>추천하지 않음</b> · 화면의 예측치는 예시값</p></div><span class="pg">부록 · 8</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">정책 브리핑 with AI</p><h2>발표보다<br><em>흐름</em></h2><p class="lead">하나의 정책을 열면<br>앞뒤 정책이 함께</p><ol class="pts"><li><span class="n">1</span><div><b>새 소식은 맨 위</b><span>확정 · 시행 · 계획 · 확정 아님을 구분</span></div></li><li><span class="n">2</span><div><b>요약에 분석까지</b><span>영향, 체크포인트, 같이 볼 지표, 상황별 영향</span></div></li><li><span class="n">3</span><div><b>앞뒤는 한눈에</b><span>전환 · 강화 · 보완으로 연결</span></div></li></ol></div><div class="rp"><figure class="shot" style="width:670px"><img src="/pitch/img/s_brief.png" alt="정책 브리핑 화면: 최근 발표 3건, 정책 목록과 10·15 주택시장 안정화 대책 상세, AI 브리핑, 기준별 평가, 오른쪽 정책 흐름" width="1280" height="1150"><i class="co" style="left:3.75%;top:29.39%;width:92.66%;height:8.00%"><b>1</b></i><i class="co" style="left:26.02%;top:52.00%;width:47.19%;height:14.43%"><b>2</b></i><i class="co" style="left:74.06%;top:43.30%;width:22.34%;height:56.70%"><b>3</b></i></figure><p class="cap">총점 대신 <b>근거의 유무</b>로 평가</p></div><span class="pg">부록 · 9</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">정책 브리핑 · 정책 기조 지수</p><h2>정책을<br><em>숫자로</em></h2><p class="lead">2016년 이후 정책 28건+α를 강화·완화로 분류</p><ol class="pts"><li><span class="n">1</span><div><b>규칙 하나에 ±5</b><span>대출·세제·청약·임대차, 100 = 2016년 이후 평균</span></div></li><li><span class="n">2</span><div><b>지금 130</b><span>2016년 이후 가장 강화된 수준, 13개월째 그대로</span></div></li><li><span class="n">3</span><div><b>규제지역은 따로</b><span>변경 24번 → 시군구 월 패널 → 시도 비중</span></div></li></ol></div><div class="rp st"><div class="chart"><p class="ct">정책 기조 지수 · 전국 · 2016.1~2026.10</p><svg viewBox="0 0 740 330" width="740" height="330" role="img" aria-label="정책 기조 지수: 2016년 1월 50에서 2021년 10월 125, 2024년 1월 100을 거쳐 2025년 10월 130으로 2016년 이후 가장 높습니다."><rect x="40.0" y="129.4" width="52.7" height="147.8" fill="#dcebf2"/><rect x="92.7" y="129.4" width="39.4" height="133.0" fill="#dcebf2"/><rect x="132.1" y="129.4" width="7.5" height="103.4" fill="#dcebf2"/><rect x="139.6" y="129.4" width="22.8" height="59.1" fill="#dcebf2"/><rect x="162.4" y="129.4" width="47.1" height="88.7" fill="#dcebf2"/><rect x="209.5" y="129.4" width="79.0" height="44.3" fill="#dcebf2"/><rect x="288.5" y="129.4" width="31.6" height="14.8" fill="#dcebf2"/><rect x="320.0" y="114.7" width="4.0" height="14.8" fill="#f6e1da"/><rect x="324.0" y="85.1" width="50.4" height="44.3" fill="#f6e1da"/><rect x="374.4" y="70.3" width="30.9" height="59.1" fill="#f6e1da"/><rect x="405.3" y="55.6" width="65.2" height="73.9" fill="#f6e1da"/><rect x="470.5" y="70.3" width="9.2" height="59.1" fill="#f6e1da"/><rect x="479.7" y="99.9" width="64.0" height="29.6" fill="#f6e1da"/><rect x="580.0" y="99.9" width="55.6" height="29.6" fill="#f6e1da"/><rect x="635.6" y="70.3" width="12.2" height="59.1" fill="#f6e1da"/><rect x="647.8" y="55.6" width="6.6" height="73.9" fill="#f6e1da"/><rect x="654.4" y="40.8" width="65.6" height="88.7" fill="#f6e1da"/><line x1="40" x2="720" y1="277.2" y2="277.2" stroke="#eceef2"/><text x="33" y="281.2" text-anchor="end" font-size="11" fill="#5b6475">50</text><line x1="40" x2="720" y1="203.3" y2="203.3" stroke="#eceef2"/><text x="33" y="207.3" text-anchor="end" font-size="11" fill="#5b6475">75</text><line x1="40" x2="720" y1="129.4" y2="129.4" stroke="#9aa3b2"/><text x="33" y="133.4" text-anchor="end" font-size="11" fill="#5b6475">100</text><line x1="40" x2="720" y1="55.6" y2="55.6" stroke="#eceef2"/><text x="33" y="59.6" text-anchor="end" font-size="11" fill="#5b6475">125</text><text x="40.0" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2016</text><text x="165.5" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2018</text><text x="291.1" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2020</text><text x="416.6" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2022</text><text x="542.2" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2024</text><text x="667.7" y="312" text-anchor="middle" font-size="11" fill="#5b6475">2026</text><path d="M40.0 277.2H92.7V262.4H132.1V232.9H139.6V188.6H162.4V218.1H209.5V173.8H288.5V144.2H320.0V114.7H324.0V85.1H374.4V70.3H405.3V55.6H470.5V70.3H479.7V99.9H543.7V129.4H580.0V99.9H635.6V70.3H647.8V55.6H654.4V40.8H720.0" fill="none" stroke="#1c2f5e" stroke-width="2.4"/><circle cx="40.0" cy="277.2" r="4.5" fill="#fff" stroke="#1c2f5e" stroke-width="2"/><text x="44.0" y="293.2" text-anchor="start" font-size="12.5" font-weight="700" fill="#1c2f5e" stroke="#fff" stroke-width="3" paint-order="stroke">50 · 2016.1</text><circle cx="405.3" cy="55.6" r="4.5" fill="#fff" stroke="#1c2f5e" stroke-width="2"/><text x="405.3" y="45.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1c2f5e" stroke="#fff" stroke-width="3" paint-order="stroke">125 · 2021.10</text><circle cx="543.7" cy="129.4" r="4.5" fill="#fff" stroke="#1c2f5e" stroke-width="2"/><text x="543.7" y="148.4" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1c2f5e" stroke="#fff" stroke-width="3" paint-order="stroke">100 · 2024.1</text><circle cx="654.4" cy="40.8" r="4.5" fill="#fff" stroke="#1c2f5e" stroke-width="2"/><text x="654.4" y="30.8" text-anchor="end" font-size="12.5" font-weight="700" fill="#1c2f5e" stroke="#fff" stroke-width="3" paint-order="stroke">지금 130</text><text x="46" y="123.4" font-size="11" fill="#5b6475" stroke="#fff" stroke-width="3" paint-order="stroke">100 = 2016년 이후 평균</text></svg>
+<p class="lg"><span style="background:#f6e1da"></span>평균보다 강화된 시기 <span style="background:#dcebf2"></span>평균보다 완화된 시기 · 공급 확대·임차인 보호는 지수에 넣지 않고 따로 표시</p></div>
+<div class="zrow"><figure class="shot" style="width:380px"><img src="/pitch/img/s_zone.png" alt="시기별 규제지역 지도: 2026년 7월 5일 기준 수도권 규제지역" width="1280" height="675"></figure><p><b>시기별 규제지역 지도</b>2016.11~2026.7 변경 24번을 슬라이더로 넘겨 보고, 지역을 누르면 이력이 나옵니다. 시도별 비중은 예측 지표의 입력으로 씁니다.</p></div></div><span class="pg">부록 · 10</span></section>
+
+<section class="slide split"><div class="lp"><div class="brand">KHMI <i>AI</i></div><p class="kick">AI 챗봇 with RAG</p><h2>답보다<br><em>근거</em></h2><p class="lead">숫자와 정책을 잇되,<br>판단은 사용자에게</p><ol class="pts"><li><span class="n">1</span><div><b>섞어서 질문</b><span>지표와 정책을 한 문장으로</span></div></li><li><span class="n">2</span><div><b>답 옆에 근거</b><span>세 번 안에 원문까지</span></div></li><li><span class="n">3</span><div><b>선은 분명하게</b><span>전망은 모델 결과로, 추천·근거 없는 답은 제외</span></div></li></ol></div><div class="rp ask"><figure class="shot" style="width:740px"><img src="/pitch/img/s_ask.png" alt="AI 챗봇 화면: 서울에서 집 살 때 대출은 얼마까지 돼? 질문, 근거 번호가 붙은 답과 원문 목록, 오른쪽 6·27 → 9·7 → 10·15 연결고리" width="1280" height="656"><i class="co" style="left:42.03%;top:31.86%;width:22.66%;height:9.30%"><b>1</b></i><i class="co" style="left:4.53%;top:41.77%;width:58.91%;height:32.62%"><b>2</b></i><i class="co" style="left:67.19%;top:18.60%;width:29.22%;height:71.04%"><b>3</b></i></figure><div class="ins"><span class="tag">가격 전망 질문</span><img class="inset" src="/pitch/img/ask_card.png" alt="가격 전망 질문에 대한 답: 지금까지의 가격 변화와 예측 모델 결과(예시) 103.9에서 106.2, 급등 경계, 80% 범위 105.7~106.7" width="820" height="500"></div><p class="cap">모르면 <b>모른다고</b>, 추천은 <b>하지 않음</b></p></div><span class="pg">부록 · 11</span></section>
+
+</div></div>
+<div id="notes" aria-live="polite"></div>
+<div id="nav"><button id="prev" type="button" aria-label="이전 장">‹</button><span id="pageno">1 / 11</span><button id="next" type="button" aria-label="다음 장">›</button></div>
+<script>
+{
+const slides = [...document.querySelectorAll(".slide")];
+const deck = document.getElementById("deck"), notes = document.getElementById("notes");
+let cur = 0;
+function fromHash() { const n = parseInt(location.hash.slice(1), 10); return n >= 1 && n <= slides.length ? n - 1 : 0; }
+function show(i) {
+  cur = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, k) => s.classList.toggle("active", k === cur));
+  document.getElementById("pageno").textContent = `${cur + 1} / ${slides.length}`;
+  notes.textContent = slides[cur].dataset.notes || "";
+  try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+}
+function fit() { const s = Math.min(innerWidth / 1300, innerHeight / 740); deck.style.transform = `scale(${s})`; }
+addEventListener("resize", fit);
+addEventListener("hashchange", () => { const i = fromHash(); if (i !== cur) show(i); });
+addEventListener("keydown", e => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+  else if (e.key === "Home") show(0);
+  else if (e.key === "End") show(slides.length - 1);
+  else if (e.key.toLowerCase() === "f") {
+    try { const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(() => {}); } catch (err) {}
+  }
+});
+document.getElementById("prev").onclick = () => show(cur - 1);
+document.getElementById("next").onclick = () => show(cur + 1);
+let tx = null;
+addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, { passive: true });
+addEventListener("touchend", e => { if (tx === null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 40) show(cur + (d < 0 ? 1 : -1)); tx = null; });
+fit(); show(fromHash());
+let idleT;
+function wake() { document.body.classList.remove("idle"); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add("idle"), 2500); }
+addEventListener("mousemove", wake); addEventListener("touchstart", wake, { passive: true });
+setTimeout(() => document.body.classList.add("idle"), 4000);
+}
+</script>
+</body>
+</html>

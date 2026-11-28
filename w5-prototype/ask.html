@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230b2447%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2216%22 font-family=%22sans-serif%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%23f59e0b%22%3EK%3C/text%3E%3C/svg%3E">
+<title>AI 챗봇 · KHMI AI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;family=Noto+Serif+KR:wght@700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2f5aa8}a:hover{color:#1f3f80}
+a:focus-visible,button:focus-visible,textarea:focus-visible{outline:3px solid #5b8ce6;outline-offset:2px}
+button:disabled{cursor:not-allowed}
+</style>
+
+</head>
+<body>
+<div id="dc-root"></div>
+<template id="dc-tpl">
+<div style="font-family: 'Noto Sans KR', sans-serif; color: #111827; background: #ffffff; min-height: 100vh">
+<header style="background: #233a70; color: #ffffff">
+<div style="max-width: 1180px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+<a href="index.html" style="display: flex; flex-direction: column; gap: 3px; color: #ffffff; text-decoration: none">
+<span style="font-family: 'Noto Serif KR', serif; font-weight: 700; font-size: 24px; letter-spacing: 0.08em">KHMI <span style="color: #9db8ef">AI</span></span>
+<span style="font-size: 10px; font-weight: 700; letter-spacing: 0.04em; color: rgba(255,255,255,0.8); border-top: 2px solid #5b8ce6; padding-top: 3px">Korea Housing Market Intelligence</span>
+</a>
+<nav aria-label="주요 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px; font-size: 14px">
+<a href="index.html" style="color: #ffffff; text-decoration: none; padding: 10px 11px; white-space: nowrap; color: rgba(255,255,255,0.86)">홈</a>
+<a href="region.html" style="color: #ffffff; text-decoration: none; padding: 10px 11px; white-space: nowrap; color: rgba(255,255,255,0.86)">지역 브리핑 <span style="font-size: 10px; font-weight: 500; opacity: 0.8">with AI</span></a>
+<a href="policy.html" style="color: #ffffff; text-decoration: none; padding: 10px 11px; white-space: nowrap; color: rgba(255,255,255,0.86)">정책 브리핑 <span style="font-size: 10px; font-weight: 500; opacity: 0.8">with AI</span></a>
+<a href="ask.html" aria-current="page" style="color: #ffffff; text-decoration: none; padding: 10px 11px; white-space: nowrap; font-weight: 700; box-shadow: inset 0 -2px 0 #9db8ef">AI 챗봇</a>
+<a href="/pitch/" style="color: #ffffff; text-decoration: none; padding: 10px 11px; white-space: nowrap; color: rgba(255,255,255,0.86)">프로젝트 소개</a>
+</nav>
+</div>
+</header>
+<p style="margin: 0; background: #fdf6ec; color: #7a4f12; font-size: 12px; text-align: center; padding: 6px 12px; border-bottom: 1px solid #f1e3c8">프로토타입 · 지표는 2026년 10월, 정책 발표는 11월 21일까지의 실제 자료입니다 · AI 문장·평가·예측은 예시입니다</p>
+
+
+<main style="max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Noto Serif KR', serif; font-size: 30px; color: #1f3166; letter-spacing: -0.02em">KHMI AI에 묻기</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.7; color: #4b5563">정책 원문을 근거로 답하고, 앞뒤 정책이 어떻게 이어지는지 함께 보여 드립니다. 가격 전망은 예측 모델 결과로 안내하고, 사고팔지에 대한 판단은 하지 않습니다.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<section aria-label="대화" style="flex: 999 1 620px; min-width: 0; border: 1px solid #e5e7eb; border-radius: 14px; display: flex; flex-direction: column">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid #eef0f3">
+<span id="who-label" style="font-size: 14px; font-weight: 700; color: #1f3166">어떤 상황이세요?</span>
+<div role="group" aria-labelledby="who-label" style="display: flex; flex-wrap: wrap; gap: 6px">
+<template data-sc="for" list="{{whoList}}" as="w" hint-placeholder-count="4">
+<button type="button" aria-pressed="{{w.pressed}}" onClick="{{w.pick}}" style="{{w.style}}">{{w.label}}</button>
+</template>
+</div>
+
+</div>
+
+<div style="padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 460px">
+<template data-sc="if" value="{{hasAsked}}" hint-placeholder-val="{{ true }}">
+<div style="align-self: flex-end; max-width: 78%; background: #1f3166; color: #ffffff; border-radius: 14px 14px 4px 14px; padding: 12px 16px; font-size: 15px; line-height: 1.6">{{asked}}</div>
+</template>
+
+<template data-sc="if" value="{{showStatus}}" hint-placeholder-val="{{ false }}">
+<p role="status" style="margin: 0; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #4b5563"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: #2f5aa8"></span>{{statusText}}</p>
+</template>
+
+<template data-sc="if" value="{{showAnswer}}" hint-placeholder-val="{{ true }}">
+<article style="align-self: flex-start; max-width: 94%; display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.85">
+<p style="margin: 0"><template data-sc="for" list="{{para1}}" as="c" hint-placeholder-count="3">{{c.text}}<template data-sc="if" value="{{c.hasCite}}" hint-placeholder-val="{{ false }}"><a href="{{c.url}}" target="_blank" rel="noopener" aria-label="{{c.aria}}" style="font-weight: 700; text-decoration: none"><sup>[{{c.n}}]</sup></a></template></template></p>
+<template data-sc="if" value="{{hasPara2}}" hint-placeholder-val="{{ true }}">
+<p style="margin: 0"><template data-sc="for" list="{{para2}}" as="c" hint-placeholder-count="2">{{c.text}}<template data-sc="if" value="{{c.hasCite}}" hint-placeholder-val="{{ false }}"><a href="{{c.url}}" target="_blank" rel="noopener" aria-label="{{c.aria}}" style="font-weight: 700; text-decoration: none"><sup>[{{c.n}}]</sup></a></template></template></p>
+</template>
+<template data-sc="if" value="{{isStopped}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 13px; color: #7a5200">답변을 멈췄습니다. 받은 부분까지 남겨 두었습니다.</p>
+</template>
+</article>
+</template>
+
+<template data-sc="if" value="{{showOkExtras}}" hint-placeholder-val="{{ true }}">
+<div style="align-self: flex-start; max-width: 94%; display: flex; flex-direction: column; gap: 12px">
+<ol style="margin: 0; padding: 12px 0 0; list-style: none; border-top: 1px solid #eef0f3; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.55">
+<template data-sc="for" list="{{sources}}" as="s" hint-placeholder-count="2">
+<li><a href="{{s.url}}" target="_blank" rel="noopener">[{{s.n}}] {{s.org}} · {{s.title}} ({{s.date}}) ↗</a></li>
+</template>
+</ol>
+<p style="margin: 0; font-size: 12px; color: #6b7280">AI가 정책 원문을 근거로 쓴 답입니다. 틀릴 수 있으니 번호를 눌러 원문을 확인해 주세요.</p>
+<div role="group" aria-label="답변 도구" style="display: flex; flex-wrap: wrap; gap: 6px">
+<button type="button" onClick="{{copyAnswer}}" style="font: inherit; font-size: 13px; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #d5d9e0; background: #ffffff; color: #374151; cursor: pointer">복사</button>
+<button type="button" aria-pressed="{{pUp}}" onClick="{{rateUp}}" style="{{sUp}}">도움이 됐어요</button>
+<button type="button" aria-pressed="{{pDown}}" onClick="{{rateDown}}" style="{{sDown}}">아쉬워요</button>
+</div>
+<template data-sc="if" value="{{isDown}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px">
+<span style="color: #4b5563">무엇이 아쉬웠나요?</span>
+<button type="button" onClick="{{sendReason}}" style="font: inherit; font-size: 12px; min-height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #d5d9e0; background: #ffffff; color: #374151; cursor: pointer">원문과 다름</button>
+<button type="button" onClick="{{sendReason}}" style="font: inherit; font-size: 12px; min-height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #d5d9e0; background: #ffffff; color: #374151; cursor: pointer">질문과 다른 답</button>
+<button type="button" onClick="{{sendReason}}" style="font: inherit; font-size: 12px; min-height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #d5d9e0; background: #ffffff; color: #374151; cursor: pointer">너무 어려움</button>
+</div>
+</template>
+<p role="status" style="margin: 0; min-height: 16px; font-size: 12px; color: #26704a">{{toolMsg}}</p>
+</div>
+</template>
+
+<template data-sc="if" value="{{isNoEvidence}}" hint-placeholder-val="{{ false }}">
+<article style="align-self: flex-start; max-width: 94%; border-radius: 12px; background: #fdf8ec; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.75">
+<p style="margin: 0; font-weight: 700; color: #4a3a12">자료에서 답을 찾지 못했습니다</p>
+<p style="margin: 0; color: #4a3a12">정책 원문 가운데 이 질문에 직접 답하는 내용이 없었습니다. 추측으로 답하지 않고 여기서 멈춥니다.</p>
+<p style="margin: 0; font-size: 13px; color: #6b5a2e">정책 이름이나 시기를 넣으면 찾을 가능성이 높아집니다. 예: “10·15 대책 대출 한도”</p>
+<div><a href="policy.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #d9c9a0; background: #ffffff; color: #4a3a12; text-decoration: none; font-size: 14px">정책 브리핑에서 직접 보기</a></div>
+</article>
+</template>
+
+<template data-sc="if" value="{{isMarket}}" hint-placeholder-val="{{ false }}">
+<article style="align-self: flex-start; max-width: 94%; border-radius: 12px; background: #f5f7fa; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.75">
+<p style="margin: 0; font-weight: 700; color: #1f3166">가격 전망은 예측 모델 결과로 답합니다</p>
+<p style="margin: 0; color: #374151">{{fc.lead}} AI가 따로 전망을 만들지 않고, 예측 모델이 낸 결과만 옮겨 드립니다.</p>
+<div style="border-radius: 10px; background: #ffffff; border: 1px solid #e5e7eb; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+<p style="margin: 0; font-size: 13px; font-weight: 700; color: #374151">지금까지 · {{fc.rg}} · 2026년 10월 기준</p>
+<div style="display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: 4px 12px; font-size: 14px; line-height: 1.6"><span style="color: #4b5563">최근 1년 가격지수</span><span style="font-weight: 700; color: #111827">{{fc.past}}</span><span style="color: #4b5563">지금 규제지역</span><span style="color: #111827">{{fc.reg}}</span></div>
+<p style="margin: 0; font-size: 12px; color: #6b7280">한국부동산원 아파트 매매·전세가격지수, 월세통합가격지수</p>
+</div>
+<div style="border-radius: 10px; background: #ffffff; border: 1px dashed #9aa8c2; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+<p style="margin: 0; font-size: 13px; font-weight: 700; color: #374151">앞으로 3개월 · 아파트 월세 · 예측 모델 결과 <span style="font-weight: 500; color: #8a5a00">(예시)</span></p>
+<div style="display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: 4px 12px; font-size: 14px; line-height: 1.6"><span style="color: #4b5563">지수 예측</span><span style="color: #111827; font-weight: 700">{{fc.fNum}}</span><span style="color: #4b5563">급등·급락 경보</span><span style="color: #111827; font-weight: 700">{{fc.fAlert}}</span><span style="color: #4b5563">범위·신뢰도</span><span style="color: #111827">{{fc.fRange}}</span><span style="color: #4b5563">함께 보는 지표</span><span style="color: #111827">{{fc.fFactor}}</span></div>
+<p style="margin: 0; font-size: 12px; color: #6b7280">모델 결과는 확정된 전망이 아닙니다. 숫자는 모델 결과에서만 옮기고, 답변에서 새로 만들지 않습니다.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<a href="forecast.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; text-decoration: none; font-size: 14px">예측 지표에서 자세히</a><a href="region.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; text-decoration: none; font-size: 14px">지역 브리핑 보기</a>
+<button type="button" onClick="{{askLoan}}" style="font: inherit; font-size: 14px; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; cursor: pointer">지금 대출 한도 보기</button>
+</div>
+</article>
+</template>
+
+<template data-sc="if" value="{{isAdvice}}" hint-placeholder-val="{{ false }}">
+<article style="align-self: flex-start; max-width: 94%; border-radius: 12px; background: #f5f7fa; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.75">
+<p style="margin: 0; font-weight: 700; color: #1f3166">사라·팔라는 판단은 드리지 않습니다</p>
+<p style="margin: 0; color: #374151">자금 사정과 대출 조건에 따라 답이 달라지기 때문입니다. 대신 {{fc.rg}} 기준으로 판단에 쓸 재료를 모아 드릴게요.</p>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: #111827">
+<li><strong>가격 흐름과 예측</strong> · 최근 1년 {{fc.past}}. 예측 모델 결과(예시)는 {{fc.fShort}}입니다.</li>
+<li><strong>지금 대출 한도</strong> · 집값과 지역에 따라 주담대 한도가 다릅니다.</li>
+<li><strong>규제지역·토지거래허가</strong> · 지금 규제지역: {{fc.reg}}. 토지거래허가구역이면 사기 전에 허가가 필요합니다.</li>
+</ol>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<a href="forecast.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; text-decoration: none; font-size: 14px">예측 지표에서 자세히</a><a href="region.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; text-decoration: none; font-size: 14px">지역 브리핑 보기</a>
+<button type="button" onClick="{{askLoan}}" style="font: inherit; font-size: 14px; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; cursor: pointer">지금 대출 한도 보기</button>
+<a href="zone.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #c9ced6; background: #ffffff; color: #111827; text-decoration: none; font-size: 14px">규제지역 지도 보기</a>
+</div>
+</article>
+</template>
+<p role="status" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0">{{liveMsg}}</p>
+</div>
+
+<div style="padding: 0 20px 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<span style="font-size: 13px; color: #6b7280">추천 질문</span>
+<template data-sc="for" list="{{prompts}}" as="p" hint-placeholder-count="3">
+<button type="button" onClick="{{p.ask}}" disabled="{{p.disabled}}" style="font: inherit; font-size: 14px; min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #c9d5ea; background: #f3f6fb; color: #1f3166; cursor: pointer">{{p.text}}</button>
+</template>
+</div>
+
+<form aria-label="질문 입력" onSubmit="{{onSubmit}}" style="border-top: 1px solid #eef0f3; padding: 14px 20px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 10px; align-items: flex-end">
+<label style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #6b7280">궁금한 정책을 물어보세요 (Enter 보내기 · Shift+Enter 줄바꿈)
+<textarea rows="2" value="{{input}}" onChange="{{onInput}}" onKeyDown="{{onKey}}" placeholder="예: 6·27 대책 이후 전세대출은 어떻게 바뀌었어?" style="font: inherit; font-size: 15px; color: #111827; border: 1px solid #c9ced6; border-radius: 10px; padding: 10px 12px; resize: vertical"></textarea>
+</label>
+<template data-sc="if" value="{{busy}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{stop}}" style="font: inherit; font-size: 14px; font-weight: 700; min-height: 46px; padding: 0 18px; border-radius: 10px; border: 1px solid #7a2f12; background: #ffffff; color: #7a2f12; cursor: pointer">멈추기</button>
+</template>
+<template data-sc="if" value="{{notBusy}}" hint-placeholder-val="{{ true }}">
+<button type="submit" disabled="{{sendDisabled}}" style="{{sendStyle}}">보내기</button>
+</template>
+</div>
+<p style="margin: 0; font-size: 12px; color: #6b7280">질문은 답을 만들기 위해 Google Gemini로 보내집니다. 주민등록번호·계좌번호 같은 개인정보는 입력하지 마세요.</p>
+</form>
+</section>
+
+<aside aria-labelledby="chain-title" style="flex: 1 1 320px; min-width: 0; border-radius: 14px; background: #f5f7fa; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<p id="chain-title" style="margin: 0; font-size: 13px; font-weight: 700; color: #2f5aa8">이 답변의 연결고리</p>
+<h2 style="margin: 0; font-size: 18px; line-height: 1.45; color: #1f3166">{{chainTitle}}</h2>
+</div>
+<template data-sc="if" value="{{showChain}}" hint-placeholder-val="{{ true }}">
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<template data-sc="for" list="{{chain}}" as="k" hint-placeholder-count="4">
+<li style="display: flex; gap: 12px">
+<div aria-hidden="true" style="display: flex; flex-direction: column; align-items: center; flex: none; width: 14px">
+<span style="{{k.dot}}"></span>
+<span style="{{k.line}}"></span>
+</div>
+<div style="padding-bottom: 16px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; color: #6b7280">{{k.date}}</span>
+<span style="{{k.nameStyle}}">{{k.name}}</span>
+<span style="font-size: 13px; line-height: 1.55; color: #4b5563">{{k.note}}</span>
+</div>
+</li>
+</template>
+</ol>
+<a href="{{detailHref}}" style="display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #1f3166; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700">{{detailLabel}}</a>
+</template>
+<template data-sc="if" value="{{noChain}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 14px; line-height: 1.7; color: #4b5563">근거가 있는 답이 나오면, 그 정책의 앞뒤 정책과 지금 상태가 여기에 이어서 나타납니다.</p>
+</template>
+</aside>
+</div>
+</main>
+</div>
+</template>
+<script src="/morphdom.min.js"></script>
+<script src="/dc-lite.js"></script>
+<script>
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { who: 'buy', kind: 'ok', input: '', asked: '서울에서 집 살 때 대출은 얼마까지 돼?', key: 'loan', phase: 'done', result: 'ok', shown: 99, feedback: '', toolMsg: '', liveMsg: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.clearTimers(); }
+  clearTimers() { this.timers.forEach(function (t) { clearTimeout(t); }); this.timers = []; }
+  later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+  data() {
+    var U627 = 'https://fsc.go.kr/po010106/84824', U907 = 'https://nsp.nanet.go.kr/plan/main/detail.do?nationalPlanControlNo=PLAN0000061003', U1015 = 'https://www.korea.kr/news/policyNewsView.do?newsId=148950973', U813 = 'https://www.fsc.go.kr/no010101/87517', U921 = 'https://www.korea.kr/news/policyNewsView.do?newsId=148972316', M = 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=';
+    var S = {
+      s627: { org: '금융위원회', title: '수도권 중심의 가계부채 관리 강화 방안 발표', date: '2025.6.27', url: U627 },
+      s907: { org: '관계부처 합동', title: '주택공급 확대방안', date: '2025.9.7', url: U907 },
+      s1015: { org: '정책브리핑', title: '서울 전역·경기 12곳 투기과열지구·토지거래허가구역 지정', date: '2025.10.15', url: U1015 },
+      s813: { org: '금융위원회', title: '수도권 23만호+α 추가 공급, 실수요자 금융지원 강화', date: '2026.8.13', url: U813 },
+      s921: { org: '정책브리핑', title: '2030년까지 공적주택 119만 호 공급…주거안정플랜 마련', date: '2026.9.21', url: U921 },
+      sFee: { org: '국토교통부', title: '공공재개발 사업수수료 3%→1% 한시 인하', date: '2026.11.12', url: M + '95092589' },
+      sMinSup: { org: '국토교통부', title: '전세사기피해자 최소보장제 시행, 10일부터 최소지원금 신청', date: '2026.11.9', url: M + '95092572' },
+      s480: { org: '국토교통부', title: '전세사기피해자등 480건 추가 결정', date: '2026.11.11', url: M + '95092588' },
+      sMinStd: { org: '국토교통부', title: '최저주거기준 높이고 공공임대 선택 넓힌다', date: '2026.11.19', url: M + '95092619' },
+      s630: { org: '금융위원회', title: '규제지역 추가 지정 관련 긴급 가계부채 점검회의', date: '2026.6.30', url: 'https://www.fsc.go.kr/no010101/87222' },
+      s129: { org: '대한민국 정책브리핑', title: '도심 주택공급 확대 및 신속화 방안 발표', date: '2026.1.29', url: 'https://www.korea.kr/briefing/policyBriefingView.do?newsId=156742030' },
+      sPrice: { org: '국토교통부', title: '’27년 부동산 공시가격 시세반영률은 전년 수준 유지', date: '2026.11.20', url: M + '95092627' }
+    };
+    var NOW = { date: '2026.11 지금', name: '규칙은 13개월째 그대로', note: '대출·세금·청약 규칙 변경 없음', kind: 'now' };
+    var A = {
+      loan: { q: '서울에서 집 살 때 대출은 얼마까지 돼?', src: ['s627', 's1015'],
+        ch: [[1, '서울은 전역이 규제지역이라, 주택구입용 주담대는 최대 6억 원입니다.', 1], [1, ' 집값이 15억 원을 넘으면 4억 원, 25억 원을 넘으면 2억 원으로 더 낮아집니다.', 2], [2, '이 금액은 상한이고, 실제 가능액은 LTV·DSR 등에 따라 더 적을 수 있습니다. '], [2, '2025년 10월 이후 이 한도를 바꾼 발표는 없었습니다.']],
+        title: '6·27 → 9·7 → 10·15로 이어진 대출 한도', detail: '10·15 대책 자세히 보기',
+        chain: [{ date: '2025.6.27', name: '6·27 대책', note: '수도권·규제지역 주담대 최대 6억 원', kind: 'tight' }, { date: '2025.9.7', name: '9·7 대책', note: '규제지역 LTV 강화', kind: 'tight' }, { date: '2025.10.15', name: '10·15 대책', note: '15억 초과 4억 원, 25억 초과 2억 원', kind: 'tight', focus: true }, NOW] },
+      tlz: { q: '토지거래허가구역이면 뭐가 달라져?', src: ['s1015', 's630'],
+        ch: [[1, '서울 전역과 경기 12개 지역의 아파트 등은 2025년 10월 20일부터 토지거래허가구역이라, 사려면 허가를 받아야 합니다.', 1], [1, ' 2026년 7월에는 동탄구·기흥구·구리시도 규제지역으로 추가됐습니다.', 2], [2, '규제지역(조정대상지역·투기과열지구)과는 별도 제도로, 대출·청약 규제와 따로 적용됩니다. '], [2, '대상 주택과 거래 면적에 따라 적용이 달라, 구체적인 요건은 원문과 관할 지자체 안내로 확인해 주세요.']],
+        title: '풀렸던 규제가 다시 묶이기까지', detail: '규제지역 지도에서 보기', href: 'zone.html',
+        chain: [{ date: '2023.1.3', name: '1·3 대책', note: '강남3구·용산 외 규제지역 해제', kind: 'ease' }, { date: '2025.10.15', name: '10·15 대책', note: '서울 전역·경기 12곳 규제지역 + 토지거래허가', kind: 'tight', focus: true }, { date: '2026.6.30', name: '규제지역 추가', note: '동탄·기흥·구리', kind: 'tight' }] },
+      gap: { q: '전세 낀 매수는 지금 가능해?', src: ['s627', 's1015'],
+        ch: [[1, '6·27 대책으로 소유권 이전을 조건으로 한 전세대출이 제한되었고, 수도권·규제지역에서 주담대로 집을 사면 6개월 안에 전입해야 합니다.', 1], [1, ' 서울 전역은 2025년 10월 20일부터 토지거래허가구역이라 아파트 등을 살 때 허가가 필요합니다.', 2], [2, '개인 상황과 대상 주택에 따라 적용이 달라 가능 여부를 단정해 답하기는 어렵습니다. '], [2, '거래 전에 허가 요건과 대출 조건을 원문과 금융기관에서 확인해 주세요.']],
+        title: '갭투자 자금을 막은 두 단계', detail: '6·27 대책 자세히 보기',
+        chain: [{ date: '2025.6.27', name: '6·27 대책', note: '조건부 전세대출 제한, 6개월 내 전입', kind: 'tight', focus: true }, { date: '2025.10.15', name: '10·15 대책', note: '서울 전역 토지거래허가구역', kind: 'tight' }, NOW] },
+      supply: { q: '최근 1년 사이 공급 정책은 어떻게 바뀌었어?', src: ['s129', 's813', 's921', 'sFee'],
+        ch: [[1, '최근 1년의 큰 공급 대책은 세 번입니다. '], [1, '2026년 1월 29일 수도권 도심 6만 호 공급 방안,', 1], [1, ' 8월 13일 수도권 23만 호 이상 추가 공급과 PF 지원 확대 계획,', 2], [1, ' 9월 21일 주거안정플랜의 2030년까지 공적주택 119만 호 목표입니다.', 3], [2, '모두 2025년 9·7 대책의 착공 목표를 잇는 후속 계획입니다. '], [2, '11월에는 공공재개발 사업수수료를 3%에서 1%로 한시 인하한다는 발표도 있었습니다.', 4], [2, ' 각 목표는 범위가 달라 단순히 더하지 않습니다.']],
+        title: '9·7 착공 목표에서 이어진 공급 대책', detail: '8·13 대책 자세히 보기',
+        chain: [{ date: '2025.9.7', name: '9·7 대책', note: '2026~2030년 수도권 135만 호 착공 목표', kind: 'supply' }, { date: '2026.1.29', name: '1·29 대책', note: '수도권 도심 6만 호', kind: 'supply' }, { date: '2026.8.13', name: '8·13 대책', note: '23만 호 이상 추가, PF 지원 확대', kind: 'supply', focus: true }, { date: '2026.9.21', name: '주거안정플랜', note: '2030년까지 공적주택 119만 호', kind: 'supply' }, { date: '2026.11.12', name: '공공재개발 수수료 인하', note: '3% → 1% 한시', kind: 'supply' }] },
+      pf: { q: 'PF 지원은 얼마나 늘었어?', src: ['s813'],
+        ch: [[1, '2026년 8월 13일 종합대책에서 PF 보증·자금지원 규모를 26.3조 원에서 47.8조 원 이상으로 늘리는 계획을 밝혔습니다.', 1], [2, '계획 발표이므로, 실제 지원은 보증상품·예산 같은 과제별 후속 조치가 나온 뒤 사업장 요건에 따라 이뤄집니다. '], [2, '주택 매수자 대출 규제와는 다른 경로라, 매수자의 주담대 한도는 그대로입니다.']],
+        title: '공급 실행을 받치는 금융 지원', detail: '8·13 대책 자세히 보기',
+        chain: [{ date: '2025.9.7', name: '9·7 대책', note: '착공 기준 공급 목표', kind: 'supply' }, { date: '2026.8.13', name: '8·13 대책', note: 'PF 지원 26.3조 → 47.8조 원 이상(계획)', kind: 'supply', focus: true }, NOW] },
+      chain: { q: '10·15 대책은 앞선 대책과 어떻게 이어져?', src: ['s627', 's907', 's1015'],
+        ch: [[1, '10·15 대책은 넉 달 사이 세 번째 수요 관리 강화입니다. '], [1, '6·27에 수도권 주담대를 최대 6억 원으로 묶었고,', 1], [1, ' 9·7에 규제지역 LTV를 강화한 뒤,', 2], [1, ' 10·15에 서울 전역·경기 12곳을 규제지역으로 넓히고 고가주택 대출 한도를 더 낮췄습니다.', 3], [2, '수단으로 보면 대출에서 시작해 규제지역·토지거래허가로 넓어졌습니다. '], [2, '서울 아파트 매매가격지수는 2025년 6월 90.3, 10월 93.6, 1년 뒤인 2026년 10월 103.6이었습니다. '], [2, '같은 시기의 움직임일 뿐, 정책의 효과를 뜻하지는 않습니다.']],
+        title: '완화에서 다시 강화로', detail: '10·15 대책 자세히 보기',
+        chain: [{ date: '2023.1.3', name: '1·3 대책', note: '규제지역 대부분 해제 (완화)', kind: 'ease' }, { date: '2025.6.27', name: '6·27 대책', note: '주담대 최대 6억 원', kind: 'tight' }, { date: '2025.9.7', name: '9·7 대책', note: '규제지역 LTV 강화', kind: 'tight' }, { date: '2025.10.15', name: '10·15 대책', note: '규제지역 확대, 고가주택 한도 축소', kind: 'tight', focus: true }, NOW] },
+      recent: { q: '최근 1년 수요 관리 정책에 변화가 있었어?', src: ['s129', 's813', 's921', 's630', 'sPrice'],
+        ch: [[1, '2025년 11월부터 2026년 10월까지 대출·세제·청약·임대차 규칙을 바꾼 대책은 없습니다. '], [1, '이 기간의 대책급 발표는 1·29 도심 공급 대책,', 1], [1, ' 8·13 종합대책,', 2], [1, ' 주거안정플랜 세 건으로 모두 공급을 늘리는 내용입니다.', 3], [2, '규제지역은 2026년 7월 1일 동탄구·기흥구·구리시가 추가 지정됐습니다.', 4], [2, ' 11월 20일에는 2027년 공시가격 시세반영률을 올해 수준으로 유지한다는 발표가 있었습니다.', 5]],
+        title: '10·15 이후 1년, 규칙은 그대로', detail: '규제지역 지도에서 보기', href: 'zone.html',
+        chain: [{ date: '2025.10.15', name: '10·15 대책', note: '마지막 규칙 강화(대출 한도)', kind: 'tight', focus: true }, { date: '2026.1.29', name: '1·29 대책', note: '도심 6만 호 공급', kind: 'supply' }, { date: '2026.6.30', name: '규제지역 추가', note: '동탄·기흥·구리', kind: 'tight' }, { date: '2026.8.13', name: '8·13 대책', note: '공급·금융 지원, 수요 관리 유지', kind: 'supply' }, { date: '2026.9.21', name: '주거안정플랜', note: '공적주택 119만 호', kind: 'supply' }, NOW] },
+      fraud: { q: '전세사기 피해 지원은 어떻게 받아?', src: ['sMinSup', 's480'],
+        ch: [[1, '전세사기피해자 최소보장제가 시행되어, 2026년 11월 10일부터 최소지원금을 신청할 수 있습니다.', 1], [1, ' 11월 11일에는 전세사기피해자 등 480건이 추가로 결정됐습니다.', 2], [2, '지원을 받으려면 먼저 피해자 등으로 결정되어야 합니다. '], [2, '신청 요건과 방법은 원문과 관할 기관 안내로 확인해 주세요.']],
+        title: '피해자 인정에서 최소 보장까지', detail: '전월세 관련 최근 변화 보기', href: 'policy.html',
+        chain: [{ date: '2023.6.1', name: '피해자 인정과 주거 지원', note: '전세사기 피해자 결정·지원 시작', kind: 'protect' }, { date: '2026.11.9', name: '최소보장제 시행', note: '11월 10일부터 최소지원금 신청', kind: 'protect', focus: true }, { date: '2026.11.11', name: '480건 추가 결정', note: '피해자 등 추가 인정', kind: 'protect' }] },
+      pubrent: { q: '공공임대는 앞으로 얼마나 늘어?', src: ['s921', 'sMinStd'],
+        ch: [[1, '2026년 9월 21일 주거안정플랜에서 2030년까지 공적주택 119만 호를 공급하고, 보편형 공공임대 19만 호를 도입한다고 밝혔습니다.', 1], [1, ' 11월 19일에는 최저주거기준을 높이고 공공임대 선택 폭을 넓히는 방안도 나왔습니다.', 2], [2, '119만 호는 목표치이며, 다른 공급 목표와 단순히 더하지 않습니다. '], [2, '입주 자격·임대료·일정은 개별 사업의 모집공고에서 확인해 주세요.']],
+        title: '공급 목표에서 주거복지로', detail: '주거안정플랜 자세히 보기',
+        chain: [{ date: '2026.8.13', name: '8·13 대책', note: '청년 등 실수요자 주거지원 강화', kind: 'supply' }, { date: '2026.9.21', name: '주거안정플랜', note: '공적주택 119만 호, 보편형 공공임대 19만 호', kind: 'supply', focus: true }, { date: '2026.11.19', name: '최저주거기준 상향', note: '공공임대 선택 폭 확대', kind: 'protect' }] },
+      jeonse: { q: '6·27 이후 전세대출은 어떻게 바뀌었어?', src: ['s627'],
+        ch: [[1, '6·27 대책으로 소유권 이전을 조건으로 한 전세대출이 제한됐고, 전세대출 보증비율 조정은 2025년 7월 21일부터 시행됐습니다.', 1], [2, '기존 계약에는 경과규정이 있었습니다. '], [2, '갱신이나 새 계약이라면 지금 조건을 은행과 보증기관 안내로 확인해 주세요.']],
+        title: '갭투자 자금 관리에서 시작된 변화', detail: '6·27 대책 자세히 보기',
+        chain: [{ date: '2025.6.27', name: '6·27 대책', note: '조건부 전세대출 제한 발표', kind: 'tight', focus: true }, { date: '2025.7.21', name: '보증비율 조정 시행', note: '전세대출 보증비율 조정', kind: 'tight' }] }
+    };
+    return { S: S, A: A };
+  }
+  region(text) {
+    var R = {"서울":[10.7,10.5,10.0,1.0],"부산":[0.4,4.2,3.4,0.0],"대구":[-1.1,1.0,1.2,0.0],"인천":[1.2,5.4,5.0,0.0],"광주":[-1.0,0.4,1.5,0.0],"대전":[0.1,1.8,1.6,0.0],"울산":[5.0,6.4,5.9,0.0],"세종":[-0.6,8.7,5.7,0.0],"경기":[7.1,7.4,6.8,0.3452],"강원":[-0.3,-0.1,1.1,0.0],"충북":[1.4,2.0,2.4,0.0],"충남":[-1.4,0.9,2.4,0.0],"전북":[3.7,3.2,4.1,0.0],"전남":[1.7,1.9,2.9,0.0],"경북":[-0.6,0.2,1.0,0.0],"경남":[1.5,3.0,3.6,0.0],"제주":[-2.4,-1.9,-1.8,0.0]};
+    var AL = [['서울', /서울|강남|서초|송파|용산|마포|성동|노원|강서|강동|영등포/], ['경기', /경기|분당|성남|수원|용인|화성|동탄|과천|고양|하남|구리|광명|안양|평택/], ['인천', /인천|송도|부평/], ['부산', /부산|해운대/], ['대구', /대구|수성/], ['광주', /광주/], ['대전', /대전/], ['울산', /울산/], ['세종', /세종/], ['강원', /강원|춘천|원주|강릉/], ['충북', /충북|충청북|청주/], ['충남', /충남|충청남|천안|아산/], ['전북', /전북|전라북|전주/], ['전남', /전남|전라남|여수|순천/], ['경북', /경북|경상북|포항|구미/], ['경남', /경남|경상남|창원|김해/], ['제주', /제주/]];
+    var F = {"서울":[103.9,106.2,2.2,105.7,106.7,"보통","up",120.26,106.19],"부산":[101.0,101.8,0.7,101.4,102.2,"보통","mid",103.05,99.32],"대구":[100.5,100.8,0.3,100.4,101.2,"높음","mid",96.42,83.46],"인천":[102.2,103.5,1.3,103.1,103.9,"보통","mid",111.83,101.9],"광주":[100.4,100.6,0.2,100.2,101.0,"높음","mid",102.28,103.98],"대전":[100.5,100.8,0.3,100.4,101.2,"높음","mid",101.21,99.12],"울산":[101.8,102.7,0.9,102.3,103.1,"보통","mid",117.74,104.41],"세종":[101.5,102.5,0.9,102.1,102.9,"보통","mid",104.17,106.18],"경기":[102.8,104.6,1.7,104.2,105.0,"보통","up",109.46,101.91],"강원":[100.3,100.5,0.2,100.1,100.9,"높음","mid",101.65,98.83],"충북":[100.9,101.5,0.6,101.1,101.9,"보통","mid",103.97,101.66],"충남":[100.9,101.5,0.6,101.1,101.9,"보통","mid",103.82,100.59],"전북":[101.2,102.0,0.7,101.6,102.4,"보통","mid",104.29,102.34],"전남":[100.8,101.2,0.4,100.8,101.6,"높음","mid",100.37,99.45],"경북":[100.2,100.4,0.2,100.0,100.8,"높음","mid",97.07,96.35],"경남":[101.2,101.9,0.7,101.5,102.3,"보통","mid",105.05,103.95],"제주":[99.4,99.0,-0.4,98.6,99.4,"높음","mid",88.31,88.96]};
+    var t = text || '', rg = '', i;
+    for (i = 0; i < AL.length; i++) { if (AL[i][1].test(t)) { rg = AL[i][0]; break; } }
+    var named = !!rg; if (!rg) rg = '서울';
+    var v = R[rg];
+    function pc(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(1) + '%'; }
+    var reg = v[3] <= 0 ? '없음' : v[3] >= 0.999 ? '시군구 전체' : '시군구의 ' + Math.round(v[3] * 100) + '%';
+    return {
+      rg: rg,
+      lead: named ? rg + ' 가격에 대한 질문으로 이해했습니다.' : '지역이 없어 서울 기준으로 보여 드립니다.',
+      past: '매매 ' + pc(v[0]) + ' · 전세 ' + pc(v[1]) + ' · 월세 ' + pc(v[2]),
+      reg: reg,
+      fNum: F[rg][0].toFixed(1) + ' → ' + F[rg][1].toFixed(1) + ' (' + pc(F[rg][2]) + ')',
+      fAlert: { up: '급등 경계', mid: '보통', down: '급락 경계' }[F[rg][6]],
+      fRange: '80% 범위 ' + F[rg][3].toFixed(1) + '~' + F[rg][4].toFixed(1) + ' · 신뢰도 ' + F[rg][5],
+      fFactor: '월세 수급 ' + F[rg][7].toFixed(1) + '(1년 전 ' + F[rg][8].toFixed(1) + ') · 모델 입력 예시',
+      fShort: '아파트 월세 3개월 ' + pc(F[rg][2]) + ' · ' + { up: '급등 경계', mid: '보통', down: '급락 경계' }[F[rg][6]]
+    };
+  }
+  classify(text) {
+    var D = this.data().A, t = text.trim();
+    for (var k in D) { if (D[k].q === t) return { kind: 'ok', key: k }; }
+    if (/살까|팔까|사도 될|사도 돼|팔아도|사야 할|팔아야|매수해도|투자해도|사는 게 나을|살 때일까|팔 때일까/.test(t)) return { kind: 'advice' };
+    if (/오를|내릴|떨어질|전망|급등|급락|예측|상승할|하락할|오르나|내리나/.test(t)) return { kind: 'market' };
+    if (/토지거래/.test(t)) return { kind: 'ok', key: 'tlz' };
+    if (/전세사기|피해자/.test(t)) return { kind: 'ok', key: 'fraud' };
+    if (/공공임대|임대주택|공적주택/.test(t)) return { kind: 'ok', key: 'pubrent' };
+    if (/전세대출/.test(t) && !/매수|갭/.test(t)) return { kind: 'ok', key: 'jeonse' };
+    if (/전세/.test(t) && /매수|갭/.test(t)) return { kind: 'ok', key: 'gap' };
+    if (/대출|주담대/.test(t) && /한도|얼마/.test(t)) return { kind: 'ok', key: 'loan' };
+    if (/PF/i.test(t)) return { kind: 'ok', key: 'pf' };
+    if (/공급/.test(t)) return { kind: 'ok', key: 'supply' };
+    if (/이어|연결|10·15/.test(t)) return { kind: 'ok', key: 'chain' };
+    return { kind: 'noevidence' };
+  }
+  run(text) {
+    var self = this, c = this.classify(text);
+    this.clearTimers();
+    var fcq = c.kind === 'market' || c.kind === 'advice';
+    this.setState({ asked: text, input: '', phase: 'search', result: '', kind: c.kind, key: c.key || '', shown: 0, feedback: '', toolMsg: '', liveMsg: fcq ? '예측지표와 지금 규칙을 불러오는 중입니다' : '원문을 찾는 중입니다' });
+    if (c.kind !== 'ok') { this.later(900, function () { self.setState({ phase: 'done', result: c.kind, liveMsg: c.kind === 'market' ? '예측지표 안내를 보여 드립니다' : c.kind === 'advice' ? '판단에 쓸 재료를 보여 드립니다' : '근거를 찾지 못했습니다' }); }); return; }
+    var N = this.data().A[c.key].ch.length;
+    this.later(700, function () { self.setState({ phase: 'write' }); });
+    for (var i = 1; i <= N; i++) { (function (k) { self.later(900 + k * 260, function () { self.setState({ phase: 'stream', shown: k }); }); })(i); }
+    this.later(900 + N * 260 + 300, function () { self.setState({ phase: 'done', result: 'ok', liveMsg: '답변이 완성되었습니다' }); });
+  }
+  renderVals() {
+    var self = this, st = this.state, D = this.data();
+    var ans = st.key ? D.A[st.key] : null;
+    var busy = st.phase === 'search' || st.phase === 'write' || st.phase === 'stream';
+    var ok = st.phase === 'done' && st.result === 'ok';
+    var srcIdx = {};
+    var sources = ans ? ans.src.map(function (k, i) { srcIdx[i + 1] = D.S[k]; var s = D.S[k]; return { n: i + 1, org: s.org, title: s.title, date: s.date, url: s.url }; }) : [];
+    var vis = ans ? ans.ch.slice(0, Math.min(st.shown, ans.ch.length)).map(function (c) {
+      var n = c[2] || 0, s = n ? srcIdx[n] : null;
+      return { p: c[0], text: c[1], hasCite: !!n, n: n || '', url: s ? s.url : '#', aria: s ? ('근거 ' + n + ' 원문 보기: ' + s.title) : '' };
+    }) : [];
+    var showAnswer = !!ans && (st.phase === 'stream' || ok || (st.phase === 'stopped' && st.shown > 0));
+    var WHO = [{ k: 'buy', label: '집을 사려고 해요' }, { k: 'rent', label: '전월세로 살아요' }, { k: 'supply', label: '집을 짓거나 공급해요' }, { k: 'flow', label: '정책 흐름을 봐요' }];
+    var PR = { buy: ['loan', 'tlz', 'gap', '?서울 월세 앞으로 오를까?'], rent: ['fraud', 'pubrent', 'jeonse', '?서울 월세 앞으로 오를까?'], supply: ['supply', 'pf', 'chain'], flow: ['chain', 'recent', 'supply', '?지금 서울에서 집 사도 될까?'] };
+    var empty = !(st.input || '').trim();
+    function send() { var t = (self.state.input || '').trim(); if (!t || busy) return; self.run(t); }
+    var fb = 'font: inherit; font-size: 13px; min-height: 36px; padding: 0 12px; border-radius: 8px; cursor: pointer; ';
+    function fbStyle(on) { return fb + (on ? 'border: 1px solid #2f5aa8; background: #ebf1fa; color: #1f3f80; font-weight: 700' : 'border: 1px solid #d5d9e0; background: #ffffff; color: #374151'); }
+    var DOTC = { tight: '#c9604a', ease: '#3f8aa8', supply: '#3c9a6a', protect: '#6b5bb0', hold: '#9aa3b2', now: '#9aa3b2' };
+    var chainList = ans ? ans.chain : [];
+    var chain = chainList.map(function (k, i) {
+      var last = i === chainList.length - 1, col = DOTC[k.kind];
+      return {
+        date: k.date, name: k.name, note: k.note,
+        dot: 'width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; margin-top: 3px; ' + (k.kind === 'now' ? 'border: 2px dashed ' + col + '; background: #f5f7fa' : (k.focus ? 'background: ' + col + '; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px ' + col : 'background: #ffffff; border: 3px solid ' + col)),
+        line: last ? 'display: none' : 'flex: 1 1 auto; width: 2px; background: #d5dbe5; margin-top: 4px',
+        nameStyle: 'font-size: 15px; ' + (k.focus ? 'font-weight: 700; color: #1f3166' : 'font-weight: 500; color: #111827')
+      };
+    });
+    var statusText = st.phase === 'search' && (st.kind === 'market' || st.kind === 'advice') ? '예측지표와 지금 규칙을 불러오는 중…' : st.phase === 'search' ? '정책 원문을 찾는 중…' : (ans ? ('원문 ' + ans.src.length + '건을 찾아 답을 쓰는 중…') : '');
+    return {
+      whoList: WHO.map(function (w) {
+        var on = w.k === st.who;
+        return { label: w.label, pressed: String(on), pick: function () { self.setState({ who: w.k }); },
+          style: 'font: inherit; font-size: 13px; min-height: 38px; padding: 0 14px; border-radius: 19px; cursor: pointer; ' + (on ? 'border: 1px solid #1f3166; background: #1f3166; color: #ffffff; font-weight: 700' : 'border: 1px solid #c9ced6; background: #ffffff; color: #374151') };
+      }),
+      prompts: PR[st.who].map(function (k) { var q = k.charAt(0) === '?' ? k.slice(1) : D.A[k].q; return { text: q, disabled: busy, ask: function () { if (!busy) self.run(q); } }; }),
+      hasAsked: !!st.asked, asked: st.asked,
+      showStatus: st.phase === 'search' || st.phase === 'write', statusText: statusText,
+      showAnswer: showAnswer,
+      para1: vis.filter(function (c) { return c.p === 1; }), para2: vis.filter(function (c) { return c.p === 2; }),
+      hasPara2: vis.some(function (c) { return c.p === 2; }),
+      isStopped: st.phase === 'stopped',
+      showOkExtras: ok, sources: sources,
+      isNoEvidence: st.phase === 'done' && st.result === 'noevidence',
+      isMarket: st.phase === 'done' && st.result === 'market',
+      isAdvice: st.phase === 'done' && st.result === 'advice',
+      fc: this.region(st.asked),
+      askLoan: function () { self.run(D.A.loan.q); },
+      showChain: ok && !!ans, noChain: !(ok && ans),
+      chainTitle: ok && ans ? ans.title : '정책의 연결고리',
+      chain: chain, detailLabel: ans ? ans.detail : '', detailHref: ans && ans.href ? ans.href : 'policy.html',
+      busy: busy, notBusy: !busy,
+      input: st.input,
+      onInput: function (e) { self.setState({ input: e.target.value }); },
+      onKey: function (e) {
+        if (e.key !== 'Enter' || e.shiftKey) return;
+        var composing = (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229;
+        if (composing) return;
+        e.preventDefault(); send();
+      },
+      onSubmit: function (e) { e.preventDefault(); send(); },
+      sendDisabled: empty,
+      sendStyle: 'font: inherit; font-size: 14px; font-weight: 700; min-height: 46px; padding: 0 20px; border-radius: 10px; border: 0; ' + (empty ? 'background: #d5d9e0; color: #4b5563' : 'background: #1f3166; color: #ffffff; cursor: pointer'),
+      stop: function () { self.clearTimers(); self.setState({ phase: 'stopped', liveMsg: '답변을 멈췄습니다' }); },
+      copyAnswer: function () { self.setState({ toolMsg: '답변과 출처를 복사했습니다' }); },
+      pUp: String(st.feedback === 'up'), pDown: String(st.feedback === 'down'),
+      sUp: fbStyle(st.feedback === 'up'), sDown: fbStyle(st.feedback === 'down'),
+      rateUp: function () { self.setState({ feedback: 'up', toolMsg: '의견을 받았습니다. 고맙습니다.' }); },
+      rateDown: function () { self.setState({ feedback: 'down', toolMsg: '' }); },
+      sendReason: function () { self.setState({ toolMsg: '알려 주셔서 고맙습니다. 답변 개선에 쓰겠습니다.' }); },
+      isDown: st.feedback === 'down',
+      toolMsg: st.toolMsg, liveMsg: st.liveMsg
+    };
+  }
+}
+
+dcMount(Component);
+</script>
+</body>
+</html>
